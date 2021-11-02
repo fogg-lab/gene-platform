@@ -1,6 +1,0 @@
-Open an R session while connected to the internet, and run:
-install.packages("shiny")
-
-Shiny is installed. Now try the first example app:
-library(shiny)
-runExample("01_hello")
