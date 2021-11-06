@@ -1,0 +1,5 @@
+Install Flask: "pip install Flask" or "pip3 install Flask"
+
+Run this app:
+export FLASK_APP=app
+flask run
