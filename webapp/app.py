@@ -1,15 +1,24 @@
 import os
+import csv
 from flask import Flask, render_template, request, redirect, url_for, \
     send_from_directory
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# TODO: Only allow 1 file per upload box
-# TODO: Store uploaded files separately for each user session
-# TODO: Add ability to upload config file instead of entering parameters
-# TODO: Add form to enter parameters, on submit it generates the config file
-# TODO: Validate config file & other uploaded files
+# backlog (in order)
+# - limit upload fields to one file (Noah)
+# - add uploading of config file (Noah)
+# - add display page html (Corbin)
+# - add route function which parses basic .tsv output file and renders display page (Carter)
+# - add user session implementation for uploading files and displaying output
+# - add parameter text input fields
+# - add ability to generate config file in correct session directory
+# - add submit button which generates config and calls analysis script
+# - add validation of parameters and uploaded files
+# - add ability to handle error.tsv output if analysis script fails
+# - add ability to choose microarray or RNA-seq
+# - add default values to text input field
 
 def validate_counts(stream):
     # Stub function for demo
@@ -67,3 +76,12 @@ def upload_filter():
 @app.route('/uploads/<filename>')
 def upload(filename):
     return send_from_directory('uploads', filename)
+
+@app.route('/display')
+def display_output():
+    # check here if output.tsv exists and errors.txt doesn't
+    output = open('output.tsv')
+    reader = csv.reader(output, delimiter='\t')
+    rows = [[elem for elem in row] for row in reader]
+    output.close()
+    return render_template('results.html', rows=rows)
