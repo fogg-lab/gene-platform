@@ -7,7 +7,9 @@ app = Flask(__name__)
 
 # TODO: Only allow 1 file per upload box
 # TODO: Store uploaded files separately for each user session
-# TODO: Validate uploaded files
+# TODO: Add ability to upload config file instead of entering parameters
+# TODO: Add form to enter parameters, on submit it generates the config file
+# TODO: Validate config file & other uploaded files
 
 def validate_counts(stream):
     # Stub function for demo
