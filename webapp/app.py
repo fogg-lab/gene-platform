@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, abort, \
+from flask import Flask, render_template, request, redirect, url_for, \
     send_from_directory
 from werkzeug.utils import secure_filename
 
@@ -7,7 +7,9 @@ app = Flask(__name__)
 
 # TODO: Only allow 1 file per upload box
 # TODO: Store uploaded files separately for each user session
-# TODO: Validate uploaded files
+# TODO: Add ability to upload config file instead of entering parameters
+# TODO: Add form to enter parameters, on submit it generates the config file
+# TODO: Validate config file & other uploaded files
 
 def validate_counts(stream):
     # Stub function for demo
