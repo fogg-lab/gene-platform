@@ -1,5 +1,10 @@
-Install Flask: "pip install Flask" or "pip3 install Flask"
+Setup:
+virtualenv venv -p $(which python3) 
+source ./venv/bin/activate
+pip3 install --upgrade pip
+pip install -r Flask
 
-Run this app:
+Run web app (replace xxxx with a unique port):
+source ./venv/bin/activate
 export FLASK_APP=app
-flask run
+flask run -h 0.0.0 -p xxxx --reload
