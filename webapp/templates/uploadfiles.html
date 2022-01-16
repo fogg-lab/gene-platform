@@ -1,0 +1,27 @@
+<html>
+
+<!-- Bootstrap & JQuery -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+  <head>
+    <title>File Upload</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
+  </head>
+  <body>
+    <h1>Upload counts (.tsv)</h1>
+    <form name="upload-counts" action="{{ url_for('upload_counts') }}" class="dropzone">
+    </form>
+    <h1>Upload coldata (.tsv)</h1>
+    <form name="upload-coldata" action="{{ url_for('upload_coldata') }}" class="dropzone">
+    </form>
+    <h1>Upload filter (.txt)</h1>
+    <form name="upload-filter" action="{{ url_for('upload_filter') }}" class="dropzone">
+    </form>
+    <h1>Config (.txt)</h1>
+    <form name="upload-config" action="{{ url_for('upload_config') }}" class="dropzone">
+    </form>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
+  </body>
+</html>
