@@ -47,7 +47,7 @@ def validate_config(stream):
 
 @app.route('/')
 def index():
-    files = os.listdir('uploads')
+    files = os.listdir('user_files')
     return render_template('uploadfiles.html', files=files)
 
 @app.route('/uploadcounts', methods=['POST'])
@@ -98,9 +98,9 @@ def upload_config():
         save_temp_file(uploaded_file, 'config')
     return redirect(url_for('index'))
 
-@app.route('/uploads/<filename>')
+@app.route('/user_files/<filename>')
 def upload(filename):
-    return send_from_directory('uploads', filename)
+    return send_from_directory('user_files', filename)
 
 @app.route('/display')
 def display_output():
@@ -111,13 +111,17 @@ def display_output():
     output.close()
     return render_template('results.html', rows=rows)
 
-# Takes an uploaded file and copies it to a temporary file on the server
-# filename_prefix will be either "counts", "coldata", "filter", or "config"
-# the full file name is generated to be unique to the session
-# the file name for is saved in session[filenameprefix+"_filename"]
-def save_temp_file(file, filenameprefix):
-    tmpfile, filename = tempfile.mkstemp(prefix=filenameprefix, dir='uploads/')
+# Takes a user's file and copies it into a temp directory on the server
+# directory path is stored in the user session variable "user_files_dirname"
+def save_temp_file(file, filename):
+    if not "user_files_dirname" in session:
+        temp_dirname = tempfile.TemporaryDirectory(dir='user_files/')
+        session["user_files_dirname"] = temp_dirname.name + '/'
+    user_file_path = session["user_files_dirname"] + filename
+    
+    if os.path.exists(user_file_path):
+        os.remove(user_file_path)
+    user_file = open(user_file_path, 'wb')
+
     for line in file:
-        os.write(tmpfile, line)
-    session_filename_var = filenameprefix + "_filename"
-    session[session_filename_var] = filename
+        user_file.write(line)
