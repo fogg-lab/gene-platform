@@ -5,6 +5,7 @@ flask run -h 0.0.0.0 -p xxxx --reload
 
 Setup outside the container:
 cd webapp
+mkdir uploads
 virtualenv venv -p $(which python3) 
 source ./venv/bin/activate
 pip3 install --upgrade pip
