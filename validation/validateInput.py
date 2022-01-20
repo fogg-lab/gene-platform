@@ -18,17 +18,13 @@ class FileSystem:
 
         self._filter_gene_file = {'type': '.txt', 'format': self.filter_gene_dict}
 
-        self._micro_array_col_file = {'type': '.tsv', 'column_count': len(self.micro_array_col_data_dict),
-                                      'format': self.micro_array_col_data_dict}
+        self._micro_array_col_file = {'type': '.tsv', 'format': self.micro_array_col_data_dict}
 
-        self._micro_array_count_file = {'type': '.tsv', 'column_count': len(self.micro_array_count_data_dict),
-                                        'format': self.micro_array_count_data_dict}
+        self._micro_array_count_file = {'type': '.tsv', 'format': self.micro_array_count_data_dict}
 
-        self._rna_seq_col_file = {'type': '.tsv', 'column_count': len(self.rna_seq_col_dict),
-                                  'format': self.rna_seq_col_dict}
+        self._rna_seq_col_file = {'type': '.tsv', 'format': self.rna_seq_col_dict}
 
-        self._rna_seq_count_file = {'type': '.tsv', 'column_count': len(self.rna_seq_count_data_dict),
-                                    'format': self.rna_seq_count_data_dict}
+        self._rna_seq_count_file = {'type': '.tsv', 'format': self.rna_seq_count_data_dict}
 
     @staticmethod
     def merge_dicts(dict_1, final_dict):
@@ -64,6 +60,8 @@ class FileValidation:
         self._has_validated_micro_array_col_file = False  # holds the validated micro_array filename
         self._has_validated_rna_seq_col_file = False  # # holds the validated rna_seq filename
         self.file_obj = FileSystem()
+        self._filename = ['filter gene', 'rna seguence coldata', 'rna sequence_count',
+                          'microarray coldata', 'microarray_count']
 
     def set_validation(self, state):
         """set the new validation status for a file"""
@@ -78,16 +76,20 @@ class FileValidation:
         print("the file has type error. Below is the data types in your files")
         print(df.dtypes)
         print("The valid data types format is shown as below:")
-        if filename == 'filter_gene':
+        if filename == self._filename[0]:
             print(pd.DataFrame.from_dict(self.file_obj.get_file_format_filter_gene()))
-        if filename == 'rna_seg_col':
+        if filename == self._filename[1]:
             print(pd.DataFrame.from_dict(self.file_obj.get_file_format_rna_seq_col()))
-        if filename == 'rna_seq_count':
+        if filename == self._filename[2]:
             print(pd.DataFrame.from_dict(self.file_obj.get_file_format_rna_seq_count()))
-        if filename == 'microarray_col':
+        if filename == self._filename[3]:
             print(pd.DataFrame.from_dict(self.file_obj.get_file_format_micro_array_col()))
-        if filename == 'microarray_count':
+        if filename == self._filename[4]:
             print(pd.DataFrame.from_dict(self.file_obj.get_file_format_micro_array_count()))
+
+    @staticmethod
+    def pending_message(filename):
+        return "pending: waiting for the " + filename + " to finish validation"
 
     @staticmethod
     def convert_string_to_dict(column_list, data_type):
@@ -106,7 +108,7 @@ class FileValidation:
         name = ''
         try:
             if filename.endswith(".txt"):
-                name = 'filter_gene'
+                name = self._filename[0]
                 df = pd.read_csv(file_path, sep=" ", header=None,
                                  dtype=self.file_obj.get_file_format_filter_gene()['format'])
                 self.set_validation(True)
@@ -114,7 +116,7 @@ class FileValidation:
             elif filename.endswith(".tsv"):
                 df = pd.read_csv(file_path, sep='\t')
                 if len(df.columns) == len(self.file_obj.get_file_format_micro_array_col()['format']):
-                    name = 'microarray_col'
+                    name = self._filename[3]
                     df = pd.read_csv(file_path, sep='\t',
                                      dtype=self.file_obj.get_file_format_micro_array_col()['format'])
                     self.file_obj.merge_dicts(
@@ -125,7 +127,7 @@ class FileValidation:
                     self.set_validation(True)
 
                 elif len(df.columns) == len(self.file_obj.get_file_format_rna_seq_col()['format']):
-                    name = 'rna_seq_col'
+                    name = self._filename[1]
                     df = pd.read_csv(file_path, sep='\t', dtype=self.file_obj.get_file_format_rna_seq_col()['format'])
                     self.file_obj.merge_dicts(
                         self.convert_string_to_dict(df['sample_name'].tolist(), np.float),
@@ -134,22 +136,22 @@ class FileValidation:
                     self._has_validated_rna_seq_col_file = True
                     self.set_validation(True)
 
-                elif df.columns.values.tolist()[0] == "symbol":
+                elif df.columns.values.tolist()[0] in self.file_obj.get_file_format_micro_array_count()['format']:
                     if self._has_validated_micro_array_col_file is True:
-                        name = 'microarray_count'
+                        name = self._filename[4]
                         df = pd.read_csv(file_path, sep='\t',
                                          dtype=self.file_obj.get_file_format_micro_array_count()['format'])
                         self.set_validation(True)
                     else:
-                        self.set_validation("pending: waiting for the microarray coldata to finish validation")
-                elif df.columns.values.tolist()[0] == "Hugo_Symbol":
+                        self.set_validation(self.pending_message(self._filename[3]))
+                elif df.columns.values.tolist()[0] in self.file_obj.get_file_format_rna_seq_count()['format']:
                     if self._has_validated_rna_seq_col_file is True:
-                        name = 'rna_seq_count'
+                        name = self._filename[2]
                         df = pd.read_csv(file_path, sep='\t',
                                          dtype=self.file_obj.get_file_format_rna_seq_count()['format'])
                         self.set_validation(True)
                     else:
-                        self.set_validation("pending: waiting for the rna_seq coldata to finish validation")
+                        self.set_validation(self.pending_message(self._filename[1]))
 
         except TypeError:
             self.error_message(df, name)
@@ -199,3 +201,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
