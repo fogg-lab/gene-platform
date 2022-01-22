@@ -3,7 +3,12 @@ cd webapp
 export FLASK_APP=app
 flask run -h 0.0.0.0 -p xxxx --reload
 
-Setup outside the container:
+Run web app inside the container, no specific port:
+cd webapp
+export FLASK_APP=app
+flask run --reload
+
+Setup web app outside the container:
 cd webapp
 virtualenv venv -p $(which python3) 
 source ./venv/bin/activate

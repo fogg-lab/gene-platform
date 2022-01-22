@@ -31,22 +31,6 @@ Session(app)
 # - add ability to handle error output if analysis script fails
 # - add ability to choose microarray or RNA-seq
 
-def validate_counts(stream):
-    # TODO: implement validate_counts
-    return '.tsv'
-
-def validate_coldata(stream):
-    # TODO: implement validate_coldata
-    return '.tsv'
-
-def validate_filter(stream):
-    # TODO: implement validate_filter
-    return '.txt'
-
-def validate_config(stream):
-    # TODO: implement validate_filter
-    return '.txt'
-
 @app.route('/')
 def index():
     files = os.listdir('user_files')
@@ -58,8 +42,7 @@ def upload_counts():
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.tsv' or \
-                file_ext != validate_counts(uploaded_file.stream):
+        if file_ext != '.tsv':
             return "Invalid file extension", 400
         save_temp_file(uploaded_file, 'counts.tsv')
     return redirect(url_for('index'))
@@ -70,8 +53,7 @@ def upload_coldata():
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.tsv' or \
-                file_ext != validate_coldata(uploaded_file.stream):
+        if file_ext != '.tsv':
             return "Invalid file extension", 400
         save_temp_file(uploaded_file, 'coldata.tsv')
     return redirect(url_for('index'))
@@ -82,8 +64,7 @@ def upload_filter():
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.txt' or \
-                file_ext != validate_filter(uploaded_file.stream):
+        if file_ext != '.txt':
             return "Invalid file extension", 400
         save_temp_file(uploaded_file, 'filter.txt')
     return redirect(url_for('index'))
@@ -94,8 +75,7 @@ def upload_config():
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.txt' or \
-                file_ext != validate_config(uploaded_file.stream):
+        if file_ext != '.txt':
             return "Invalid file extension", 400
         save_temp_file(uploaded_file, 'config.txt')
     return redirect(url_for('index'))
@@ -143,11 +123,15 @@ def cleanup_old_sessions():
     # Clean up other sessions older than one hour (3600 seconds)
     for old_dir in os.listdir('user_files'):
         old_dir = 'user_files/' + old_dir
+
         if old_dir != "user_files/.gitkeep":
-            get_age_params = "$(($(date +%s) - $(date +%s -r " + old_dir + ")))"
-            age = int(subprocess.Popen(['echo %s' %(get_age_params)], \
+            get_age = "$(($(date +%s) - $(date +%s -r " + old_dir + ")))"
+
+            # Run bash command and return the stdout output
+            age_seconds = int(subprocess.Popen(['echo %s' %(get_age)], \
                 stdout=subprocess.PIPE, shell=True).communicate()[0])
-            if age > 3600:
+
+            if age_seconds > 3600:
                 shutil.rmtree(old_dir)
 
 cleanup_old_sessions()
