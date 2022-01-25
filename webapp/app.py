@@ -4,8 +4,6 @@ import shutil
 import csv
 from datetime import timedelta
 import tempfile
-from tkinter import N
-from tkinter.messagebox import NO
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, \
     send_from_directory, session
