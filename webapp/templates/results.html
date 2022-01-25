@@ -10,6 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
   </head>
   <body>
-    <h1>Hello</h1>
+    <table>
+      {% for result in rows %}
+      <tr>
+        {% for elem in result %}
+        <td>{{elem}}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
   </body>
 </html>
