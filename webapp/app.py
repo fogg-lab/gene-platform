@@ -28,18 +28,8 @@ MICROARRAY_SCRIPT_LOCATION = "../dge_analysis/microarray_dgea.R"
 USER_FILES_LOCATION = "user_files"
 
 # backlog (in order)
-# - limit upload fields to one file (Noah) - done (a new upload overwrites old)
-# - add uploading of config file (Noah) - done
-# - add display page html (Corbin)
-# - add route function which parses basic .tsv output file and renders
-#    display page (Carter)
-# - add user session implementation for uploading files and displaying output
-# - add parameter text input fields
-# - add ability to generate config file in correct session directory
-# - add submit button which generates config and calls analysis script
-# - add validation of parameters and uploaded files
+# - add validation of parameters
 # - add ability to handle error output if analysis script fails
-# - add ability to choose microarray or RNA-seq
 
 @app.route('/')
 def index():
