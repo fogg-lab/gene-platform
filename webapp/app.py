@@ -106,6 +106,7 @@ def submit():
     use_qual_weights = request.args.get('use_qual_weights')
 
     # if the parameters are set, generate config
+    # TODO: fix parameter generation
     if min_expr is not None and min_prop is not None \
         and padj_thresh is not None and adj_method is not None \
         and adj_method is not None and condition is not None \
@@ -129,7 +130,7 @@ def submit():
     # TODO: error handling
     analysis_done = False
     while not analysis_done:
-        path_to_output =  session["user_session_dir"] + '/output.tsv'
+        path_to_output =  session["user_session_dir"] + 'output.tsv'
         output = subprocess.Popen(['ls %s' %(path_to_output)], \
                 stdout=subprocess.PIPE, shell=True).communicate()[0]
 
@@ -141,7 +142,7 @@ def submit():
 @app.route('/display')
 def display_output():
     # check here if output.tsv exists and errors.txt doesn't
-    path_to_output =  session["user_session_dir"] + '/output.tsv'
+    path_to_output =  session["user_session_dir"] + 'output.tsv'
     output = open(path_to_output)
     reader = csv.reader(output, delimiter='\t')
     rows = [[elem for elem in row] for row in reader]
@@ -194,14 +195,15 @@ def generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
     config_file_path = session["user_session_dir"] + "/config.yml"
     config_file = open(config_file_path, 'w')
 
-    config_file.write("min_expr:", str(min_expr))
-    config_file.write("min_prop:", str(min_prop))
-    config_file.write("padj_thresh:", str(padj_thresh))
-    config_file.write("adj_method:", str(adj_method))
-    config_file.write("condition:", str(condition))
-    config_file.write("contrast_level:", str(contrast_level))
-    config_file.write("reference_level:", str(reference_level))
-    config_file.write("use_qual_weights:", str(use_qual_weights))
+    config_file.write("min_expr:%s" %str(min_expr))
+    config_file.write("min_prop:%s" %str(min_prop))
+    config_file.write("padj_thresh:%s" %str(padj_thresh))
+    config_file.write("adj_method: \"%s\"" %(str(adj_method)))
+    config_file.write("condition: \"%s\"" %(str(condition)))
+    config_file.write("contrast_level:%s" %str(contrast_level))
+    config_file.write("reference_level:%s" %str(reference_level))
+    config_file.write("use_qual_weights:%s" %str(use_qual_weights))
 
+    config_file.close()
 
 cleanup_old_sessions()
