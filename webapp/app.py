@@ -78,7 +78,7 @@ def upload_config():
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.txt' or file_ext != '.yml':
+        if file_ext != '.yml' and file_ext != '.txt':
             return "Invalid file extension", 400
         save_temp_file(uploaded_file, 'config.yml')
     return redirect(url_for('index'))
@@ -124,12 +124,25 @@ def submit():
         subprocess.Popen(['RNA_SEQ_SCRIPT_LOCATION %s' \
             %("webapp/" + session["user_session_dir"])], shell=True)
 
-    return
+    # wait for the output.tsv file to appear in the session directory,
+    # then redirect to the results page
+    # TODO: error handling
+    analysis_done = False
+    while not analysis_done:
+        path_to_output =  session["user_session_dir"] + '/output.tsv'
+        output = subprocess.Popen(['ls %s' %(path_to_output)], \
+                stdout=subprocess.PIPE, shell=True).communicate()[0]
+
+        # results of the ls are returned in bytes, ends with newline character
+        analysis_done = output == str.encode(path_to_output) + b'\n'
+    
+    return redirect(url_for('display_output'))
 
 @app.route('/display')
 def display_output():
     # check here if output.tsv exists and errors.txt doesn't
-    output = open('output.tsv')
+    path_to_output =  session["user_session_dir"] + '/output.tsv'
+    output = open(path_to_output)
     reader = csv.reader(output, delimiter='\t')
     rows = [[elem for elem in row] for row in reader]
     output.close()
