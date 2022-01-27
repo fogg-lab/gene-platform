@@ -17,8 +17,15 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 app.config['DROPZONE_TIMEOUT'] = 120000 # timeout for uploads in milliseconds
 Session(app)
 
-RNA_SEQ_SCRIPT_LOCATION = "dge_analysis/rna_seq_dgea.R"
-MICROARRAY_SCRIPT_LOCATION = "dge_analysis/microarray_dgea.R"
+# Ensure that the current working directory is the webapp directory
+# Get the path to the webapp dir from the path of this script
+SCRIPT_PATH = os.path.realpath(__file__)
+SCRIPT_DIR = "/".join(SCRIPT_PATH.split('/')[:-1])
+os.chdir(SCRIPT_DIR)
+
+RNA_SEQ_SCRIPT_LOCATION = "../dge_analysis/rna_seq_dgea.R"
+MICROARRAY_SCRIPT_LOCATION = "../dge_analysis/microarray_dgea.R"
+USER_FILES_LOCATION = "user_files"
 
 # backlog (in order)
 # - limit upload fields to one file (Noah) - done (a new upload overwrites old)
@@ -36,7 +43,7 @@ MICROARRAY_SCRIPT_LOCATION = "dge_analysis/microarray_dgea.R"
 
 @app.route('/')
 def index():
-    files = os.listdir('user_files')
+    files = os.listdir(USER_FILES_LOCATION)
     return render_template('input_form.html', files=files)
 
 @app.route('/uploadcounts', methods=['POST'])
@@ -93,25 +100,31 @@ def upload(filename):
 @app.route('/submit', methods=['POST'])
 def submit():
     # get whether analysis is microarray or RNA-Seq
-    data_type = request.args.get('data_type')
+    data_type = request.form.get('data_type')
     
     # get config parameters
-    min_expr = request.args.get('min_expr')
-    min_prop = request.args.get('min_prop')
-    padj_thresh = request.args.get('padj_thresh')
-    adj_method = request.args.get('adj_method')
-    condition = request.args.get('condition')
-    contrast_level = request.args.get('contrast_level')
-    reference_level = request.args.get('reference_level')
-    use_qual_weights = request.args.get('use_qual_weights')
+    min_expr = request.form.get('min_expr')
+    min_prop = request.form.get('min_prop')
+    padj_thresh = request.form.get('padj_thresh')
+    adj_method = request.form.get('adj_method')
+    condition = request.form.get('condition')
+    contrast_level = request.form.get('contrast_level')
+    reference_level = request.form.get('reference_level')
+
+    # request.form.get('use_qual_weights') returns either "None" or "on"
+    # needs to be either "TRUE" or "FALSE"
+    use_qual_weights = request.form.get('use_qual_weights')
+    if use_qual_weights is None:
+        use_qual_weights = "FALSE"
+    else:
+        use_qual_weights = "TRUE"
 
     # if the parameters are set, generate config
     # TODO: fix parameter generation
     if min_expr is not None and min_prop is not None \
         and padj_thresh is not None and adj_method is not None \
         and adj_method is not None and condition is not None \
-        and contrast_level is not None and reference_level is not None \
-        and use_qual_weights is not None:
+        and contrast_level is not None and reference_level is not None:
         generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
             contrast_level, reference_level, use_qual_weights)
 
@@ -147,7 +160,10 @@ def display_output():
     reader = csv.reader(output, delimiter='\t')
     rows = [[elem for elem in row] for row in reader]
     output.close()
+
+    # Delete the user session directory, including the input and output files
     cleanup_session()
+    
     return render_template('results.html', rows=rows)
 
 # Takes a user's file and copies it into a temp directory on the server
@@ -155,7 +171,7 @@ def display_output():
 def save_temp_file(file, filename):
     if ("user_session_dir" not in session or
             not os.path.exists(session["user_session_dir"])):
-        temp_dir = tempfile.mkdtemp(dir="user_files")
+        temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
         session["user_session_dir"] = temp_dir + '/'
 
     user_file_path = session["user_session_dir"] + filename
@@ -169,25 +185,25 @@ def save_temp_file(file, filename):
 
     user_file.close()
 
-# cleanup_session() cleans up the user's session on exit
+# cleanup_session() cleans up the user's session
 # Removes the temp directory for the session, including input/output files
 def cleanup_session():
     if "user_session_dir" in session:
         shutil.rmtree(session["user_session_dir"])
 
 def cleanup_old_sessions():
-    # Clean up other sessions older than one hour (3600 seconds)
-    for old_dir in os.listdir('user_files'):
-        old_dir = 'user_files/' + old_dir
+    # Clean up other sessions older than one day (86400 seconds)
+    for old_dir in os.listdir(USER_FILES_LOCATION):
+        old_dir = "%s/%s" %(USER_FILES_LOCATION, old_dir)
 
-        if old_dir != "user_files/.gitkeep":
+        if old_dir != "%s/.gitkeep" %(USER_FILES_LOCATION):
             get_age = "$(($(date +%s) - $(date +%s -r " + old_dir + ")))"
 
             # Run bash command and return the stdout output
             age_seconds = int(subprocess.Popen(['echo %s' %(get_age)], \
                 stdout=subprocess.PIPE, shell=True).communicate()[0])
-
-            if age_seconds > 3600:
+            
+            if age_seconds > 86400:
                 shutil.rmtree(old_dir)
 
 def generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
@@ -195,14 +211,14 @@ def generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
     config_file_path = session["user_session_dir"] + "/config.yml"
     config_file = open(config_file_path, 'w')
 
-    config_file.write("min_expr:%s" %str(min_expr))
-    config_file.write("min_prop:%s" %str(min_prop))
-    config_file.write("padj_thresh:%s" %str(padj_thresh))
-    config_file.write("adj_method: \"%s\"" %(str(adj_method)))
-    config_file.write("condition: \"%s\"" %(str(condition)))
-    config_file.write("contrast_level:%s" %str(contrast_level))
-    config_file.write("reference_level:%s" %str(reference_level))
-    config_file.write("use_qual_weights:%s" %str(use_qual_weights))
+    config_file.write("min_expr: %s\n" %str(min_expr))
+    config_file.write("min_prop: %s\n" %str(min_prop))
+    config_file.write("padj_thresh: %s\n" %str(padj_thresh))
+    config_file.write("adj_method: \"%s\"\n" %(str(adj_method)))
+    config_file.write("condition: \"%s\"\n" %(str(condition)))
+    config_file.write("contrast_level: %s\n" %str(contrast_level))
+    config_file.write("reference_level: %s\n" %str(reference_level))
+    config_file.write("use_qual_weights: %s" %str(use_qual_weights))
 
     config_file.close()
 
