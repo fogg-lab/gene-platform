@@ -123,10 +123,10 @@ def submit():
 
     if data_type == "microarray":
         subprocess.Popen(['MICROARRAY_SCRIPT_LOCATION %s' \
-            %("webapp/" + session["user_session_dir"])], shell=True)
+            %(session["session_id"])], shell=True)
     elif data_type == "RNA_Seq":
         subprocess.Popen(['RNA_SEQ_SCRIPT_LOCATION %s' \
-            %("webapp/" + session["user_session_dir"])], shell=True)
+            %(session["session_id"])], shell=True)
 
     # wait for the output.tsv file to appear in the session directory,
     # then redirect to the results page
@@ -163,6 +163,7 @@ def save_temp_file(file, filename):
             not os.path.exists(session["user_session_dir"])):
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
         session["user_session_dir"] = temp_dir + '/'
+        session["session_id"] = temp_dir.split('/')[-1:]
 
     user_file_path = session["user_session_dir"] + filename
 
