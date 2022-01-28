@@ -112,7 +112,7 @@ def display_output():
     rows = [[elem for elem in row] for row in reader]
     output.close()
     cleanup_session()
-    return render_template('results.html', rows=rows)
+    return render_template('results.html', col_titles = rows[:1], info = rows[1:])
 
 # Takes a user's file and copies it into a temp directory on the server
 # directory path is stored in the user session variable "user_session_dir"
