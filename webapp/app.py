@@ -105,9 +105,9 @@ def submit():
     # needs to be either "TRUE" or "FALSE"
     use_qual_weights = request.form.get('use_qual_weights')
     if use_qual_weights is None:
-        use_qual_weights = "FALSE"
+        use_qual_weights = False
     else:
-        use_qual_weights = "TRUE"
+        use_qual_weights = True
 
     # if the parameters are set, generate config
     # TODO: fix parameter generation
@@ -206,8 +206,8 @@ def generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
     config_file.write("padj_thresh: %s\n" %str(padj_thresh))
     config_file.write("adj_method: \"%s\"\n" %(str(adj_method)))
     config_file.write("condition: \"%s\"\n" %(str(condition)))
-    config_file.write("contrast_level: %s\n" %str(contrast_level))
-    config_file.write("reference_level: %s\n" %str(reference_level))
+    config_file.write("contrast_level: \"%s\"\n" %str(contrast_level))
+    config_file.write("reference_level: \"%s\"\n" %str(reference_level))
     config_file.write("use_qual_weights: %s" %str(use_qual_weights))
 
     config_file.close()
