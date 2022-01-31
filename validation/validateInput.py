@@ -1,3 +1,12 @@
+# Name: Ai Vu
+# Description: This program is used to validata the 5 input files: microarray coldata, microarray countdata,
+# rna-seq coldata, rna-seq countdata, and filter gene list. To validate, users create a FileValidation object
+# and use the function validate_file with the filename as an argument. There are 3 possible result: True if
+# file is valid, False if file is invalid, and Pending if there is not enough information to conclude. Pending
+# does not mean file is invalid, but it might be due to the FileValidation needs to wait for the other file (either
+# coldata or count data of the same analysis) to complete its task.
+
+
 import pandas as pd
 import numpy as np
 import os
