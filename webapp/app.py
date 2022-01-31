@@ -102,7 +102,7 @@ def submit():
     reference_level = request.form.get('reference_level')
 
     # request.form.get('use_qual_weights') returns either "None" or "on"
-    # needs to be either "TRUE" or "FALSE"
+    # needs to be boolean True or False
     use_qual_weights = request.form.get('use_qual_weights')
     if use_qual_weights is None:
         use_qual_weights = False
