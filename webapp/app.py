@@ -122,11 +122,11 @@ def submit():
     # TODO: validate input files before calling analysis
 
     if data_type == "microarray":
-        subprocess.Popen(['MICROARRAY_SCRIPT_LOCATION %s' \
-            %(session["session_id"])], shell=True)
+        subprocess.Popen(['%s %s' \
+            %(MICROARRAY_SCRIPT_LOCATION, session["session_id"])], shell=True)
     elif data_type == "RNA_Seq":
-        subprocess.Popen(['RNA_SEQ_SCRIPT_LOCATION %s' \
-            %(session["session_id"])], shell=True)
+        subprocess.Popen(['%s %s' \
+            %(RNA_SEQ_SCRIPT_LOCATION, session["session_id"])], shell=True)
 
     # wait for the output.tsv file to appear in the session directory,
     # then redirect to the results page
