@@ -2,24 +2,15 @@ Gene Expression Analysis Platform
 
 Instructions
 
-Run web app inside the container (replace xxxx with a unique port):
+1. Setup web app:
 cd webapp
-export FLASK_APP=app
-flask run -h 0.0.0.0 -p xxxx
-
-Setup web app outside the container:
-cd webapp
-virtualenv venv -p $(which python3) 
-source ./venv/bin/activate
 pip3 install --upgrade pip
 pip install -r requirements.txt
 
-Run web app outside the container on specific port (replace xxxx with port #):
-source ./venv/bin/activate
+2. Set FLASK_APP environmental variable (required):
 export FLASK_APP=app
-flask run -h 0.0.0.0 -p xxxx
 
-Run web app outside the container, no specific port:
-source ./venv/bin/activate
-export FLASK_APP=app
+3. Run the web app
 flask run
+# or run the web app on a specific port (replace xxxx with port#):
+flask run -h 0.0.0.0 -p xxxx
