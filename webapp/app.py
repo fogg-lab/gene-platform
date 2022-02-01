@@ -172,8 +172,8 @@ def save_temp_file(file, filename):
 
     # copy the file line by line, adding a trailing newline if none exists
     lines = file.readlines()
-    if lines[-1][-1] != '\n':
-        lines[-1] += '\n'
+    if lines[-1][-1] != b'\n':
+        lines[-1] += b'\n'
     for line in lines:
         user_file.write(line.decode("utf-8"))
 
