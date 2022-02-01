@@ -170,7 +170,11 @@ def save_temp_file(file, filename):
         os.remove(user_file_path)
     user_file = open(user_file_path, 'w')
 
-    for line in file.readlines():
+    # copy the file line by line, adding a trailing newline if none exists
+    lines = file.readlines()
+    if lines[-1][-1] != '\n':
+        lines[-1] += '\n'
+    for line in lines:
         user_file.write(line.decode("utf-8"))
 
     user_file.close()
@@ -208,7 +212,7 @@ def generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
     config_file.write("condition: \"%s\"\n" %(str(condition)))
     config_file.write("contrast_level: \"%s\"\n" %str(contrast_level))
     config_file.write("reference_level: \"%s\"\n" %str(reference_level))
-    config_file.write("use_qual_weights: %s" %str(use_qual_weights))
+    config_file.write("use_qual_weights: %s\n" %str(use_qual_weights))
 
     config_file.close()
 
