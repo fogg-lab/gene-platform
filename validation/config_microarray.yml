@@ -1,19 +1,7 @@
-default:
-    microarray_analysis:
-        min_expr_log_base_b: 2
-        min_expr_lob_base_b_of_a: 50
-        min_prop: 0.25
-        adj_method: "BH"
-        condition: "condition"
-        use_weight: True
-        contrast_level: "endometriosis"
-        reference_level: "normal"
-
-    rna_sequence_analysis:
-        min_exp: 0
-        min_prop: 1/3
-        padj_thresh: 0.05
-        adj_method: "BH"
-        condition: "condition"
-        contrast_level: "tumor"
-        reference_level: "healthy"
+min_expr: 50
+min_prop: 0.25
+adj_method: "BH"
+condition: "condition"
+use_weight: True
+contrast_level: "endometriosis"
+reference_level: "normal"
