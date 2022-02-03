@@ -134,8 +134,10 @@ def submit():
     analysis_done = False
     while not analysis_done:
         path_to_output =  session["user_session_dir"] + 'output.tsv'
-        output = subprocess.Popen(['ls %s' %(path_to_output)], \
-                stdout=subprocess.PIPE, shell=True).communicate()[0]
+        
+        # '2>/dev/null' suppresses the expected error output 'file not found'
+        output = subprocess.Popen(['ls %s %s' %(path_to_output, '2>/dev/null')\
+            ], stdout=subprocess.PIPE, shell=True).communicate()[0]
 
         # results of the ls are returned in bytes, ends with newline character
         analysis_done = output == str.encode(path_to_output) + b'\n'
