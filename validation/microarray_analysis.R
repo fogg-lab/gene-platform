@@ -1,4 +1,5 @@
 # Name: Ai Vu
+# Source: based on the provided microrray analysis pipeline in R
 # Description: Given the input files: microrray_coldata(.tsv), micro_array_count(.tsv),
 # parameters (yaml), +/- filter_gene(.txt). Output the results of microarray analysis (.tsv)
 # for filter and unfiltered genes.
