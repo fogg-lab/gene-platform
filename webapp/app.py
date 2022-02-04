@@ -23,8 +23,8 @@ SCRIPT_PATH = os.path.realpath(__file__)
 SCRIPT_DIR = "/".join(SCRIPT_PATH.split('/')[:-1])
 os.chdir(SCRIPT_DIR)
 
-RNA_SEQ_SCRIPT_LOCATION = "../dge_analysis/rna_seq_dgea.R"
-MICROARRAY_SCRIPT_LOCATION = "../dge_analysis/microarray_dgea.R"
+RNA_SEQ_SCRIPT = "Rscript ../analysis/rnaseq.R"
+MICROARRAY_SCRIPT = "Rscript ../analysis/microarray.R"
 USER_FILES_LOCATION = "user_files"
 
 # backlog (in order)
@@ -123,10 +123,10 @@ def submit():
 
     if data_type == "microarray":
         subprocess.Popen(['%s %s' \
-            %(MICROARRAY_SCRIPT_LOCATION, session["session_id"])], shell=True)
+            %(MICROARRAY_SCRIPT, session["session_id"])], shell=True)
     elif data_type == "RNA_Seq":
         subprocess.Popen(['%s %s' \
-            %(RNA_SEQ_SCRIPT_LOCATION, session["session_id"])], shell=True)
+            %(RNA_SEQ_SCRIPT, session["session_id"])], shell=True)
 
     # wait for the output.tsv file to appear in the session directory,
     # then redirect to the results page
