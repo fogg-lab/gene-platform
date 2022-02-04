@@ -4,13 +4,16 @@ library(BiocParallel)
 library(parallel)
 library(yaml)
 
-counts_filepath <- "data/rna_seq_ucec_counts.tsv"
-coldata_filepath <- "data/rna_seq_ucec_coldata.tsv"
-config_filepath <- "webapp/dummy_files/config.yml"
-
 args = commandArgs(trailingOnly = TRUE)
 
-user_filepath <- args[1]
+write("rnaseq script running", stderr())
+
+user_filepath <- paste("user_files/", gsub("[][]","",args[1]), "/", sep="")
+counts_filepath <- paste(user_filepath, "counts.tsv", sep="")
+coldata_filepath <- paste(user_filepath, "coldata.tsv", sep="")
+config_filepath <- paste(user_filepath, "config.yml", sep="")
+
+
 
 n_cores <- detectCores() - 2
 BiocParallel::register(MulticoreParam(n_cores))
@@ -67,5 +70,7 @@ fit_res <- results(
 dge_res_df <- as_tibble(fit_res, rownames = "symbol")
 
 colnames(dge_res_df) <- c("symbol", "base_avg", "l2fc", "l2fc_se", "test_stat", "pval", "padj")
+
+write("script done running, outputting tsv", stderr())
 
 write_tsv(dge_res_df, paste(user_filepath,"output.tsv", sep=""))
