@@ -124,7 +124,7 @@ def submit():
     if data_type == "microarray":
         subprocess.Popen(['%s %s' \
             %(MICROARRAY_SCRIPT, session["session_id"])], shell=True)
-    elif data_type == "RNA_Seq":
+    elif data_type == "RNA-Seq":
         subprocess.Popen(['%s %s' \
             %(RNA_SEQ_SCRIPT, session["session_id"])], shell=True)
 
