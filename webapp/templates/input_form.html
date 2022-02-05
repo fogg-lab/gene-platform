@@ -1,0 +1,81 @@
+<html>
+
+<!-- Styles -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='formatting.css') }}">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  
+  <head>
+    <title>DGE Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
+  </head>
+  <body>
+    <h1>Upload counts (.tsv)</h1>
+    <form name="upload-counts" action="{{ url_for('upload_counts') }}" class="dropzone">
+    </form>
+    <h1>Upload coldata (.tsv)</h1>
+    <form name="upload-coldata" action="{{ url_for('upload_coldata') }}" class="dropzone">
+    </form>
+    <h1>Upload filter (.txt)</h1>
+    <form name="upload-filter" action="{{ url_for('upload_filter') }}" class="dropzone">
+    </form>
+    <h1>Config (.yml or .txt)</h1>
+    <form name="upload-config" action="{{ url_for('upload_config') }}" class="dropzone">
+    </form>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
+  </body>
+  <p><form id="submit" action="/submit" method="post">
+    <label> Data type </label>
+    <select id='data_type' name="data_type">
+      <option value="microarray">microarray</option>
+      <option value="RNA-Seq">RNA-Seq</option>
+    </select>
+    <p><label>min_expr</label>
+    <input id='min_expr' type="text" name="min_expr"></p>
+    <p><label>min_prop</label>
+    <input id='min_prop' type="text" name="min_prop"></p>
+    <p><label>padj_thresh</label>
+    <input id='padj_thresh' type="text" name="padj_thresh"></p>
+    <p><label>adj_method</label>
+    <input id='adj_method' type="text" name="adj_method"></p>
+    <p><label>condition</label>
+    <input id='condition' type="text" name="condition"></p>
+    <p><label>contrast_level</label>
+    <input id='contrast_level' type="text" name="contrast_level"></p>
+    <p><label>reference_level</label>
+    <input id='reference_level' type="text" name="reference_level"></p>
+    <p><label>use_qual_weights</label>
+    <input id='use_qual_weights' type="checkbox" name="use_qual_weights"></p>
+    <p><input type="submit" value="Submit"></p>
+  </form></p>
+</html>
+
+<script>
+  function upload_config() {
+      var req = new XMLHttpRequest()
+      req.onreadystatechange = function() {
+          if (req.readyState == 4) {
+              if (req.status != 200) {
+                  //error handling code here
+              }
+              else {
+                  var response = JSON.parse(req.responseText)
+                  document.getElementById('min_expr').innerHTML = response.min_expr
+                  document.getElementById('min_prop').innerHTML = response.min_prop
+                  document.getElementById('padj_thresh').innerHTML = response.padj_thresh
+                  document.getElementById('adj_method').innerHTML = response.adj_method
+                  document.getElementById('condition').innerHTML = response.condition
+                  document.getElementById('contrast_level').innerHTML = response.contrast_level
+                  document.getElementById('reference_level').innerHTML = response.reference_level
+                  document.getElementById('use_qual_weights').innerHTML = response.use_qual_weights
+              }
+          }
+      }
+  
+      req.open('POST', '/uploadconfig')
+      req.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+      req.send()
+  }
+</script>

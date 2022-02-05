@@ -1,0 +1,36 @@
+.spicy-table{
+    border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 0.9em;
+    font-family: Verdana;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.spicy-table thead tr {
+    background-color: #8aca8a;
+    color: #ffffff;
+    text-align: left;
+}
+
+.spicy-table th,
+.spicy-table td {
+    padding: 12px 15px;
+}
+
+.spicy-table tbody tr {
+    border-bottom: thin solid #dddddd;
+}
+
+.spicy-table tbody tr:nth-of-type(even) {
+    background-color: #f1f1f1;
+}
+
+.spicy-table tbody tr:last-of-type {
+    border-bottom: medium solid #8aca8a;
+}
+.spicy-table tbody tr.spicy {
+    font-weight: bold;
+    color: #76b376;
+}

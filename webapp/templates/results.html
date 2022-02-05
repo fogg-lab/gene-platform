@@ -1,15 +1,28 @@
 <html>
-
-<!-- Bootstrap & JQuery -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-
   <head>
     <title>Results</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/results_style.css') }}">
   </head>
   <body>
-    <h1>Hello</h1>
+    <table class="spicy-table">
+      <thead>
+        <tr>
+          {% for elem in col_titles %}
+          {% for item in elem %}
+          <th>{{item}}</th>
+          {% endfor %}
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in info %}
+        <tr class = "{{ loop.cycle('normal', 'spicy') }}">
+          {% for elem in result %}
+          <td>{{elem}}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </body>
 </html>
