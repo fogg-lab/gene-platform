@@ -1,9 +1,7 @@
-default:
-  rna_sequence_analysis:
-    min_exp: 0
-    min_prop: 1/3
-    padj_thresh: 0.05
-    adj_method: "BH"
-    condition: "condition"
-    contrast_level: "tumor"
-    reference_level: "healthy"
+min_exp: 0
+min_prop: 1/3
+padj_thresh: 0.05
+adj_method: "BH"
+condition: "condition"
+contrast_level: "tumor"
+reference_level: "healthy"
