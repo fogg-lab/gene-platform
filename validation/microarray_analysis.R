@@ -140,22 +140,3 @@ if (checkFilePath(microarray_counts_path) &
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
