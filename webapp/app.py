@@ -20,12 +20,12 @@ Session(app)
 # Ensure that the current working directory is the webapp directory
 # Get the path to the webapp dir from the path of this script
 SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = "/".join(SCRIPT_PATH.split('/')[:-1])
+SCRIPT_DIR = '/'.join(SCRIPT_PATH.split('/')[:-1])
 os.chdir(SCRIPT_DIR)
 
-RNA_SEQ_SCRIPT = "Rscript ../analysis/rnaseq.R"
-MICROARRAY_SCRIPT = "Rscript ../analysis/microarray.R"
-USER_FILES_LOCATION = "user_files"
+RNA_SEQ_SCRIPT = 'Rscript ../analysis/rnaseq.R'
+MICROARRAY_SCRIPT = 'Rscript ../analysis/microarray.R'
+USER_FILES_LOCATION = 'user_files'
 
 # backlog (in order)
 # - add validation of parameters
@@ -43,7 +43,7 @@ def upload_counts():
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext != '.tsv':
-            return "Invalid file extension", 400
+            return 'Invalid file extension', 400
         save_temp_file(uploaded_file, 'counts.tsv')
     return redirect(url_for('index'))
 
@@ -54,7 +54,7 @@ def upload_coldata():
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext != '.tsv':
-            return "Invalid file extension", 400
+            return 'Invalid file extension', 400
         save_temp_file(uploaded_file, 'coldata.tsv')
     return redirect(url_for('index'))
 
@@ -65,7 +65,7 @@ def upload_filter():
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext != '.txt':
-            return "Invalid file extension", 400
+            return 'Invalid file extension', 400
         save_temp_file(uploaded_file, 'filter.txt')
     return redirect(url_for('index'))
 
@@ -76,13 +76,19 @@ def upload_config():
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext != '.yml' and file_ext != '.txt':
-            return "Invalid file extension", 400
+            return 'Invalid file extension', 400
         save_temp_file(uploaded_file, 'config.yml')
     return redirect(url_for('index'))
 
 @app.route('/user_files/<filename>')
 def upload(filename):
     return send_from_directory('user_files', filename)
+
+@app.route('/getconfig', methods=['POST'])
+def get_config():
+    config = open(('%sconfig.yml' %(session['user_session_dir'])), 'r')
+    parameters = get_config_parameters(config)
+    return parameters
 
 # submit()
 # submits input for analysis
@@ -92,14 +98,7 @@ def submit():
     # get whether analysis is microarray or RNA-Seq
     data_type = request.form.get('data_type')
     
-    # get config parameters
-    min_expr = request.form.get('min_expr')
-    min_prop = request.form.get('min_prop')
-    padj_thresh = request.form.get('padj_thresh')
-    adj_method = request.form.get('adj_method')
-    condition = request.form.get('condition')
-    contrast_level = request.form.get('contrast_level')
-    reference_level = request.form.get('reference_level')
+
 
     # request.form.get('use_qual_weights') returns either "None" or "on"
     # needs to be boolean True or False
@@ -110,30 +109,43 @@ def submit():
         use_qual_weights = True
 
     # if the parameters are set, generate config
-    # TODO: fix parameter generation
-    if min_expr is not None and min_prop is not None \
-        and padj_thresh is not None and adj_method is not None \
-        and adj_method is not None and condition is not None \
-        and contrast_level is not None and reference_level is not None:
-        generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
-            contrast_level, reference_level, use_qual_weights)
+    # TODO: FIX THIS
+
+    parameters = {}
+    # if analysis type is RNASeq, use min_expr
+    if data_type == 'RNA-Seq':
+        parameters['min_expr'] = request.form.get('min_expr')
+    parameters['min_prop'] = request.form.get('min_prop')
+    parameters['padj_thresh'] = request.form.get('padj_thresh')
+    parameters['adj_method'] = request.form.get('adj_method')
+    parameters['condition'] = request.form.get('condition')
+    parameters['contrast_level'] = request.form.get('contrast_level')
+    parameters['reference_level'] = request.form.get('reference_level')
+
+    parameters_filled = True
+    for parameter_val in parameters:
+        if not parameter_val:
+            parameters_filled = False
+    
+    if parameters_filled:
+        generate_config(parameters)
 
     # input files should be in the user directory by now
     # TODO: validate input files before calling analysis
 
-    if data_type == "microarray":
+    if data_type == 'microarray':
         subprocess.Popen(['%s %s' \
-            %(MICROARRAY_SCRIPT, session["session_id"])], shell=True)
-    elif data_type == "RNA-Seq":
+            %(MICROARRAY_SCRIPT, session['session_id'])], shell=True)
+    elif data_type == 'RNA-Seq':
         subprocess.Popen(['%s %s' \
-            %(RNA_SEQ_SCRIPT, session["session_id"])], shell=True)
+            %(RNA_SEQ_SCRIPT, session['session_id'])], shell=True)
 
     # wait for the output.tsv file to appear in the session directory,
     # then redirect to the results page
     # TODO: error handling
     analysis_done = False
     while not analysis_done:
-        path_to_output =  session["user_session_dir"] + 'output.tsv'
+        path_to_output =  session['user_session_dir'] + 'output.tsv'
         
         # '2>/dev/null' suppresses the expected error output 'file not found'
         output = subprocess.Popen(['ls %s %s' %(path_to_output, '2>/dev/null')\
@@ -147,7 +159,7 @@ def submit():
 @app.route('/display')
 def display_output():
     # check here if output.tsv exists and errors.txt doesn't
-    path_to_output =  session["user_session_dir"] + 'output.tsv'
+    path_to_output =  session['user_session_dir'] + 'output.tsv'
     output = open(path_to_output)
     reader = csv.reader(output, delimiter='\t')
     rows = [[elem for elem in row] for row in reader]
@@ -160,13 +172,13 @@ def display_output():
 # Takes a user's file and copies it into a temp directory on the server
 # directory path is stored in the user session variable "user_session_dir"
 def save_temp_file(file, filename):
-    if ("user_session_dir" not in session or
-            not os.path.exists(session["user_session_dir"])):
+    if ('user_session_dir' not in session or
+            not os.path.exists(session['user_session_dir'])):
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
-        session["user_session_dir"] = temp_dir + '/'
-        session["session_id"] = temp_dir.split('/')[-1:]
+        session['user_session_dir'] = temp_dir + '/'
+        session['session_id'] = temp_dir.split('/')[-1:]
 
-    user_file_path = session["user_session_dir"] + filename
+    user_file_path = session['user_session_dir'] + filename
 
     if os.path.exists(user_file_path):
         os.remove(user_file_path)
@@ -177,23 +189,23 @@ def save_temp_file(file, filename):
     if lines[-1][-1] != b'\n':
         lines[-1] += b'\n'
     for line in lines:
-        user_file.write(line.decode("utf-8"))
+        user_file.write(line.decode('utf-8'))
 
     user_file.close()
 
 # cleanup_session() cleans up the user's session
 # Removes the temp directory for the session, including input/output files
 def cleanup_session():
-    if "user_session_dir" in session:
-        shutil.rmtree(session["user_session_dir"])
+    if 'user_session_dir' in session:
+        shutil.rmtree(session['user_session_dir'])
 
 def cleanup_old_sessions():
     # Clean up other sessions older than one day (86400 seconds)
     for old_dir in os.listdir(USER_FILES_LOCATION):
-        old_dir = "%s/%s" %(USER_FILES_LOCATION, old_dir)
+        old_dir = '%s/%s' %(USER_FILES_LOCATION, old_dir)
 
-        if old_dir != "%s/.gitkeep" %(USER_FILES_LOCATION):
-            get_age = "$(($(date +%s) - $(date +%s -r " + old_dir + ")))"
+        if old_dir != '%s/.gitkeep' %(USER_FILES_LOCATION):
+            get_age = '$(($(date +%s) - $(date +%s -r ' + old_dir + ')))'
 
             # Run bash command and return the stdout output
             age_seconds = int(subprocess.Popen(['echo %s' %(get_age)], \
@@ -202,20 +214,27 @@ def cleanup_old_sessions():
             if age_seconds > 86400:
                 shutil.rmtree(old_dir)
 
-def generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
-        contrast_level, reference_level, use_qual_weights):
-    config_file_path = session["user_session_dir"] + "/config.yml"
+def generate_config(parameters):
+    config_file_path = session['user_session_dir'] + '/config.yml'
     config_file = open(config_file_path, 'w')
 
-    config_file.write("min_expr: %s\n" %str(min_expr))
-    config_file.write("min_prop: %s\n" %str(min_prop))
-    config_file.write("padj_thresh: %s\n" %str(padj_thresh))
-    config_file.write("adj_method: \"%s\"\n" %(str(adj_method)))
-    config_file.write("condition: \"%s\"\n" %(str(condition)))
-    config_file.write("contrast_level: \"%s\"\n" %str(contrast_level))
-    config_file.write("reference_level: \"%s\"\n" %str(reference_level))
-    config_file.write("use_qual_weights: %s\n" %str(use_qual_weights))
+    for param in parameters.keys():
+        if param in ['adj_method', 'condition', 'contrast_level', 'reference_level']:
+            config_file.write('%s: \"%s\"\n' %(param, parameters[param]))
+        else:
+            config_file.write('%s: %s\n' %(param, parameters[param]))
 
     config_file.close()
+
+def get_config_parameters(config_file):
+    parameters = {}
+    config_lines = config_file.readlines()
+    for line in config_lines:
+        # remove quotes and newline characters
+        line = line.translate(str.maketrans('', '', '\n\"\''))
+        if line:
+            parameter_name, parameter_value = tuple(line.split(': '))
+            parameters[parameter_name] = parameter_value
+    return parameters
 
 cleanup_old_sessions()

@@ -1,8 +1,0 @@
-min_expr: 0.0
-min_prop: 0.33
-padj_thresh: 0.05
-adj_method: "BH" 
-condition: "disease status"
-contrast_level: "tumor"
-reference_level: "healthy"
-use_qual_weights: FALSE
