@@ -111,10 +111,10 @@ def submit():
 
     # if the parameters are set, generate config
     # TODO: fix parameter generation
-    if min_expr is not None and min_prop is not None \
-        and padj_thresh is not None and adj_method is not None \
-        and adj_method is not None and condition is not None \
-        and contrast_level is not None and reference_level is not None:
+    if min_expr != '' and min_prop != '' \
+        and padj_thresh != '' and adj_method != '' \
+        and adj_method != '' and condition != '' \
+        and contrast_level != '' and reference_level != '':
         generate_config(min_expr, min_prop, padj_thresh, adj_method, condition, \
             contrast_level, reference_level, use_qual_weights)
 
