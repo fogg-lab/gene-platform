@@ -26,7 +26,7 @@
     </form>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
   </body>
-  <p><form id="submit" action="/submit" method="post">
+  <p><form id="submit" action={{ url_for('submit') }} method="post">
     <label> Data type </label>
     <select class='data_type' id='data_type' name="data_type">
       <option value=""></option>
@@ -50,8 +50,8 @@
       <input id='reference_level' type="text" name="reference_level"></p>
       <p><label>use_qual_weights</label>
       <input id='use_qual_weights' type="checkbox" name="use_qual_weights"></p>
-      <p><input type="submit" value="Submit"></p>
     </div>
+    <p><input type="submit" value="Submit"></p>
   </form></p>
 </html>
 
@@ -76,18 +76,19 @@
               }
               else {
                   var response = JSON.parse(req.responseText)
-                  
-                  if(typeof response.min_expr !== 'undefined')
-                      document.getElementById('min_expr').setAttribute('value', response.min_expr)
+                  if (response.config_exists) {
+                    if(typeof response.min_expr !== 'undefined')
+                        document.getElementById('min_expr').setAttribute('value', response.min_expr)
 
-                  document.getElementById('min_prop').setAttribute('value', response.min_prop)
-                  document.getElementById('padj_thresh').setAttribute('value', response.padj_thresh)
-                  document.getElementById('adj_method').setAttribute('value', response.adj_method)
-                  document.getElementById('condition').setAttribute('value', response.condition)
-                  document.getElementById('contrast_level').setAttribute('value', response.contrast_level)
-                  document.getElementById('reference_level').setAttribute('value', response.reference_level)
+                    document.getElementById('min_prop').setAttribute('value', response.min_prop)
+                    document.getElementById('padj_thresh').setAttribute('value', response.padj_thresh)
+                    document.getElementById('adj_method').setAttribute('value', response.adj_method)
+                    document.getElementById('condition').setAttribute('value', response.condition)
+                    document.getElementById('contrast_level').setAttribute('value', response.contrast_level)
+                    document.getElementById('reference_level').setAttribute('value', response.reference_level)
 
-                  document.getElementById('use_qual_weights').checked = use_qual_weights == 'TRUE';
+                    document.getElementById('use_qual_weights').checked = use_qual_weights == 'TRUE';
+                  }
               }
           }
       }

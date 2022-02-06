@@ -15,6 +15,7 @@ app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 app.config['DROPZONE_TIMEOUT'] = 120000 # timeout for uploads in milliseconds
+
 Session(app)
 
 # Ensure that the current working directory is the webapp directory
@@ -86,8 +87,15 @@ def upload(filename):
 
 @app.route('/getconfig', methods=['POST'])
 def get_config():
-    config = open(('%sconfig.yml' %(session['user_session_dir'])), 'r')
-    parameters = get_config_parameters(config)
+    parameters = {}
+    if 'user_session_dir' in session:
+        config_filepath = '%sconfig.yml' %(session['user_session_dir'])
+    if 'user_session_dir' in session and os.path.isfile(config_filepath):
+        config = open(('%sconfig.yml' %(session['user_session_dir'])), 'r')
+        parameters = get_config_parameters(config)
+        parameters["config_exists"] = True
+    else:
+        parameters["config_exists"] = False
     return parameters
 
 # submit()
@@ -127,6 +135,12 @@ def submit():
     if parameters_filled:
         generate_config(parameters)
 
+    if data_type == "microarray":
+        subprocess.Popen(['%s %s' \
+            %(MICROARRAY_SCRIPT, session["session_id"])], shell=True)
+    elif data_type == "RNA-Seq":
+        subprocess.Popen(['%s %s' \
+            %(RNA_SEQ_SCRIPT, session["session_id"])], shell=True)
 
     # wait for the output.tsv file to appear in the session directory,
     # then redirect to the results page
