@@ -98,8 +98,6 @@ def submit():
     # get whether analysis is microarray or RNA-Seq
     data_type = request.form.get('data_type')
     
-
-
     # request.form.get('use_qual_weights') returns either "None" or "on"
     # needs to be boolean True or False
     use_qual_weights = request.form.get('use_qual_weights')
@@ -109,7 +107,6 @@ def submit():
         use_qual_weights = True
 
     # if the parameters are set, generate config
-    # TODO: FIX THIS
 
     parameters = {}
     # if analysis type is RNASeq, use min_expr
@@ -130,15 +127,6 @@ def submit():
     if parameters_filled:
         generate_config(parameters)
 
-    # input files should be in the user directory by now
-    # TODO: validate input files before calling analysis
-
-    if data_type == 'microarray':
-        subprocess.Popen(['%s %s' \
-            %(MICROARRAY_SCRIPT, session['session_id'])], shell=True)
-    elif data_type == 'RNA-Seq':
-        subprocess.Popen(['%s %s' \
-            %(RNA_SEQ_SCRIPT, session['session_id'])], shell=True)
 
     # wait for the output.tsv file to appear in the session directory,
     # then redirect to the results page

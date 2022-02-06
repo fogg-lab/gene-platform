@@ -1,18 +1,26 @@
-library(tidyverse)
-library(DESeq2)
-library(BiocParallel)
-library(parallel)
-library(yaml)
+# James McGuire
 
+# write("Loading libraries: tidyverse, DESeq2, BiocParallel, parallel, yaml", stderr())
+
+# Loading libraries required for RNA Sequence Analysis.
+# Suppress Messages/Warnings are used to hide long output from Bioconductor packages
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(DESeq2)))
+suppressMessages(suppressWarnings(library(BiocParallel)))
+suppressMessages(suppressWarnings(library(parallel)))
+suppressMessages(suppressWarnings(library(yaml)))
+
+# write("Libraries loaded, preforming analysis...", stderr())
+
+# Command arguments stored in args variable, used to get Session ID from Flask app
 args = commandArgs(trailingOnly = TRUE)
 
-write("rnaseq script running", stderr())
-
-user_filepath <- paste("user_files/", gsub("[][]","",args[1]), "/", sep="")
-counts_filepath <- paste(user_filepath, "counts.tsv", sep="")
-coldata_filepath <- paste(user_filepath, "coldata.tsv", sep="")
-config_filepath <- paste(user_filepath, "config.yml", sep="")
-
+# Grabs directory where User session is located, creates variables for each file required for analysis
+user_directory <- paste("user_files/", gsub("[][]","",args[1]), "/", sep="")
+counts_filepath <- paste(user_directory, "counts.tsv", sep="")
+coldata_filepath <- paste(user_directory, "coldata.tsv", sep="")
+config_filepath <- paste(user_directory, "config.yml", sep="")
+filter_filepath <- paste(user_directory, "filter.txt", sep="")
 
 
 n_cores <- detectCores() - 2
@@ -71,6 +79,12 @@ dge_res_df <- as_tibble(fit_res, rownames = "symbol")
 
 colnames(dge_res_df) <- c("symbol", "base_avg", "l2fc", "l2fc_se", "test_stat", "pval", "padj")
 
-write("script done running, outputting tsv", stderr())
+# write("Analysis complete, writing output files", stderr())
 
-write_tsv(dge_res_df, paste(user_filepath,"output.tsv", sep=""))
+write_tsv(dge_res_df, paste(user_directory,"output.tsv", sep=""))
+
+if (file.info(filter_filepath)$size != 0) {
+    filter_list <- scan(filter_filepath, what="character")
+    filtered_df <- dge_res_df[dge_res_df$symbol %in% filter_list,]
+    write_tsv(filtered_df, paste(user_directory, "filter_output.tsv", sep=""))
+}
