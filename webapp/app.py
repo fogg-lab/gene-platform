@@ -6,7 +6,7 @@ from datetime import timedelta
 import tempfile
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, \
-    send_from_directory, session
+    send_from_directory, session, Response
 from flask_session.__init__ import Session
 
 app = Flask(__name__)
@@ -109,29 +109,28 @@ def submit():
     # request.form.get('use_qual_weights') returns either "None" or "on"
     # needs to be boolean True or False
     use_qual_weights = request.form.get('use_qual_weights')
-    if use_qual_weights is None:
-        use_qual_weights = False
-    else:
-        use_qual_weights = True
-
-    # if the parameters are set, generate config
 
     parameters = {}
-    # if analysis type is RNASeq, use min_expr
+    # if analysis type is RNASeq, use padj_thresh
     if data_type == 'RNA-Seq':
-        parameters['min_expr'] = request.form.get('min_expr')
+        parameters['padj_thresh'] = request.form.get('padj_thresh')
     parameters['min_prop'] = request.form.get('min_prop')
-    parameters['padj_thresh'] = request.form.get('padj_thresh')
+    parameters['min_expr'] = request.form.get('min_expr')
     parameters['adj_method'] = request.form.get('adj_method')
     parameters['condition'] = request.form.get('condition')
     parameters['contrast_level'] = request.form.get('contrast_level')
     parameters['reference_level'] = request.form.get('reference_level')
+    if use_qual_weights is None:
+        parameters['use_qual_weights'] = False
+    else:
+        parameters['use_qual_weights'] = True
 
     parameters_filled = True
     for parameter_val in parameters:
         if not parameter_val:
             parameters_filled = False
     
+        # if the parameters are set, generate config
     if parameters_filled:
         generate_config(parameters)
 
@@ -171,6 +170,24 @@ def display_output():
     cleanup_session()
     return render_template('results.html', col_titles = rows[:1], info = rows[1:])
 
+@app.route('/getunfilteredtsv')
+def get_unfiltered_tsv():
+    unfiltered_output = open("%soutput.tsv" %(session['user_session_dir']))
+    return Response(
+        unfiltered_output,
+        mimetype="text/csv",
+        headers={"Content-disposition":
+                "attachment; filename=output.tsv"})
+
+@app.route('/getfilteredtsv')
+def get_filtered_tsv():
+    filtered_output = open("%sfilter_output.tsv" %(session['user_session_dir']))
+    return Response(
+        filtered_output,
+        mimetype="text/csv",
+        headers={"Content-disposition":
+                "attachment; filename=filter_output.tsv"})
+
 # Takes a user's file and copies it into a temp directory on the server
 # directory path is stored in the user session variable "user_session_dir"
 def save_temp_file(file, filename):
@@ -188,8 +205,6 @@ def save_temp_file(file, filename):
 
     # copy the file line by line, adding a trailing newline if none exists
     lines = file.readlines()
-    if lines[-1][-1] != b'\n':
-        lines[-1] += b'\n'
     for line in lines:
         user_file.write(line.decode('utf-8'))
 
@@ -199,7 +214,9 @@ def save_temp_file(file, filename):
 # Removes the temp directory for the session, including input/output files
 def cleanup_session():
     if 'user_session_dir' in session:
-        shutil.rmtree(session['user_session_dir'])
+        pass
+        # need to find a different way, this deletes output files prematurely
+        #shutil.rmtree(session['user_session_dir'])
 
 def cleanup_old_sessions():
     # Clean up other sessions older than one day (86400 seconds)

@@ -34,12 +34,12 @@
       <option value="RNA-Seq">RNA-Seq</option>
     </select>
     <div id="form_parameters" style="visibility: hidden; display: none;">
-      <p><label id="min_expr_label" name="min_expr_label">min_expr</label>
-      <input id='min_expr' type="text" name="min_expr" ></p>
+      <p><label id="padj_thresh_label" name="padj_thresh_label">padj_thresh</label>
+      <input id='padj_thresh' type="text" name="padj_thresh" ></p>
       <p><label>min_prop</label>
       <input id='min_prop' type="text" name="min_prop"></p>
-      <p><label>padj_thresh</label>
-      <input id='padj_thresh' type="text" name="padj_thresh"></p>
+      <p><label>min_expr</label>
+      <input id='min_expr' type="text" name="min_expr"></p>
       <p><label>adj_method</label>
       <input id='adj_method' type="text" name="adj_method"></p>
       <p><label>condition</label>
@@ -77,17 +77,18 @@
               else {
                   var response = JSON.parse(req.responseText)
                   if (response.config_exists) {
-                    if(typeof response.min_expr !== 'undefined')
-                        document.getElementById('min_expr').setAttribute('value', response.min_expr)
+                    if(typeof response.padj_thresh !== 'undefined')
+                        document.getElementById('padj_thresh').setAttribute('value', response.padj_thresh)
 
                     document.getElementById('min_prop').setAttribute('value', response.min_prop)
-                    document.getElementById('padj_thresh').setAttribute('value', response.padj_thresh)
+                    document.getElementById('min_expr').setAttribute('value', response.min_expr)
                     document.getElementById('adj_method').setAttribute('value', response.adj_method)
                     document.getElementById('condition').setAttribute('value', response.condition)
                     document.getElementById('contrast_level').setAttribute('value', response.contrast_level)
                     document.getElementById('reference_level').setAttribute('value', response.reference_level)
-
-                    document.getElementById('use_qual_weights').checked = use_qual_weights == 'TRUE';
+                    
+                    use_qual_weights_lower = response.use_qual_weights.toLowerCase();
+                    document.getElementById('use_qual_weights').checked = use_qual_weights_lower == 'true';
                   }
               }
           }
@@ -112,14 +113,14 @@
       document.getElementById('form_parameters').style.visibility = 'visible'
       
       if (document.getElementById('data_type').value == "microarray") {
-        document.getElementById('min_expr_label').style.display = 'none'
-        document.getElementById('min_expr_label').style.visibility = 'hidden'
-        document.getElementById('min_expr').setAttribute('type','hidden')
+        document.getElementById('padj_thresh_label').style.display = 'none'
+        document.getElementById('padj_thresh_label').style.visibility = 'hidden'
+        document.getElementById('padj_thresh').setAttribute('type','hidden')
       }
       else {
-        document.getElementById('min_expr_label').style.display = 'inline'
-        document.getElementById('min_expr_label').style.visibility = 'visible'
-        document.getElementById('min_expr').setAttribute('type','text')
+        document.getElementById('padj_thresh_label').style.display = 'inline'
+        document.getElementById('padj_thresh_label').style.visibility = 'visible'
+        document.getElementById('padj_thresh').setAttribute('type','text')
       }
     }
   }

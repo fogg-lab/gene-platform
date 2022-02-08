@@ -4,12 +4,15 @@
 # parameters (yaml), +/- filter_gene(.txt). Output the results of microarray analysis (.tsv)
 # for filter and unfiltered genes.
 # To use the program, specify the path to input files in lines 40-43
-library(tidyverse)
-library(limma)
-library(stringr)
-library(BiocGenerics)
-library(tibble)
-library(yaml)
+
+# Loading libraries required for microarray analysis.
+# Suppress Messages/Warnings are used to hide long output from Bioconductor packages
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(limma)))
+suppressMessages(suppressWarnings(library(stringr)))
+suppressMessages(suppressWarnings(library(BiocGenerics)))
+suppressMessages(suppressWarnings(library(tibble)))
+suppressMessages(suppressWarnings(library(yaml)))
 
 # check if the filepath exists
 checkFilePath = function(path){
@@ -37,26 +40,34 @@ tryReadTSVFile = function(file){
     }
     return(name)
 }
-# list file paths
-microarray_counts_path = "C:/Users/trungn/PycharmProjects/DGEAP/validation/microarray_endometriosis_counts.tsv"
-microarray_col_path = "C:/Users/trungn/PycharmProjects/DGEAP/validation/microarray_endometriosis_coldata.tsv"
-input_config_path = "C:/Users/trungn/PycharmProjects/DGEAP/validation/config_microarray.yml"
-filter_gene_path = "C:/Users/trungn/PycharmProjects/DGEAP/validation/filter_gene.txt"
 
-if (checkFilePath(microarray_counts_path) &
-    checkFilePath(microarray_col_path) &
-    checkFilePath(input_config_path)){
+# Command arguments stored in args variable, used to get Session ID from Flask app
+args = commandArgs(trailingOnly = TRUE)
+print(args)
+
+# Grabs directory where User session is located, creates variables for each file required for analysis
+user_directory <- paste("user_files/", gsub("[][]","",args[1]), "/", sep="")
+counts_filepath <- paste(user_directory, "counts.tsv", sep="")
+coldata_filepath <- paste(user_directory, "coldata.tsv", sep="")
+config_filepath <- paste(user_directory, "config.yml", sep="")
+filter_filepath <- paste(user_directory, "filter.txt", sep="")
+print(user_directory)
+
+
+if (checkFilePath(counts_filepath) &
+    checkFilePath(coldata_filepath) &
+    checkFilePath(config_filepath)){
     #read files
-    counts_df <- tryReadTSVFile(microarray_counts_path)
-    coldata_df <- tryReadTSVFile(microarray_col_path)
-    input_config <- read_yaml(input_config_path)
+    counts_df <- tryReadTSVFile(counts_filepath)
+    coldata_df <- tryReadTSVFile(coldata_filepath)
+    input_config <- read_yaml(config_filepath)
 
     # get the parameters from user
     min_expr = log(input_config$min_expr,2)
     min_prop <- input_config$min_prop
     condition <- input_config$condition
     adj_method <- input_config$adj_method
-    use_weight <- input_config$use_weight
+    use_qual_weights <- input_config$use_qual_weights
     contrast_level <- input_config$contrast_level
     reference_level <- input_config$reference_level
     # check if there is contents in files
@@ -80,7 +91,7 @@ if (checkFilePath(microarray_counts_path) &
         design
         all(colnames(filt_expr) == rownames(design))
 
-        if (isTRUE(use_weight)){
+        if (isTRUE(use_qual_weights)){
             qual_weights <- arrayWeights(filt_expr, design = design)
         }else{
             qual_weights <- 0
@@ -94,13 +105,9 @@ if (checkFilePath(microarray_counts_path) &
             rename(lfc = logFC, ave_expr = AveExpr, pval = P.Value, padj = adj.P.Val) %>%
            as_tibble(rownames = "symbol")
 
-        # save the data table output as tsv
-        write.table(fit_de_res_df_unfiltered_genes,
-            file='microrray_result_unfiltered.tsv', quote=FALSE, sep='\t', col.names = NA)
-
         #if there is filter-gene file: create another output for unfiltered gene
-        if (checkFilePath(filter_gene_path)){
-            filter_gene_df <- tryReadTXTFile(filter_gene_path)
+        if (checkFilePath(filter_filepath)){
+            filter_gene_df <- tryReadTXTFile(filter_filepath)
             if(nrow(filter_gene_df) > 1){
                 gene_vec <- filter_gene_df[['V1']]
                 modified_counts_df <- counts_df[counts_df$symbol %in% gene_vec,]
@@ -119,7 +126,7 @@ if (checkFilePath(microarray_counts_path) &
                 all(colnames(modified_filt_expr) == rownames(design))
                 print(design)
 
-                if (isTRUE(use_weight)){
+                if (isTRUE(use_qual_weights)){
                     modified_qual_weights <- arrayWeights(modified_filt_expr, design = design)
                 }else{
                     modified_qual_weights <- 0
@@ -132,9 +139,13 @@ if (checkFilePath(microarray_counts_path) &
                 rename(lfc = logFC, ave_expr = AveExpr, pval = P.Value, padj = adj.P.Val) %>%
                 as_tibble(rownames = "symbol")
 
-                # save the data table output as tsv
+                # save the filtered output as tsv
                 write.table(fit_de_res_df_filtered_genes,
-                    file='microrray_result_filtered.tsv', quote=FALSE, sep='\t', col.names = NA)
+                    file=paste(user_directory, "filter_output.tsv", sep=""), quote=FALSE, sep='\t', col.names = NA)
+                
+                # save the unfiltered output as tsv
+                write.table(fit_de_res_df_unfiltered_genes,
+                    file=paste(user_directory, "output.tsv", sep=""), quote=FALSE, sep='\t', col.names = NA)
             }
         }
     }
