@@ -169,7 +169,7 @@ def display_output():
 
     # Delete the user session directory, including the input and output files
     cleanup_session()
-    return render_template('results.html', col_titles = rows[:1], info = rows[1:])
+    return render_template('results.html', col_titles=rows[:1], info=rows[1:])
 
 @app.route('/getunfilteredtsv')
 def get_unfiltered_tsv():
@@ -195,8 +195,10 @@ def save_temp_file(file, filename):
     if ('user_session_dir' not in session or
             not os.path.exists(session['user_session_dir'])):
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
+        os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
         session['user_session_dir'] = temp_dir + '/'
         session['session_id'] = temp_dir.split('/')[-1:]
+        schedule_session_deletion(session['user_session_dir'])
 
     user_file_path = session['user_session_dir'] + filename
 
@@ -239,7 +241,8 @@ def generate_config(parameters):
     config_file = open(config_file_path, 'w')
 
     for param in parameters.keys():
-        if param in ['adj_method', 'condition', 'contrast_level', 'reference_level']:
+        if param in ['adj_method', 'condition', 'contrast_level',\
+             'reference_level']:
             config_file.write('%s: \"%s\"\n' %(param, parameters[param]))
         else:
             config_file.write('%s: %s\n' %(param, parameters[param]))
@@ -267,5 +270,8 @@ def remove_old_output():
         os.remove(filtered_output_path)
     if unfiltered_output_exists:
         os.remove(unfiltered_output_path)
+
+def schedule_session_deletion(session_path):
+    pass
 
 cleanup_old_sessions()
