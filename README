@@ -1,6 +1,25 @@
 Gene Expression Analysis Platform
 
 
+Prerequisites - R and Python3, with the following packages:
+
+R Packages:
+  - yaml
+  - tidyverse
+  - BiocManager
+
+BiocManager packages:
+  - BiocParallel
+  - affycoretools
+  - affyPLM
+  - hgu133plus2.db
+  - qvalue
+
+Python3 packages (in requirements.txt):
+  - flask
+  - flask-session
+
+
 Instructions to set up and start the web app:
 
 1. Setup web app in your environment
