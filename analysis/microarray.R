@@ -135,7 +135,7 @@ if (checkFilePath(counts_filepath) &
                 modified_bayes_fit <- eBayes(modified_lm_fit)
                 modified_bayes_fit$coefficients %>% colnames()
 
-                fit_de_res_df_filtered_genes <- topTable(modified_bayes_fit, coef = coef_name, number = nrow(modified_filt_counts_df), adjust.method = "BH") %>%
+                fit_de_res_df_filtered_genes <- topTable(modified_bayes_fit, coef = coef_name, number = nrow(modified_filt_counts_df), adjust.method = adj_method) %>%
                 rename(lfc = logFC, ave_expr = AveExpr, pval = P.Value, padj = adj.P.Val) %>%
                 as_tibble(rownames = "symbol")
 
