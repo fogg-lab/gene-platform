@@ -144,6 +144,7 @@ def submit():
     # wait for the output.tsv file to appear in the session directory,
     # then redirect to the results page
     # TODO: error handling
+    remove_old_output()
     analysis_done = False
     while not analysis_done:
         path_to_output =  session['user_session_dir'] + 'output.tsv'
@@ -255,5 +256,16 @@ def get_config_parameters(config_file):
             parameter_name, parameter_value = tuple(line.split(': '))
             parameters[parameter_name] = parameter_value
     return parameters
+
+# removes old output files from the current session
+def remove_old_output():
+    filtered_output_path = "%sfilter_output.tsv" %(session['user_session_dir'])
+    unfiltered_output_path = "%soutput.tsv" %(session['user_session_dir'])
+    filtered_output_exists = os.path.exists(filtered_output_path)
+    unfiltered_output_exists = os.path.exists(unfiltered_output_path)
+    if filtered_output_exists:
+        os.remove(filtered_output_path)
+    if unfiltered_output_exists:
+        os.remove(unfiltered_output_path)
 
 cleanup_old_sessions()
