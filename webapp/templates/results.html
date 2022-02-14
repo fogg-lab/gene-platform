@@ -4,6 +4,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/results_style.css') }}">
   </head>
   <body>
+    <p><a href="{{ url_for('get_unfiltered_tsv') }}">Download unfiltered output</a></p>
+    <p><a href="{{ url_for('get_filtered_tsv') }}">Download filtered output</a></p>
     <table class="spicy-table">
       <thead>
         <tr>
