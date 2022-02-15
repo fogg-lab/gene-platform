@@ -14,7 +14,6 @@ app = Flask(__name__)
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-app.config['DROPZONE_TIMEOUT'] = 120000 # timeout for uploads in milliseconds
 
 Session(app)
 
