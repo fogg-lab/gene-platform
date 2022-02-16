@@ -8,8 +8,10 @@ from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, \
     send_from_directory, session, Response
 from flask_session.__init__ import Session
+from flask_dropzone import Dropzone
 
 app = Flask(__name__)
+dropzone = Dropzone(app)
 
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_TYPE'] = 'filesystem'

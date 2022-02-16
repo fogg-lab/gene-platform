@@ -1,30 +1,28 @@
-<html>
-
-<!-- Styles -->
-<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
+
   <head>
     <title>DGE Analysis</title>
   </head>
   <body>
-    <h1>Upload counts (.tsv)</h1>
-    <form name="upload-counts" action="{{ url_for('upload_counts') }}" class="dropzone">
-    </form>
-    <h1>Upload coldata (.tsv)</h1>
-    <form name="upload-coldata" action="{{ url_for('upload_coldata') }}" class="dropzone">
-    </form>
-    <h1>Upload filter (.txt)</h1>
-    <form name="upload-filter" action="{{ url_for('upload_filter') }}" class="dropzone">
-    </form>
-    <h1>Config (.yml or .txt)</h1>
-    <form id="upload-config" name="upload-config" action="{{ url_for('upload_config') }}" class="dropzone">
-    </form>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
+    <!-- Style upload forms -->
+    {{ dropzone.load_css() }}
+    {{ dropzone.style('min-height: 60px; max-height: 75px; min-width: 100px; max-width: 200px;') }}
+    
+    <!-- Upload forms -->
+    <label><b>Upload counts (.tsv)</b></label>
+    {{ dropzone.create(id='upload-counts', action=url_for('upload_counts')) }}
+    <label><b>Upload coldata (.tsv)</b></label>
+    {{ dropzone.create(id='upload-coldata', action=url_for('upload_coldata')) }}
+    <label><b>Upload filter (.txt)</b></label>
+    {{ dropzone.create(id='upload-filter', action=url_for('upload_filter')) }}
+    <label><b>Config (.yml or .txt)</b></label>
+    {{ dropzone.create(id='upload-config', action=url_for('upload_config')) }}
+    {{ dropzone.config(id='upload-config') }}
+
+    {{ dropzone.load_js() }}
   </body>
+
   <p><form id="submit" action={{ url_for('submit') }} method="post">
     <label> Data type </label>
     <select class='data_type' id='data_type' name="data_type">
@@ -32,7 +30,7 @@
       <option value="microarray">microarray</option>
       <option value="RNA-Seq">RNA-Seq</option>
     </select>
-    <div id="form_parameters" style="visibility: hidden; display: none;">
+    <div id="form_parameters">
       <p><label id="padj_thresh_label" name="padj_thresh_label">padj_thresh</label>
       <input id='padj_thresh' type="text" name="padj_thresh" ></p>
       <p><label>min_prop</label>
@@ -52,86 +50,4 @@
     </div>
     <p><input type="submit" value="Submit"></p>
   </form></p>
-</html>
 
-<script>
-
-  // timer is a temp fix until it's figured out how to add an event listener for a dropzone
-  // form without breaking the form
-  var timer;
-  function startTimer() {
-    timer = setInterval(function() {
-      upload_config();
-    }, 1000);
-  }
-  startTimer();
-
-  function upload_config() {
-    var req = new XMLHttpRequest()
-      req.onreadystatechange = function() {
-          if (req.readyState == 4) {
-              if (req.status != 200) {
-                  //error handling code here
-              }
-              else {
-                  var response = JSON.parse(req.responseText)
-                  if (response.config_exists) {
-                    if(typeof response.padj_thresh !== 'undefined')
-                        document.getElementById('padj_thresh').setAttribute('value', response.padj_thresh)
-
-                    document.getElementById('min_prop').setAttribute('value', response.min_prop)
-                    document.getElementById('min_expr').setAttribute('value', response.min_expr)
-                    document.getElementById('adj_method').setAttribute('value', response.adj_method)
-                    document.getElementById('condition').setAttribute('value', response.condition)
-                    document.getElementById('contrast_level').setAttribute('value', response.contrast_level)
-                    document.getElementById('reference_level').setAttribute('value', response.reference_level)
-                    
-                    use_qual_weights_lower = response.use_qual_weights.toLowerCase();
-                    document.getElementById('use_qual_weights').checked = use_qual_weights_lower == 'true';
-                  }
-              }
-          }
-      }
-  
-      req.open('POST', '/getconfig')
-      req.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-      req.send()
-  }
-
-  document.getElementById('data_type').onchange = show_hide_parameters;
-
-  function show_hide_parameters() {
-
-    if (!document.getElementById('data_type').value) {
-      document.getElementById('form_parameters').style.display = 'none'
-      document.getElementById('form_parameters').style.visibility = 'hidden'
-    }
-
-    else {
-      document.getElementById('form_parameters').style.display = 'block'
-      document.getElementById('form_parameters').style.visibility = 'visible'
-      
-      if (document.getElementById('data_type').value == "microarray") {
-        document.getElementById('padj_thresh_label').style.display = 'none'
-        document.getElementById('padj_thresh_label').style.visibility = 'hidden'
-        document.getElementById('padj_thresh').setAttribute('type','hidden')
-      }
-      else {
-        document.getElementById('padj_thresh_label').style.display = 'inline'
-        document.getElementById('padj_thresh_label').style.visibility = 'visible'
-        document.getElementById('padj_thresh').setAttribute('type','text')
-      }
-    }
-  }
-
-  Dropzone.options.filedrop = {
-    init: function () {
-        this.on("queuecomplete", function (file) {
-            alert("All files have uploaded ");
-            upload_config();
-        })
-    }
-  };
-
-
-</script>
