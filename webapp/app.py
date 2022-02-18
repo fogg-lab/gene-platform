@@ -1,3 +1,5 @@
+import sys
+
 import os
 import subprocess
 import shutil
@@ -380,19 +382,23 @@ def get_config_parameters():
     config_file = None
 
     if "user_session_dir" in session:
+        print('Hello world!', file=sys.stderr)
         config_filepath = f"{session['user_session_dir']}config.yml"
+        print(config_filepath, file=sys.stderr)
         if os.path.isfile(config_filepath):
+            print('Hello world2!', file=sys.stderr)
             config_file = open(config_filepath, "r", encoding="UTF-8")
 
     config_parameters = {}
-    config_lines = config_file.readlines()
 
-    for line in config_lines:
-        # remove quotes and newline characters
-        line = line.translate(str.maketrans("", "", "\n\'\""))
-        if line:
-            parameter_name, parameter_value = tuple(line.split(": "))
-            config_parameters[parameter_name] = parameter_value
+    if config_file:
+        config_lines = config_file.readlines()
+        for line in config_lines:
+            # remove quotes and newline characters
+            line = line.translate(str.maketrans("", "", "\n\'\""))
+            if line:
+                parameter_name, parameter_value = tuple(line.split(": "))
+                config_parameters[parameter_name] = parameter_value
 
     return config_parameters
 
