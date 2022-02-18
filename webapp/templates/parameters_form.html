@@ -1,0 +1,63 @@
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
+
+  <head>
+    <title>DGE Analysis</title>
+  </head>
+
+  <p><form id="submit" action="{{ url_for('submit') }}" method="post">
+    <label> Data type </label>
+    <select class="data_type" id="data_type" name="data_type">
+      <option value=""></option>
+      <option value="microarray">microarray</option>
+      <option value="RNA-Seq">RNA-Seq</option>
+    </select>
+    <div id="form_parameters" style="visibility: hidden; display: none;">
+      <p><label id="padj_thresh_label"></label>
+      <input id="padj_thresh" type="text" name="padj_thresh" ></p>
+      <p><label>min_prop</label>
+      <input id="min_prop" type="text" name="min_prop"></p>
+      <p><label>min_expr</label>
+      <input id="min_expr" type="text" name="min_expr"></p>
+      <p><label>adj_method</label>
+      <input id="adj_method" type="text" name="adj_method"></p>
+      <p><label>condition</label>
+      <input id="condition" type="text" name="condition"></p>
+      <p><label>contrast_level</label>
+      <input id="contrast_level" type="text" name="contrast_level"></p>
+      <p><label>reference_level</label>
+      <input id="reference_level" type="text" name="reference_level"></p>
+      <p><label>use_qual_weights</label>
+      <input id="use_qual_weights" type="checkbox" name="use_qual_weights"></p>
+    </div>
+    <p><input type="submit" value="Submit"></p>
+  </form></p>
+
+
+<script>
+  document.getElementById("data_type").onchange = show_hide_parameters;
+
+  function show_hide_parameters() {
+
+    if (!document.getElementById("data_type").value) {
+      document.getElementById("form_parameters").style.display = "none"
+      document.getElementById("form_parameters").style.visibility = "hidden"
+    }
+
+    else {
+      document.getElementById("form_parameters").style.display = "block"
+      document.getElementById("form_parameters").style.visibility = "visible"
+      
+      if (document.getElementById("data_type").value == "microarray") {
+        document.getElementById("padj_thresh_label").style.display = "none"
+        document.getElementById("padj_thresh_label").style.visibility = "hidden"
+        document.getElementById("padj_thresh").setAttribute("type","hidden")
+      }
+      else {
+        document.getElementById("padj_thresh_label").style.display = "inline"
+        document.getElementById("padj_thresh_label").style.visibility = "visible"
+        document.getElementById("padj_thresh").setAttribute("type","text")
+      }
+    }
+  }
+</script>

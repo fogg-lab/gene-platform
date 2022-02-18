@@ -1,0 +1,24 @@
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
+
+  <head>
+    <title>DGE Analysis</title>
+  </head>
+  <body>
+    <!-- Style upload forms -->
+    {{ dropzone.load_css() }}
+    {{ dropzone.style('min-height: 60px; max-height: 75px; min-width: 100px; max-width: 200px;') }}
+    
+    <!-- Upload forms -->
+    <label><b>Upload counts (.tsv)</b></label>
+    {{ dropzone.create(id='upload-counts', action=url_for('upload_counts')) }}
+    <label><b>Upload coldata (.tsv)</b></label>
+    {{ dropzone.create(id='upload-coldata', action=url_for('upload_coldata')) }}
+    <label><b>Upload filter (.txt)</b></label>
+    {{ dropzone.create(id='upload-filter', action=url_for('upload_filter')) }}
+    <label><b>Config (.yml or .txt)</b></label>
+    {{ dropzone.create(id='upload-config', action=url_for('upload_config')) }}
+    {{ dropzone.config(id='upload-config') }}
+
+    {{ dropzone.load_js() }}
+  </body>
