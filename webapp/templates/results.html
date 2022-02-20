@@ -2,17 +2,20 @@
   <head>
     <title>Results</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/results_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
   </head>
   <body>
-    <p><a href="{{ url_for('get_unfiltered_tsv') }}">Download unfiltered output</a></p>
-    <p><a href="{{ url_for('get_filtered_tsv') }}">Download filtered output</a></p>
+    <p>
+      <a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download unfiltered output  </a>
+      <a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output  </a>
+      <a href="{{ url_for('reset') }}" class="button">New analysis  </a>
+      <a href="{{ url_for('index') }}" class="button">Change input files or parameters  </a>
+    </p>
     <table class="spicy-table">
       <thead>
         <tr>
-          {% for elem in col_titles %}
-          {% for item in elem %}
+          {% for item in col_titles %}
           <th>{{item}}</th>
-          {% endfor %}
           {% endfor %}
         </tr>
       </thead>
