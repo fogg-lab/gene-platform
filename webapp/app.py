@@ -17,8 +17,27 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 
 Session(app)
 
-#TODO: analysis runtime counter
-#TODO: sort and filter
+'''
+Unordered to-do list:
+TODO: Parameter constraints validation
+TODO: Validation:
+        - Supplied column names must be checked against the values present in
+            the data. If there is a mismatch (e.g., user entered “disease
+            status” but the column name is “disease_condition”), the user
+            should be informed of the issue and given the opportunity to
+            correct the data columns and resubmit.
+        - Column names for values returned by all analysis types must match
+            (e.g., “log2FoldChange” (DESeq2) and “logFC” (limma) should both
+            be abbreviated the same)
+        - Supplied factor levels must be present in the data and user should
+            be informed of errors and allowed to correct
+        - Constraint: 0 < p-thresh < 1
+        - Constraint: 0 < min_prop < 1
+TODO: Descriptions for parameters
+TODO: User story 4 (inform user of analysis to be conducted before execution)
+TODO: Analysis runtime counter
+TODO: Sort and filter
+'''
 
 # Ensure that the current working directory is the webapp directory
 # Get the path to the webapp dir from the path of this script
