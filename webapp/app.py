@@ -18,7 +18,8 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 Session(app)
 
 '''
-Unordered to-do list:
+backlog:
+TODO: Analysis runtime counter
 TODO: Parameter constraints validation
 TODO: Validation:
         - Supplied column names must be checked against the values present in
@@ -33,10 +34,12 @@ TODO: Validation:
             be informed of errors and allowed to correct
         - Constraint: 0 < p-thresh < 1
         - Constraint: 0 < min_prop < 1
+        - Constraint: do not allow navigating to parameters without uploading
+            all required files
 TODO: Descriptions for parameters
 TODO: User story 4 (inform user of analysis to be conducted before execution)
-TODO: Analysis runtime counter
 TODO: Sort and filter
+TODO: In the filter.txt error message, include the line of the error
 '''
 
 # Ensure that the current working directory is the webapp directory
