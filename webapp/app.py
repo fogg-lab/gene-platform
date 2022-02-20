@@ -17,13 +17,8 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 
 Session(app)
 
-
-#TODO: progress bar text - if uploaded (successfully), have it say "File uploaded: {filename}"
-#                           if not uploaded, have it say "Not uploaded: {}"
-#TODO: MAYBE send status messages on page reload
-#TODO: nav buttons, file validation
-#TODO: improve sort and filter
-
+#TODO: analysis runtime counter
+#TODO: sort and filter
 
 # Ensure that the current working directory is the webapp directory
 # Get the path to the webapp dir from the path of this script
@@ -66,7 +61,7 @@ def upload():
     else:
         result["error_status"] = f"Invalid filename: {filename}. \
             Filename must end with either counts.tsv, coldata.tsv, filter.txt,\
-                 config.yml or config.txt\n"
+            config.yml or config.txt\n"
 
     if standardized_filename == "filter.txt":
         result["error_status"] = check_filter()
