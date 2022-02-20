@@ -1,20 +1,15 @@
-import sys
-
 import os
 import subprocess
 import shutil
 import csv
 from datetime import timedelta
 import tempfile
-from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response
 from flask_session.__init__ import Session
-from flask_dropzone import Dropzone
 
 
 app = Flask(__name__)
-dropzone = Dropzone(app)
 
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
@@ -23,7 +18,11 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 Session(app)
 
 
+#TODO: progress bar text - if uploaded (successfully), have it say "File uploaded: {filename}"
+#                           if not uploaded, have it say "Not uploaded: {}"
+#TODO: MAYBE send status messages on page reload
 #TODO: nav buttons, file validation
+#TODO: improve sort and filter
 
 
 # Ensure that the current working directory is the webapp directory
@@ -41,80 +40,44 @@ USER_FILES_LOCATION = "user_files"
 def index():
     '''main page, first input page (file uploads)'''
 
-    files = os.listdir(USER_FILES_LOCATION)
-    return render_template("uploads_form.html", files=files)
+    ensure_session_dir()
+    
+    user_files = os.listdir(session["user_session_dir"])
+    uploads = [filename for filename in user_files if "output" not in filename]
+
+    return render_template("uploads_form.html", uploads=uploads)
 
 
-@app.route("/uploadcounts", methods=["POST"])
-def upload_counts():
-    '''handles uploading a counts file'''
+@app.route("/upload", methods=["POST"])
+def upload():
+    '''
+    handles uploading files coldata, filter, filter and config
+    one file per request
+    file contents are in request.data (a bytes object)
+    '''
 
-    uploaded_file = request.files["file"]
-    filename = secure_filename(uploaded_file.filename)
-    file_ext = os.path.splitext(filename)[1]
+    result = {}
+    
+    filename = request.headers.get('X_FILENAME')
+    standardized_filename = standardize_filename(filename)
+    
+    if standardized_filename:
+        save_temp_file(request.data, standardized_filename)
+    else:
+        result["error_status"] = f"Invalid filename: {filename}. \
+            Filename must end with either counts.tsv, coldata.tsv, filter.txt,\
+                 config.yml or config.txt\n"
 
-    if file_ext != ".tsv":
-        return "Invalid file extension", 400
+    if standardized_filename == "filter.txt":
+        result["error_status"] = check_filter()
+    elif standardized_filename == "config.yml":
+        result["error_status"] = check_config()
 
-    save_temp_file(uploaded_file, "counts.tsv")
-
-    return redirect(url_for("index"))
-
-
-@app.route("/uploadcoldata", methods=["POST"])
-def upload_coldata():
-    '''handles uploading a coldata file'''
-
-    uploaded_file = request.files["file"]
-    filename = secure_filename(uploaded_file.filename)
-    file_ext = os.path.splitext(filename)[1]
-
-    if file_ext != ".tsv":
-        return "Invalid file extension", 400
-
-    save_temp_file(uploaded_file, "coldata.tsv")
-
-    return redirect(url_for("index"))
-
-
-@app.route("/uploadfilter", methods=["POST"])
-def upload_filter():
-    '''handles uploading a filter file'''
-
-    uploaded_file = request.files["file"]
-    filename = secure_filename(uploaded_file.filename)
-    file_ext = os.path.splitext(filename)[1]
-
-    if file_ext != ".txt":
-        return "Invalid file extension", 400
-
-    save_temp_file(uploaded_file, "filter.txt")
-
-    return redirect(url_for("index"))
-
-
-@app.route("/uploadconfig", methods=["POST"])
-def upload_config():
-    '''handles uploading a config file'''
-
-    uploaded_file = request.files["file"]
-    filename = secure_filename(uploaded_file.filename)
-    file_ext = os.path.splitext(filename)[1]
-
-    if file_ext not in {".txt", ".yml"}:
-        return "Invalid file extension", 400
-
-    save_temp_file(uploaded_file, "config.yml")
-
-    config_validity = validate_config()
-    if config_validity != "valid":
-        return config_validity, 400
-
-    return redirect(url_for("index"))
+    return result
 
 
 @app.route("/parameters", methods=["GET"])
-def parameters_form():
+def parameters():
     '''loads the parameter form'''
 
     parameters = get_config_parameters()
@@ -133,16 +96,16 @@ def submit():
     # get whether analysis is microarray or RNA-Seq
     data_type = request.form.get("data_type")
 
-    if not data_type:
-        pass    # error - blank datatype. todo: inform user
-
     parameters = get_request_parameters(request.form, data_type)
 
     generate_config(parameters)
 
-    call_analysis(data_type)
-    remove_old_output()
+    # remove old output
+    delete_user_file("filter_output.tsv")
+    delete_user_file("output.tsv")
 
+    call_analysis(data_type)
+    
     wait_for_output()
 
     return redirect(url_for("display_output"))
@@ -154,14 +117,65 @@ def display_output():
     display output in a table
     '''
 
-    # check here if output.tsv exists and errors.txt doesn"t
+    # check here if output.tsv exists and errors.txt doesn't
     path_to_output =  f"{session['user_session_dir']}output.tsv"
     output = open(path_to_output, encoding="UTF-8")
     reader = csv.reader(output, delimiter="\t")
     rows = [[elem for elem in row] for row in reader]
     output.close()
 
-    return render_template("results.html", col_titles=rows[:1], info=rows[1:])
+    return render_template("results.html",col_titles=rows[:1][0],info=rows[1:])
+
+
+@app.route("/reset", methods=["GET"])
+def reset():
+    delete_user_file("counts.tsv")
+    delete_user_file("coldata.tsv")
+    delete_user_file("filter.txt")
+    delete_user_file("config.yml")
+    delete_user_file("filter_output.tsv")
+    delete_user_file("output.tsv")
+    return redirect(url_for("index"))
+
+
+@app.context_processor
+def utility_processor():
+    '''defines functions that templates can use'''
+        
+    def try_float(elem):
+        try:
+            elem = float(elem)
+        except:
+            pass
+        return elem
+
+    def data_sorted_on_col(data, col_names, sort_col):
+        col_index = col_names.index(sort_col)
+        sorted_data = sorted(data, key=lambda line: try_float(line[col_index]))
+        return sorted_data
+
+    def data_filtered(data, col_names, filter_text, filter_col=""):
+        '''
+            returns rows that contain the filter text
+            if filter column is unspecified, search all columns
+        '''
+        columns_to_search = []
+        if filter_col:
+            columns_to_search.append(filter_col)
+        else:
+            columns_to_search.append(col_names)
+        filtered_data = []
+        for row in data:
+            row_match = False
+            for colname in columns_to_search:
+                col_index = col_names[colname]
+                if filter_text in row[col_index]:
+                    row_match = True
+            if row_match:
+                filtered_data.append(row)
+
+    return dict(try_float=try_float, data_sorted_on_col=data_sorted_on_col,
+        data_filtered=data_filtered)
 
 
 @app.route("/getunfilteredtsv")
@@ -192,18 +206,17 @@ def get_filtered_tsv():
                 "attachment; filename=filter_output.tsv"})
 
 
-def save_temp_file(file, filename):
+def save_temp_file(file_contents, filename):
     '''
-    Takes a user"s file and copies it into a temp directory on the server
-    directory path is stored in the user session variable 'user_session_dir'
+    Saves uploaded file to user session directory
+    
+    Parameters:
+        file_contents: bytes object
+        filename: string
     '''
 
-    if ("user_session_dir" not in session or
-            not os.path.exists(session["user_session_dir"])):
-        temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
-        os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
-        session["user_session_dir"] = f"{temp_dir}/"
-        session["session_id"] = temp_dir.split("/")[-1:]
+    # create session directory if none exists
+    ensure_session_dir()
 
     user_file_path = f"{session['user_session_dir']}{filename}"
 
@@ -211,17 +224,16 @@ def save_temp_file(file, filename):
         os.remove(user_file_path)
 
     user_file = open(user_file_path, "w", encoding="UTF-8")
+    lines = file_contents.split(b'\n')
 
     # copy the file line by line, adding a trailing newline if none exists
-    lines = file.readlines()
-
     for line in lines:
-        user_file.write(line.decode("UTF-8"))
+        user_file.write(f"{line.decode('UTF-8')}\n")
 
     user_file.close()
 
 
-def validate_config():
+def check_config():
     '''
     validates config.yml, returns the status, deletes the file if invalid
     
@@ -229,21 +241,22 @@ def validate_config():
     min_expr, min_prop, padj_thresh, adj_method, condition, contrast_level,
     and reference_level
 
-    returns either "valid", "Missing value for parameter: xxxx", or
-    "Missing parameter: xxxx" where "xxxx" is replaced w/ the name of the param
+    returns an empty string if valid
+    if invalid, returns either "Missing value for parameter: xxxx", or
+    "Missing parameter: xxxx" where "xxxx" is replaced by the name of the param
     '''
 
     config_parameters = get_config_parameters()
 
     all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method", \
         "condition", "contrast_level", "reference_level", "use_qual_weights"}
-    config_status = ""
+    config_error_status = ""
 
     for parameter_name, parameter_value in config_parameters.items():
         if not parameter_value and parameter_name in all_parameters:
-            config_status += f"Missing value for parameter: {parameter_name}\n"
+            config_error_status += f"Missing value for parameter: {parameter_name}\n"
         elif parameter_name not in all_parameters:
-            config_status += f"Unknown parameter: {parameter_name}\n"
+            config_error_status += f"Unknown parameter: {parameter_name}\n"
         else:
             all_parameters.remove(parameter_name)
 
@@ -253,31 +266,36 @@ def validate_config():
 
     # if any parameters are missing, list them
     for missing_parameter in all_parameters:
-        config_status += f"Missing parameter: {missing_parameter}\n"
+        config_error_status += f"Missing parameter: {missing_parameter}\n"
 
-    if not config_status:
-        config_status = "valid"
-    else:
+    if config_error_status:
         delete_user_file("config.yml")
 
-    return config_status
+    return config_error_status
 
 
-def validate_filter():
-    '''ensures that filter has one gene per line'''
+def check_filter():
+    '''
+    ensures that filter has one gene per line
+    returns empty string if valid
+    if invalid, returns error status - "invalid: not one gene per line"
+    '''
 
     filter_file = read_user_file("filter.txt")
-    filter_status = "valid"
+    filter_error_status = ""
 
     for line in filter_file:
         word_list = line.split()
         if len(word_list) > 1:
-            filter_status = "invalid: not one gene per line"
+            filter_error_status = "Must contain only one gene per line"
 
     if filter_file:
         filter_file.close()
 
-    return filter_status
+    if filter_error_status:
+        delete_user_file("filter.txt")
+
+    return filter_error_status
 
 
 def check_factor_levels():
@@ -345,7 +363,7 @@ def wait_for_output():
 
 
 def cleanup_old_sessions():
-    '''Clean up other sessions older than one day (86400 seconds)'''
+    '''Clean up other sessions older than 4 hours (14400 seconds)'''
 
     for old_dir in os.listdir(USER_FILES_LOCATION):
         old_dir = f"{USER_FILES_LOCATION}/{old_dir}"
@@ -357,7 +375,7 @@ def cleanup_old_sessions():
             age_seconds = int(subprocess.Popen([f"echo {get_age}"], \
                 stdout=subprocess.PIPE, shell=True).communicate()[0])
 
-            if age_seconds > 28800:
+            if age_seconds > 14400:
                 shutil.rmtree(old_dir)
 
 
@@ -382,11 +400,8 @@ def get_config_parameters():
     config_file = None
 
     if "user_session_dir" in session:
-        print('Hello world!', file=sys.stderr)
         config_filepath = f"{session['user_session_dir']}config.yml"
-        print(config_filepath, file=sys.stderr)
         if os.path.isfile(config_filepath):
-            print('Hello world2!', file=sys.stderr)
             config_file = open(config_filepath, "r", encoding="UTF-8")
 
     config_parameters = {}
@@ -428,16 +443,38 @@ def get_request_parameters(form, data_type):
     return request_parameters
 
 
-def remove_old_output():
-    '''removes old output files from the current session'''
-    filtered_output_path = f"{session['user_session_dir']}filter_output.tsv"
-    unfiltered_output_path = f"{session['user_session_dir']}output.tsv"
-    filtered_output_exists = os.path.exists(filtered_output_path)
-    unfiltered_output_exists = os.path.exists(unfiltered_output_path)
-    if filtered_output_exists:
-        os.remove(filtered_output_path)
-    if unfiltered_output_exists:
-        os.remove(unfiltered_output_path)
+def standardize_filename(filename):
+    '''
+    standardize filename to one of the following:
+    counts.tsv, coldata.tsv, filter.txt or config.yml
+    then return the standardized filename
+    if the file name isn't recognized, return empty string
+    '''
+    
+    if "config" in filename:
+        filename = "config.yml"
+    elif "count" in filename:
+        filename = "counts.tsv"
+    elif "col" in filename:
+        filename = "coldata.tsv"
+    elif "filt" in filename:
+        filename = "filter.txt"
+    
+    return filename
+
+
+def ensure_session_dir():
+    '''
+    if there is no directory for the user session, create one now
+    directory path is stored in the user session variable 'user_session_dir'
+    '''
+    
+    if ("user_session_dir" not in session or
+        not os.path.exists(session["user_session_dir"])):
+        temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
+        os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
+        session["user_session_dir"] = f"{temp_dir}/"
+        session["session_id"] = temp_dir.split("/")[-1:]
 
 
 cleanup_old_sessions()

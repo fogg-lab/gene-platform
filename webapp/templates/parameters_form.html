@@ -30,7 +30,10 @@
       <p><label id="use_qual_weights_label">use_qual_weights</label>
       <input id="use_qual_weights" type="checkbox" name="use_qual_weights" value="{{ params.get('use_qual_weights', '') }}"></p>
     </div>
-    <p><input type="submit" value="Submit"></p>
+    <p>
+      <a href="{{ url_for('index') }}" class="button">Previous: Upload Files</a>
+      <input type="submit" class="button" value="Submit">
+    </p>
   </form></p>
 
 
