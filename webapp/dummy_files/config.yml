@@ -1,0 +1,8 @@
+min_expr: 0.05
+min_prop: 0.05
+padj_thresh: 0.05
+adj_method: "yes"
+condition: "goodness"
+contrast_level: "bad"
+reference_level: "good"
+use_qual_weights: True

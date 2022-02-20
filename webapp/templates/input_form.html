@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  
+
   <head>
     <title>DGE Analysis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
@@ -86,14 +86,14 @@
                     document.getElementById('condition').setAttribute('value', response.condition)
                     document.getElementById('contrast_level').setAttribute('value', response.contrast_level)
                     document.getElementById('reference_level').setAttribute('value', response.reference_level)
-                    
+
                     use_qual_weights_lower = response.use_qual_weights.toLowerCase();
                     document.getElementById('use_qual_weights').checked = use_qual_weights_lower == 'true';
                   }
               }
           }
       }
-  
+
       req.open('POST', '/getconfig')
       req.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
       req.send()
@@ -111,7 +111,7 @@
     else {
       document.getElementById('form_parameters').style.display = 'block'
       document.getElementById('form_parameters').style.visibility = 'visible'
-      
+
       if (document.getElementById('data_type').value == "microarray") {
         document.getElementById('padj_thresh_label').style.display = 'none'
         document.getElementById('padj_thresh_label').style.visibility = 'hidden'

@@ -35,7 +35,16 @@ USER_FILES_LOCATION = 'user_files'
 @app.route('/')
 def index():
     files = os.listdir(USER_FILES_LOCATION)
-    return render_template('input_form.html', files=files)
+    session_dir = get_session_dir()
+    min_expr, min_prop, padj_thresh, adj_method, condition, contrast_level, reference_level = "","","","","","",""
+    if session_dir:
+        config_path = session["user_session_dir"] + "/config.yml"
+        if os.path.exists(config_path):
+            params = parse_config(config_path)
+            min_expr, min_prop, padj_thresh, adj_method, condition, contrast_level, reference_level = params["min_expr"], params["min_prop"], params["padj_thresh"], params["adj_method"], params["condition"], params["contrast_level"], params["reference_level"]
+            # return render_template('input_form_prefilled.html', files=files, min_expr=min_expr, min_prop=min_prop, padj_thresh=padj_thresh, adj_method=adj_method, condition=condition, contrast_level=contrast_level, reference_level=reference_level)
+
+    return render_template('input_form.html', use_qual_weights=True)
 
 @app.route('/uploadcounts', methods=['POST'])
 def upload_counts():
@@ -79,7 +88,15 @@ def upload_config():
         if file_ext != '.yml' and file_ext != '.txt':
             return 'Invalid file extension', 400
         save_temp_file(uploaded_file, 'config.yml')
-    return redirect(url_for('index'))
+
+    config_dict = parse_config('config.yml')
+    if type(config_dict) == str:
+        print(err_msg)
+        # TODO: reload page with error message here
+    else:
+        print("config file is valid")
+
+    return redirect(url_for('prefilled_index'))
 
 @app.route('/user_files/<filename>')
 def upload(filename):
@@ -105,7 +122,20 @@ def get_config():
 def submit():
     # get whether analysis is microarray or RNA-Seq
     data_type = request.form.get('data_type')
-    
+<<<<<<< Updated upstream
+
+=======
+
+    # get config parameters
+    min_expr = request.form.get('min_expr')
+    min_prop = request.form.get('min_prop')
+    padj_thresh = request.form.get('padj_thresh')
+    adj_method = request.form.get('adj_method')
+    condition = request.form.get('condition')
+    contrast_level = request.form.get('contrast_level')
+    reference_level = request.form.get('reference_level')
+
+>>>>>>> Stashed changes
     # request.form.get('use_qual_weights') returns either "None" or "on"
     # needs to be boolean True or False
     use_qual_weights = request.form.get('use_qual_weights')
@@ -129,7 +159,7 @@ def submit():
     for parameter_val in parameters:
         if not parameter_val:
             parameters_filled = False
-    
+
         # if the parameters are set, generate config
     if parameters_filled:
         generate_config(parameters)
@@ -148,14 +178,14 @@ def submit():
     analysis_done = False
     while not analysis_done:
         path_to_output =  session['user_session_dir'] + 'output.tsv'
-        
+
         # '2>/dev/null' suppresses the expected error output 'file not found'
         output = subprocess.Popen(['ls %s %s' %(path_to_output, '2>/dev/null')\
             ], stdout=subprocess.PIPE, shell=True).communicate()[0]
 
         # results of the ls are returned in bytes, ends with newline character
         analysis_done = output == str.encode(path_to_output) + b'\n'
-    
+
     return redirect(url_for('display_output'))
 
 @app.route('/display')
@@ -232,12 +262,19 @@ def cleanup_old_sessions():
             # Run bash command and return the stdout output
             age_seconds = int(subprocess.Popen(['echo %s' %(get_age)], \
                 stdout=subprocess.PIPE, shell=True).communicate()[0])
-            
+
             if age_seconds > 86400:
                 shutil.rmtree(old_dir)
 
+def get_session_dir():
+    if "user_session_dir" in session:
+        return session["user_session_dir"]
+    else:
+        return False
+
 def generate_config(parameters):
-    config_file_path = session['user_session_dir'] + '/config.yml'
+
+    config_file_path = session["user_session_dir"] + "/config.yml"
     config_file = open(config_file_path, 'w')
 
     for param in parameters.keys():
@@ -273,5 +310,62 @@ def remove_old_output():
 
 def schedule_session_deletion(session_path):
     pass
+
+def parse_config(filename):
+    params = {}
+    config_file_path = session["user_session_dir"] + "/config.yml"
+    file_text = (open(config_file_path, 'r')).readlines()
+    # params = yaml.load(file_text)
+    for line in file_text:
+        # try:
+        keyvalue = line.split(': ')
+        key = keyvalue[0]
+        value = keyvalue[1][:-1] #remove trailing newline
+        if is_numeric(value):
+            value = float(value)
+        elif is_bool(value):
+             value = bool(value)
+        else:
+            value = value[1:-1]
+        params[key] = value
+        # except:
+        #     return "config file is not formatted correctly"
+
+    err_msg = validate_config_params(params)
+    if err_msg != "":
+        return err_msg
+    return params
+
+def is_numeric(string):
+    num_symbols = "-.0123456789"
+    return all([char in num_symbols for char in string])
+
+def is_bool(string):
+    return string in {"True", "False"}
+
+# returns an error message if config parameters are invalid
+# otherwise, returns an empty string
+def validate_config_params(params):
+    if type(params["min_expr"]) not in [int, float]:
+        return "min_expr must be a number"
+    if params["min_expr"] < 0:
+        return "min_expr must be a non-negative"
+    if type(params["min_prop"]) not in [int, float]:
+        return "min_prop must be a number"
+    if params["min_prop"] < 0:
+        return "min_prop must be a non-negative"
+    if type(params["padj_thresh"]) not in [int, float]:
+        return "padj_thresh must be a number"
+    if type(params["adj_method"]) != str:
+        return "adj_method must be a string"
+    if type(params["condition"]) != str:
+        return "condition must be a string"
+    if type(params["contrast_level"]) != str:
+        return "contrast_level must be a string"
+    if type(params["reference_level"]) != str:
+        return "reference_level must be a string"
+    if type(params["use_qual_weights"]) != bool:
+        return "reference_level must be a bool"
+    return ""
 
 cleanup_old_sessions()
