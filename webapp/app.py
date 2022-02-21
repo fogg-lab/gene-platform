@@ -20,6 +20,7 @@ Session(app)
 '''
 backlog:
 TODO: Analysis runtime counter
+TODO: Add button to remove uploaded file (cancel button next to progress bar)
 TODO: Parameter constraints validation
 TODO: Validation:
         - Supplied column names must be checked against the values present in
