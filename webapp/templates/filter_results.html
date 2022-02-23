@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Results</title>
+    <title>Filtered Results</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/results_style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
   </head>
@@ -10,25 +10,25 @@
       <a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output  </a>
       <a href="{{ url_for('reset') }}" class="button">New analysis  </a>
       <a href="{{ url_for('index') }}" class="button">Change input files or parameters  </a>
-      <a href="{{ url_for('display_filtered') }}" class="button">View Filtered Output </a>
+      <a href="{{ url_for('display_output') }}" class="button">View Unfiltered Output </a>
     </p>
     <table class="spicy-table">
       <thead>
         <tr>
-          {% for item in output_cols %}
-          <th>{{item}}</th>
-          {% endfor %}
+            {% for item in filter_cols %}
+            <th>{{item}}</th>
+            {% endfor %}
         </tr>
       </thead>
       <tbody>
-        {% for result in output_body %}
+        {% for result in filter_body %}
         <tr class = "{{ loop.cycle('normal', 'spicy') }}">
           {% for elem in result %}
           <td>{{elem}}</td>
           {% endfor %}
         </tr>
         {% endfor %}
-      </tbody>
+    </tbody>
     </table>
-  </body>
+    </body>
 </html>
