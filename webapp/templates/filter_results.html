@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <title>Filtered Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/results_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
+  </head>
+  <body>
+    <table class="header-table">
+        <tr>
+          <th><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download unfiltered output  </a></th>
+          <th><a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output  </a></th>
+          <th><a href="{{ url_for('reset') }}" class="button">New analysis  </a></th>
+          <th><a href="{{ url_for('index') }}" class="button">Change input files or parameters  </a></th>
+          <th><a href="{{ url_for('display_output') }}" class="button">View Unfiltered Output </a></th>
+        </tr>
+        </table>
+        <br>
+    <table class="spicy-table">
+      <thead>
+        <tr>
+            {% for item in filter_cols %}
+            <th>{{item}}</th>
+            {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in filter_body %}
+        <tr class = "{{ loop.cycle('normal', 'spicy') }}">
+          {% for elem in result %}
+          <td>{{elem}}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    </body>
+</html>

@@ -136,13 +136,29 @@ def display_output():
     '''
 
     # check here if output.tsv exists and errors.txt doesn't
-    path_to_output =  f"{session['user_session_dir']}output.tsv"
-    output = open(path_to_output, encoding="UTF-8")
-    reader = csv.reader(output, delimiter="\t")
-    rows = [[elem for elem in row] for row in reader]
-    output.close()
+    path_to_output1 =  f"{session['user_session_dir']}output.tsv"
+    output1 = open(path_to_output1, encoding="UTF-8")
+    reader1 = csv.reader(output1, delimiter="\t")
+    output = [[elem for elem in output1] for output1 in reader1]
+    output1.close()
 
-    return render_template("results.html",col_titles=rows[:1][0],info=rows[1:])
+    return render_template("results.html",output_cols=output[:1][0],output_body=output[1:])
+
+@app.route("/filter_display")
+def display_filtered():
+    '''
+    display filtered output in a table
+    '''
+
+    #perform the same function as displaying results, but for filtered tsv
+    path_to_output2 =  f"{session['user_session_dir']}filter_output.tsv"
+    output2 = open(path_to_output2, encoding="UTF-8")
+    reader2 = csv.reader(output2, delimiter="\t")
+    filter_output = [[elem for elem in output2] for output2 in reader2]
+    output2.close()
+
+    return render_template("filter_results.html",filter_cols=filter_output[:1][0],filter_body=filter_output[1:])
+
 
 
 @app.route("/reset", methods=["GET"])
