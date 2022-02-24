@@ -357,7 +357,6 @@ def delete_user_file(filename):
     deletes a user input file if it exists
     just supply the filename like "counts.tsv" for example
     '''
-    user_file = None
 
     if "user_session_dir" in session:
         filepath = f"{session['user_session_dir']}{filename}"
@@ -415,12 +414,7 @@ def generate_config(config_parameters):
 
 def get_config_parameters():
     '''parses config to return a dictionary of parameters with set values'''
-    config_file = None
-
-    if "user_session_dir" in session:
-        config_filepath = f"{session['user_session_dir']}config.yml"
-        if os.path.isfile(config_filepath):
-            config_file = open(config_filepath, "r", encoding="UTF-8")
+    config_file = read_user_file("config.yml")
 
     config_parameters = {}
 
