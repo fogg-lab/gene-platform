@@ -19,6 +19,7 @@ Session(app)
 
 '''
 backlog:
+TODO: fix params template to prefill use_qual_weights checkmark correctly
 TODO: Analysis runtime counter
 TODO: Add button to remove uploaded file (cancel button next to progress bar)
 TODO: Parameter constraints validation
@@ -98,7 +99,7 @@ def upload():
 def parameters():
     '''loads the parameter form'''
 
-    parameters = get_config_parameters()
+    parameters = parse_config()
 
     return render_template("parameters_form.html", params=parameters)
 
@@ -158,7 +159,6 @@ def display_filtered():
     output2.close()
 
     return render_template("filter_results.html",filter_cols=filter_output[:1][0],filter_body=filter_output[1:])
-
 
 
 @app.route("/reset", methods=["GET"])
@@ -267,20 +267,16 @@ def save_temp_file(file_contents, filename):
     user_file.close()
 
 
-def check_config():
+def check_parameter_names(config_parameters):
     '''
-    validates config.yml, returns the status, deletes the file if invalid
-    
-    ensures config has all needed parameters:
-    min_expr, min_prop, padj_thresh, adj_method, condition, contrast_level,
-    and reference_level
+    ensures config parameters contain the required parameters,
+    and that there are no unrecognized parameters
+    min_expr, min_prop, padj_thresh, adj_method, condition,
+    contrast_level, and reference_level
 
     returns an empty string if valid
-    if invalid, returns either "Missing value for parameter: xxxx", or
-    "Missing parameter: xxxx" where "xxxx" is replaced by the name of the param
+    if invalid, returns error message
     '''
-
-    config_parameters = get_config_parameters()
 
     all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method", \
         "condition", "contrast_level", "reference_level", "use_qual_weights"}
@@ -301,9 +297,6 @@ def check_config():
     # if any parameters are missing, list them
     for missing_parameter in all_parameters:
         config_error_status += f"Missing parameter: {missing_parameter}\n"
-
-    if config_error_status:
-        delete_user_file("config.yml")
 
     return config_error_status
 
@@ -412,6 +405,13 @@ def cleanup_old_sessions():
                 shutil.rmtree(old_dir)
 
 
+def get_session_dir():
+    if "user_session_dir" in session:
+        return session["user_session_dir"]
+    else:
+        return False
+
+
 def generate_config(config_parameters):
     '''generates a config file using user-entered parameters'''
 
@@ -426,24 +426,6 @@ def generate_config(config_parameters):
             config_file.write(f"{param}: {config_parameters[param]}\n")
 
     config_file.close()
-
-
-def get_config_parameters():
-    '''parses config to return a dictionary of parameters with set values'''
-    config_file = read_user_file("config.yml")
-
-    config_parameters = {}
-
-    if config_file:
-        config_lines = config_file.readlines()
-        for line in config_lines:
-            # remove quotes and newline characters
-            line = line.translate(str.maketrans("", "", "\n\'\""))
-            if line:
-                parameter_name, parameter_value = tuple(line.split(": "))
-                config_parameters[parameter_name] = parameter_value
-
-    return config_parameters
 
 
 def get_request_parameters(form, data_type):
@@ -503,6 +485,90 @@ def ensure_session_dir():
         os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
         session["user_session_dir"] = f"{temp_dir}/"
         session["session_id"] = temp_dir.split("/")[-1:]
+
+
+def parse_config():
+    config_parameters = {}
+    config_file_path = session["user_session_dir"] + "/config.yml"
+    file_text = (open(config_file_path, 'r')).readlines()
+    # config_parameters = yaml.load(file_text)
+    for line in file_text:
+        # try:
+        keyvalue = line.split(': ')
+        key = keyvalue[0]
+        value = keyvalue[1][:-1] #remove trailing newline
+        if is_numeric(value):
+            value = float(value)
+        elif is_bool(value):
+             value = bool(value)
+        else:
+            value = value[1:-1]
+        config_parameters[key] = value
+        # except:
+        #     return "config file is not formatted correctly"
+
+    err_msg = validate_parameters(config_parameters)
+    if err_msg != "":
+        return err_msg
+    return config_parameters
+
+
+def is_numeric(string):
+    num_symbols = "-.0123456789"
+    return all([char in num_symbols for char in string])
+
+
+def is_bool(string):
+    return string in {"True", "False"}
+
+
+def validate_parameters(config_parameters):
+    '''
+    returns an error message if config parameters are invalid
+    otherwise, returns an empty string
+    '''
+
+    if (error_msg := check_parameter_names(config_parameters)) != "":
+        return error_msg
+    if type(config_parameters["min_expr"]) not in [int, float]:
+        return "min_expr must be a number"
+    if config_parameters["min_expr"] < 0:
+        return "min_expr must be a non-negative"
+    if type(config_parameters["min_prop"]) not in [int, float]:
+        return "min_prop must be a number"
+    if config_parameters["min_prop"] < 0:
+        return "min_prop must be a non-negative"
+    if type(config_parameters["padj_thresh"]) not in [int, float]:
+        return "padj_thresh must be a number"
+    if type(config_parameters["adj_method"]) != str:
+        return "adj_method must be a string"
+    if type(config_parameters["condition"]) != str:
+        return "condition must be a string"
+    if type(config_parameters["contrast_level"]) != str:
+        return "contrast_level must be a string"
+    if type(config_parameters["reference_level"]) != str:
+        return "reference_level must be a string"
+    if type(config_parameters["use_qual_weights"]) != bool:
+        return "reference_level must be a bool"
+    
+    return ""
+
+
+def check_config():
+    '''get config params in a dict then validate the params'''
+
+    err_msg = ""
+
+    config_params = parse_config()
+    if type(config_params) == str:
+        err_msg = config_params
+    else:
+        err_msg = validate_parameters(config_params)
+
+    if err_msg:
+        delete_user_file("config.yml")
+
+    return err_msg
 
 
 cleanup_old_sessions()
