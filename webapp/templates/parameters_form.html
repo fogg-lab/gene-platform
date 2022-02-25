@@ -1,11 +1,12 @@
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
 
-  <head>
-    <title>DGE Analysis</title>
-  </head>
+<head>
+  <title>DGE Analysis</title>
+</head>
 
-  <p><form id="submit" action="{{ url_for('submit') }}" method="post">
+<body>
+  <p><form id="submit" action="javascript:submit()">
     <label> Data type </label>
     <select class="data_type" id="data_type" name="data_type">
       <option value=""></option>
@@ -27,40 +28,23 @@
       <input id="contrast_level" type="text" name="contrast_level" value="{{ params.get('contrast_level', '') }}"></p>
       <p><label>reference_level</label>
       <input id="reference_level" type="text" name="reference_level" value="{{ params.get('reference_level', '') }}"></p>
-      <p><label id="use_qual_weights_label">use_qual_weights</label>
-      <input id="use_qual_weights" type="checkbox" name="use_qual_weights" value="{{ params.get('use_qual_weights', '') }}"></p>
+      {% if (params.get('use_qual_weights', None)) != None %}
+        <p><label id="use_qual_weights_label">use_qual_weights</label>
+        {% if params.get('use_qual_weights', False) %}
+        <input id="use_qual_weights" type="checkbox" name="use_qual_weights" checked>
+        {% else %}
+        <input id="use_qual_weights" type="checkbox" name="use_qual_weights">
+        {% endif %}
+        </p>
+      {% endif %}
     </div>
     <p>
       <a href="{{ url_for('index') }}" class="button">Previous: Upload Files</a>
       <input type="submit" class="button" value="Submit">
     </p>
   </form></p>
+</body>
 
+<div id="runtime_overlay"><span id="time"></span></div>
 
-<script>
-  document.getElementById("data_type").onchange = show_hide_parameters;
-
-  function show_hide_parameters() {
-
-    if (!document.getElementById("data_type").value) {
-      document.getElementById("form_parameters").style.display = "none"
-      document.getElementById("form_parameters").style.visibility = "hidden"
-    }
-
-    else {
-      document.getElementById("form_parameters").style.display = "block"
-      document.getElementById("form_parameters").style.visibility = "visible"
-      
-      if (document.getElementById("data_type").value == "RNA-Seq") {
-        document.getElementById("use_qual_weights_label").style.display = "none"
-        document.getElementById("use_qual_weights_label").style.visibility = "hidden"
-        document.getElementById("use_qual_weights").setAttribute("type","hidden")
-      }
-      else {
-        document.getElementById("use_qual_weights_label").style.display = "inline"
-        document.getElementById("use_qual_weights_label").style.visibility = "visible"
-        document.getElementById("use_qual_weights").setAttribute("type","checkbox")
-      }
-    }
-  }
-</script>
+<script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>

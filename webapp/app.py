@@ -121,7 +121,7 @@ def submit():
 
     wait_for_output()
 
-    return redirect(url_for("display_output"))
+    return "analysis completed"
 
 
 @app.route("/display")
