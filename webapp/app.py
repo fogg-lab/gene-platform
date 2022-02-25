@@ -549,7 +549,7 @@ def validate_parameters(config_parameters):
     if type(config_parameters["reference_level"]) != str:
         return "reference_level must be a string"
     if type(config_parameters["use_qual_weights"]) != bool:
-        return "reference_level must be a bool"
+        return "use_qual_weights must be a bool"
     
     return ""
 
