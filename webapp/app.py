@@ -21,8 +21,6 @@ Session(app)
 
 '''
 backlog:
-TODO: fix params template to prefill use_qual_weights checkmark correctly
-TODO: Analysis runtime counter
 TODO: Add button to remove uploaded file (cancel button next to progress bar)
 TODO: Validation:
         - Supplied column names must be checked against the values present in
