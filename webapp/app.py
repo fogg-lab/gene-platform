@@ -384,7 +384,7 @@ def parse_config():
     session_dir = get_session_dir()
     config_file_path = session_dir + "/config.yml"
     config_file = open(config_file_path)
-    config_parameters = yaml.load(config_file)
+    config_parameters = yaml.safe_load(config_file)
     return config_parameters
 
 
