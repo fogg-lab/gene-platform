@@ -88,9 +88,7 @@ def upload():
             Filename must end with either counts.tsv, coldata.tsv, filter.txt,\
             config.yml or config.txt\n"
 
-    if standardized_filename == "filter.txt":
-        result["error_status"] = check_filter()
-    elif standardized_filename == "config.yml":
+    if standardized_filename == "config.yml":
         result["error_status"] = check_config()
 
     return result
@@ -300,30 +298,6 @@ def check_parameter_names(config_parameters):
         config_error_status += f"Missing parameter: {missing_parameter}\n"
 
     return config_error_status
-
-
-def check_filter():
-    '''
-    ensures that filter has one gene per line
-    returns empty string if valid
-    if invalid, returns error status - "invalid: not one gene per line"
-    '''
-
-    filter_file = read_user_file("filter.txt")
-    filter_error_status = ""
-
-    for line in filter_file:
-        word_list = line.split()
-        if len(word_list) > 1:
-            filter_error_status = "Must contain only one gene per line"
-
-    if filter_file:
-        filter_file.close()
-
-    if filter_error_status:
-        delete_user_file("filter.txt")
-
-    return filter_error_status
 
 
 def check_factor_levels():
