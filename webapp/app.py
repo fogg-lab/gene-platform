@@ -60,7 +60,7 @@ def index():
     '''main page, first input page (file uploads)'''
 
     ensure_session_dir()
-    
+
     user_files = os.listdir(session["user_session_dir"])
     uploads = [filename for filename in user_files if "output" not in filename]
 
@@ -76,10 +76,10 @@ def upload():
     '''
 
     result = {}
-    
+
     filename = request.headers.get('X_FILENAME')
     standardized_filename = standardize_filename(filename)
-    
+
     if standardized_filename:
         save_temp_file(request.data, standardized_filename)
     else:
@@ -124,7 +124,7 @@ def submit():
     delete_user_file("output.tsv")
 
     call_analysis(data_type)
-    
+
     wait_for_output()
 
     return redirect(url_for("display_output"))
@@ -175,7 +175,7 @@ def reset():
 @app.context_processor
 def utility_processor():
     '''defines functions that templates can use'''
-        
+
     def try_float(elem):
         try:
             elem = float(elem)
@@ -243,7 +243,7 @@ def get_filtered_tsv():
 def save_temp_file(file_contents, filename):
     '''
     Saves uploaded file to user session directory
-    
+
     Parameters:
         file_contents: bytes object
         filename: string
@@ -460,7 +460,7 @@ def standardize_filename(filename):
     then return the standardized filename
     if the file name isn't recognized, return empty string
     '''
-    
+
     if "config" in filename:
         filename = "config.yml"
     elif "count" in filename:
@@ -469,7 +469,7 @@ def standardize_filename(filename):
         filename = "coldata.tsv"
     elif "filt" in filename:
         filename = "filter.txt"
-    
+
     return filename
 
 
@@ -478,7 +478,7 @@ def ensure_session_dir():
     if there is no directory for the user session, create one now
     directory path is stored in the user session variable 'user_session_dir'
     '''
-    
+
     if ("user_session_dir" not in session or
         not os.path.exists(session["user_session_dir"])):
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
@@ -488,24 +488,9 @@ def ensure_session_dir():
 
 
 def parse_config():
-    config_parameters = {}
     config_file_path = session["user_session_dir"] + "/config.yml"
-    file_text = (open(config_file_path, 'r')).readlines()
-    # config_parameters = yaml.load(file_text)
-    for line in file_text:
-        # try:
-        keyvalue = line.split(': ')
-        key = keyvalue[0]
-        value = keyvalue[1][:-1] #remove trailing newline
-        if is_numeric(value):
-            value = float(value)
-        elif is_bool(value):
-             value = bool(value)
-        else:
-            value = value[1:-1]
-        config_parameters[key] = value
-        # except:
-        #     return "config file is not formatted correctly"
+    config_file = open(config_file_path)
+    config_parameters = yaml.load(config_file)
 
     err_msg = validate_parameters(config_parameters)
     if err_msg != "":
@@ -550,7 +535,7 @@ def validate_parameters(config_parameters):
         return "reference_level must be a string"
     if type(config_parameters["use_qual_weights"]) != bool:
         return "use_qual_weights must be a bool"
-    
+
     return ""
 
 
