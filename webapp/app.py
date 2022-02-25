@@ -39,7 +39,6 @@ TODO: Validation:
 TODO: Descriptions for parameters
 TODO: User story 4 (inform user of analysis to be conducted before execution)
 TODO: Sort and filter
-TODO: In the filter.txt error message, include the line of the error
 '''
 
 # Ensure that the current working directory is the webapp directory
