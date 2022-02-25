@@ -23,7 +23,6 @@ backlog:
 TODO: fix params template to prefill use_qual_weights checkmark correctly
 TODO: Analysis runtime counter
 TODO: Add button to remove uploaded file (cancel button next to progress bar)
-TODO: Parameter constraints validation
 TODO: Validation:
         - Supplied column names must be checked against the values present in
             the data. If there is a mismatch (e.g., user entered “disease
@@ -35,8 +34,6 @@ TODO: Validation:
             be abbreviated the same)
         - Supplied factor levels must be present in the data and user should
             be informed of errors and allowed to correct
-        - Constraint: 0 < p-thresh < 1
-        - Constraint: 0 < min_prop < 1
         - Constraint: do not allow navigating to parameters without uploading
             all required files
 TODO: Descriptions for parameters
