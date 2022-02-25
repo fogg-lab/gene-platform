@@ -18,6 +18,7 @@ BiocManager packages:
 Python3 packages (in requirements.txt):
   - flask
   - flask-session
+  - pyyaml
 
 
 Instructions to set up and start the web app:
