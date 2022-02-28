@@ -289,7 +289,8 @@ def read_user_file(filename):
     '''
     user_file = None
 
-    if session_dir := get_session_dir():
+    session_dir = get_session_dir()
+    if session_dir:
         filepath = f"{session_dir}{filename}"
         if os.path.isfile(filepath):
             user_file = open(filepath, "r", encoding="UTF-8")
