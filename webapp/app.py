@@ -2,6 +2,8 @@ import os
 import subprocess
 import shutil
 import csv
+import yaml
+import helpers
 from datetime import timedelta
 import tempfile
 from flask import Flask, render_template, request, redirect, url_for, \
@@ -19,9 +21,7 @@ Session(app)
 
 '''
 backlog:
-TODO: Analysis runtime counter
 TODO: Add button to remove uploaded file (cancel button next to progress bar)
-TODO: Parameter constraints validation
 TODO: Validation:
         - Supplied column names must be checked against the values present in
             the data. If there is a mismatch (e.g., user entered “disease
@@ -33,14 +33,11 @@ TODO: Validation:
             be abbreviated the same)
         - Supplied factor levels must be present in the data and user should
             be informed of errors and allowed to correct
-        - Constraint: 0 < p-thresh < 1
-        - Constraint: 0 < min_prop < 1
         - Constraint: do not allow navigating to parameters without uploading
             all required files
 TODO: Descriptions for parameters
 TODO: User story 4 (inform user of analysis to be conducted before execution)
 TODO: Sort and filter
-TODO: In the filter.txt error message, include the line of the error
 '''
 
 # Ensure that the current working directory is the webapp directory
@@ -59,7 +56,7 @@ def index():
     '''main page, first input page (file uploads)'''
 
     ensure_session_dir()
-    
+
     user_files = os.listdir(session["user_session_dir"])
     uploads = [filename for filename in user_files if "output" not in filename]
 
@@ -75,10 +72,10 @@ def upload():
     '''
 
     result = {}
-    
+
     filename = request.headers.get('X_FILENAME')
-    standardized_filename = standardize_filename(filename)
-    
+    standardized_filename = helpers.standardize_filename(filename)
+
     if standardized_filename:
         save_temp_file(request.data, standardized_filename)
     else:
@@ -86,9 +83,7 @@ def upload():
             Filename must end with either counts.tsv, coldata.tsv, filter.txt,\
             config.yml or config.txt\n"
 
-    if standardized_filename == "filter.txt":
-        result["error_status"] = check_filter()
-    elif standardized_filename == "config.yml":
+    if standardized_filename == "config.yml":
         result["error_status"] = check_config()
 
     return result
@@ -98,9 +93,7 @@ def upload():
 def parameters():
     '''loads the parameter form'''
 
-    parameters = get_config_parameters()
-
-    return render_template("parameters_form.html", params=parameters)
+    return render_template("parameters_form.html", params=parse_config())
 
 
 @app.route("/submit", methods=["POST"])
@@ -114,7 +107,7 @@ def submit():
     # get whether analysis is microarray or RNA-Seq
     data_type = request.form.get("data_type")
 
-    parameters = get_request_parameters(request.form, data_type)
+    parameters = helpers.get_request_parameters(request.form, data_type)
 
     generate_config(parameters)
 
@@ -123,10 +116,10 @@ def submit():
     delete_user_file("output.tsv")
 
     call_analysis(data_type)
-    
+
     wait_for_output()
 
-    return redirect(url_for("display_output"))
+    return "analysis completed"
 
 
 @app.route("/display")
@@ -160,7 +153,6 @@ def display_filtered():
     return render_template("filter_results.html",filter_cols=filter_output[:1][0],filter_body=filter_output[1:])
 
 
-
 @app.route("/reset", methods=["GET"])
 def reset():
     delete_user_file("counts.tsv")
@@ -175,7 +167,7 @@ def reset():
 @app.context_processor
 def utility_processor():
     '''defines functions that templates can use'''
-        
+
     def try_float(elem):
         try:
             elem = float(elem)
@@ -243,7 +235,7 @@ def get_filtered_tsv():
 def save_temp_file(file_contents, filename):
     '''
     Saves uploaded file to user session directory
-    
+
     Parameters:
         file_contents: bytes object
         filename: string
@@ -267,69 +259,6 @@ def save_temp_file(file_contents, filename):
     user_file.close()
 
 
-def check_config():
-    '''
-    validates config.yml, returns the status, deletes the file if invalid
-    
-    ensures config has all needed parameters:
-    min_expr, min_prop, padj_thresh, adj_method, condition, contrast_level,
-    and reference_level
-
-    returns an empty string if valid
-    if invalid, returns either "Missing value for parameter: xxxx", or
-    "Missing parameter: xxxx" where "xxxx" is replaced by the name of the param
-    '''
-
-    config_parameters = get_config_parameters()
-
-    all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method", \
-        "condition", "contrast_level", "reference_level", "use_qual_weights"}
-    config_error_status = ""
-
-    for parameter_name, parameter_value in config_parameters.items():
-        if not parameter_value and parameter_name in all_parameters:
-            config_error_status += f"Missing value for parameter: {parameter_name}\n"
-        elif parameter_name not in all_parameters:
-            config_error_status += f"Unknown parameter: {parameter_name}\n"
-        else:
-            all_parameters.remove(parameter_name)
-
-    # use_qual_weights is not required
-    if "use_qual_weights" in all_parameters:
-        all_parameters.remove("use_qual_weights")
-
-    # if any parameters are missing, list them
-    for missing_parameter in all_parameters:
-        config_error_status += f"Missing parameter: {missing_parameter}\n"
-
-    if config_error_status:
-        delete_user_file("config.yml")
-
-    return config_error_status
-
-
-def check_filter():
-    '''
-    ensures that filter has one gene per line
-    returns empty string if valid
-    if invalid, returns error status - "invalid: not one gene per line"
-    '''
-
-    filter_file = read_user_file("filter.txt")
-    filter_error_status = ""
-
-    for line in filter_file:
-        word_list = line.split()
-        if len(word_list) > 1:
-            filter_error_status = "Must contain only one gene per line"
-
-    if filter_file:
-        filter_file.close()
-
-    if filter_error_status:
-        delete_user_file("filter.txt")
-
-    return filter_error_status
 
 
 def check_factor_levels():
@@ -360,8 +289,8 @@ def read_user_file(filename):
     '''
     user_file = None
 
-    if "user_session_dir" in session:
-        filepath = f"{session['user_session_dir']}{filename}"
+    if session_dir := get_session_dir():
+        filepath = f"{session_dir}{filename}"
         if os.path.isfile(filepath):
             user_file = open(filepath, "r", encoding="UTF-8")
 
@@ -373,10 +302,9 @@ def delete_user_file(filename):
     deletes a user input file if it exists
     just supply the filename like "counts.tsv" for example
     '''
-    user_file = None
 
-    if "user_session_dir" in session:
-        filepath = f"{session['user_session_dir']}{filename}"
+    if session_dir := get_session_dir():
+        filepath = f"{session_dir}{filename}"
         if os.path.isfile(filepath):
             os.remove(filepath)
 
@@ -413,6 +341,13 @@ def cleanup_old_sessions():
                 shutil.rmtree(old_dir)
 
 
+def get_session_dir():
+    if "user_session_dir" in session:
+        return session["user_session_dir"]
+    else:
+        return False
+
+
 def generate_config(config_parameters):
     '''generates a config file using user-entered parameters'''
 
@@ -429,86 +364,43 @@ def generate_config(config_parameters):
     config_file.close()
 
 
-def get_config_parameters():
-    '''parses config to return a dictionary of parameters with set values'''
-    config_file = None
-
-    if "user_session_dir" in session:
-        config_filepath = f"{session['user_session_dir']}config.yml"
-        if os.path.isfile(config_filepath):
-            config_file = open(config_filepath, "r", encoding="UTF-8")
-
-    config_parameters = {}
-
-    if config_file:
-        config_lines = config_file.readlines()
-        for line in config_lines:
-            # remove quotes and newline characters
-            line = line.translate(str.maketrans("", "", "\n\'\""))
-            if line:
-                parameter_name, parameter_value = tuple(line.split(": "))
-                config_parameters[parameter_name] = parameter_value
-
-    return config_parameters
-
-
-def get_request_parameters(form, data_type):
-    '''returns request parameters from the parameter form'''
-
-    request_parameters = {}
-
-    # if analysis type is microarray, consider use_qual_weights
-    if data_type != "RNA-Seq":
-        # form.get("use_qual_weights") will initially be either 'None' or 'on'
-        # it needs to be a boolean True or False
-        if form.get("use_qual_weights") is None:
-            request_parameters["use_qual_weights"] = False
-        else:
-            request_parameters["use_qual_weights"] = True
-
-    request_parameters["min_prop"] = form.get("min_prop")
-    request_parameters["min_expr"] = form.get("min_expr")
-    request_parameters["adj_method"] = form.get("adj_method")
-    request_parameters["condition"] = form.get("condition")
-    request_parameters["contrast_level"] = form.get("contrast_level")
-    request_parameters["reference_level"] = form.get("reference_level")
-    request_parameters["padj_thresh"] = form.get("padj_thresh")
-
-    return request_parameters
-
-
-def standardize_filename(filename):
-    '''
-    standardize filename to one of the following:
-    counts.tsv, coldata.tsv, filter.txt or config.yml
-    then return the standardized filename
-    if the file name isn't recognized, return empty string
-    '''
-    
-    if "config" in filename:
-        filename = "config.yml"
-    elif "count" in filename:
-        filename = "counts.tsv"
-    elif "col" in filename:
-        filename = "coldata.tsv"
-    elif "filt" in filename:
-        filename = "filter.txt"
-    
-    return filename
-
-
 def ensure_session_dir():
     '''
     if there is no directory for the user session, create one now
     directory path is stored in the user session variable 'user_session_dir'
     '''
-    
+
     if ("user_session_dir" not in session or
         not os.path.exists(session["user_session_dir"])):
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
         os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
         session["user_session_dir"] = f"{temp_dir}/"
         session["session_id"] = temp_dir.split("/")[-1:]
+
+
+def parse_config():
+    session_dir = get_session_dir()
+    config_file_path = session_dir + "/config.yml"
+    config_file = open(config_file_path)
+    config_parameters = yaml.safe_load(config_file)
+    return config_parameters
+
+
+def check_config():
+    '''get config params in a dict then validate the params'''
+
+    err_msg = ""
+
+    config_params = parse_config()
+    if type(config_params) == str:
+        err_msg = config_params
+    else:
+        err_msg = helpers.validate_parameters(config_params)
+
+    if err_msg:
+        delete_user_file("config.yml")
+
+    return err_msg
 
 
 cleanup_old_sessions()
