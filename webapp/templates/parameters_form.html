@@ -1,10 +1,12 @@
+{% extends "upload_template.html" %}
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
 
-  <head>
-    <title>DGE Analysis</title>
-  </head>
-
+{% block head %}
+{% block title %}Parameters{% endblock %}
+  {{ super() }}
+{% endblock %}
+{% block central %}
   <p><form id="submit" action="{{ url_for('submit') }}" method="post">
     <label> Data type </label>
     <select class="data_type" id="data_type" name="data_type">
@@ -64,3 +66,4 @@
     }
   }
 </script>
+{% endblock %}
