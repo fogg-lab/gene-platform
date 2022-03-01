@@ -76,16 +76,24 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			}
 
 			// create progress bar and set id for tracking
-			var o = $id("progress");
+			var progress_div_id = "progress_of_" + standard_filename + "_div"
+			var o = $id(progress_div_id);
 			var progress = o.appendChild(document.createElement("p"));
 			progress.appendChild(document.createTextNode("upload " + file.name));
 			progress.id = "progress_of_" + standard_filename;
+			
+			// show progress div and cancel button
+			o.style.display = 'table-cell';
+			$id("cancel_" + standard_filename + "_button").style.display = "inline-block";
 
 			// progress bar
 			xhr.upload.addEventListener("progress", function(e) {
 				var pc = parseInt(100 - (e.loaded / e.total * 100));
 				progress.style.backgroundPosition = pc + "% 0";
 			}, false);
+
+			// show cancel button
+			$id("")
 
 			// file received/failed
 			xhr.onreadystatechange = function(e) {
@@ -94,14 +102,15 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 						var response = JSON.parse(xhr.responseText);
 						
 						// remove prior status messages
-						file_status_classname = "status_of" + standard_filename
-						old_file_status = document.getElementsByClassName(file_status_classname);
+						var file_status_classname = "status_of" + standard_filename
+						var old_file_status = document.getElementsByClassName(file_status_classname);
 						for (status_message of old_file_status) {
 							status_message.remove()
 						}
 
 						if (response.error_status) {
-							progress.className = "failure";
+							progress.className = "failed";
+							o.style.backgroundColor = "#c00";
 							Output(
 								"<p class=\"" + file_status_classname +
 								"\"><strong>Error in " + file.name + ": " +
@@ -110,6 +119,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 						} else {
 							progress.className = "success";
 							progress.innerHTML = "File uploaded: " + file.name
+							o.style.backgroundColor = "#0c0";
 						}
 					}
 				}
@@ -158,13 +168,13 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 
 	function get_standardized_filename(filename) {
 		if (filename.includes("config")) {
-			filename = "config.yml"
+			filename = "config"
 		} else if (filename.includes("count")) {
-			filename = "counts.tsv"
+			filename = "counts"
 		} else if (filename.includes("col")) {
-			filename = "coldata.tsv"
+			filename = "coldata"
 		} else if (filename.includes('filt')) {
-			filename = "filter.txt"
+			filename = "filter"
 		}
     
     	return filename

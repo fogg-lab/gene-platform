@@ -7,7 +7,7 @@ import helpers
 from datetime import timedelta
 import tempfile
 from flask import Flask, render_template, request, redirect, url_for, \
-    session, Response
+    session, Response, jsonify
 from flask_session.__init__ import Session
 
 
@@ -21,7 +21,6 @@ Session(app)
 
 '''
 backlog:
-TODO: Add button to remove uploaded file (cancel button next to progress bar)
 TODO: Validation:
         - Supplied column names must be checked against the values present in
             the data. If there is a mismatch (e.g., user entered “disease
@@ -58,7 +57,12 @@ def index():
     ensure_session_dir()
 
     user_files = os.listdir(session["user_session_dir"])
-    uploads = [filename for filename in user_files if "output" not in filename]
+    uploads = {}
+    for filename in {"counts.tsv", "coldata.tsv", "filter.txt", "config.yml"}:
+        uploads[filename] = False
+    for filename in user_files:
+        if filename in uploads:
+            uploads[filename] = True
 
     return render_template("uploads_form.html", uploads=uploads)
 
@@ -86,7 +90,19 @@ def upload():
     if standardized_filename == "config.yml":
         result["error_status"] = check_config()
 
-    return result
+    return jsonify(result)
+
+
+@app.route("/cancelupload", methods=["POST"])
+def cancelupload():
+    '''
+    removes uploaded file from user session directory
+    '''
+
+    filename = request.form.get("filename")
+    delete_user_file(filename)
+
+    return f"{filename} upload cancelled"
 
 
 @app.route("/parameters", methods=["GET"])
@@ -136,6 +152,7 @@ def display_output():
     output1.close()
 
     return render_template("results.html",output_cols=output[:1][0],output_body=output[1:])
+
 
 @app.route("/filter_display")
 def display_filtered():
@@ -259,8 +276,6 @@ def save_temp_file(file_contents, filename):
     user_file.close()
 
 
-
-
 def check_factor_levels():
     '''ensures factor levels are present in the input files'''
 
@@ -351,7 +366,7 @@ def get_session_dir():
 def generate_config(config_parameters):
     '''generates a config file using user-entered parameters'''
 
-    config_file_path = f"{session['user_session_dir']}/config.yml"
+    config_file_path = f"{session['user_session_dir']}config.yml"
     config_file = open(config_file_path, "w", encoding="UTF-8")
 
     for param in config_parameters.keys():

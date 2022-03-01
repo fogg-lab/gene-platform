@@ -73,9 +73,16 @@ def standardize_filename(filename):
     counts.tsv, coldata.tsv, filter.txt or config.yml
     then return the standardized filename
     if the file name isn't recognized, return empty string
+
+    FILE NAMING REQUIREMENTS FOR THE USER: The server recognizes filenames
+        based on whether they contain one of the following unique substrings:
+        "config" or ".yml": File is identified as the config.yml file
+        "count": File is identified as the counts.tsv file
+        "col": File is identified as the coldata.tsv file
+        "filt": File is identified as the filter.txt file
     '''
 
-    if "config" in filename:
+    if "config" in filename or ".yml" in filename:
         filename = "config.yml"
     elif "count" in filename:
         filename = "counts.tsv"

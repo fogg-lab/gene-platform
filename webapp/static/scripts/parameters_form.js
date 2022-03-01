@@ -27,7 +27,6 @@ function show_hide_parameters() {
 function submitReqListener() {
   console.log(this.responseText);
   // analysis is complete - load the results page
-  var displayReq = new XMLHttpRequest()
   window.location.href = "/display"
 }
 
