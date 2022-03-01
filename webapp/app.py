@@ -7,7 +7,7 @@ import helpers
 from datetime import timedelta
 import tempfile
 from flask import Flask, render_template, request, redirect, url_for, \
-    session, Response
+    session, Response, jsonify
 from flask_session.__init__ import Session
 
 
@@ -86,7 +86,7 @@ def upload():
     if standardized_filename == "config.yml":
         result["error_status"] = check_config()
 
-    return result
+    return jsonify(result)
 
 
 @app.route("/parameters", methods=["GET"])
