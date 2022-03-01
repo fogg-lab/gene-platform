@@ -62,21 +62,22 @@ pre {
 	border: 1px solid #999;
 }
 
-#progress p {
-	display: block;
-	width: 240px;
+.progress_div {
+	display: table-cell;
 	padding: 2px 5px;
 	margin: 2px 0;
 	border: 1px inset #446;
 	border-radius: 5px;
-	background: #eee url("progress.png") 100% 0 repeat-y;
+	background: #0c0 url("progress.png") 100% 0 repeat-y;
 }
 
-#progress p.success {
+.success {
+	height: 100%;
+	width: 100%;
 	background: #0c0 none 0 0 no-repeat;
 }
 
-#progress p.failed {
+.failed {
 	background: #c00 none 0 0 no-repeat;
 }
 
@@ -89,6 +90,18 @@ pre {
 	text-decoration: none;
 	display: inline-block;
 	font-size: 15px;
+	cursor:pointer;
+}
+
+.cancel-button {
+	background-color: #e7e7e7; /* Grey */
+	border: none;
+	color: black;
+	padding: 5px 13px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 13px;
 	cursor:pointer;
 }
 
@@ -115,4 +128,8 @@ pre {
 	color: white;
 	transform: translate(-50%,-50%);
 	-ms-transform: translate(-50%,-50%);
+}
+
+table, th, td {
+	border: 1px solid;
 }
