@@ -21,9 +21,8 @@ Session(app)
 
 '''
 backlog:
-TODO: Do not allow navigating to parameters without uploading
-        all required files (at least counts and coldata)
 TODO: Descriptions for the columns included in the output
+TODO: Parameter field descriptions
 TODO: User story 4 (inform user of analysis to be conducted before execution)
 TODO: Sort and filter output using server functions from the display page templates
          - See utility_processor() function in app.py for sort/filter helper functions
