@@ -1,5 +1,5 @@
 '''utility functions for app.py'''
-
+import sys
 
 def check_parameter_names(config_parameters):
     '''
@@ -17,7 +17,7 @@ def check_parameter_names(config_parameters):
     config_error_status = ""
 
     for parameter_name, parameter_value in config_parameters.items():
-        if not parameter_value and parameter_name in all_parameters:
+        if (parameter_value in {"", None}) and (parameter_name in all_parameters):
             config_error_status += \
                 f"Missing value for parameter: {parameter_name}\n"
         elif parameter_name not in all_parameters:
@@ -41,8 +41,8 @@ def validate_parameters(config_parameters):
     returns an error message if config parameters are invalid
     otherwise, returns an empty string
     '''
-
-    if (error_msg := check_parameter_names(config_parameters)) != "":
+    error_msg = check_parameter_names(config_parameters)
+    if error_msg:
         return error_msg
     if type(config_parameters["min_expr"]) not in [int, float]:
         return "min_expr must be a number"
@@ -62,7 +62,8 @@ def validate_parameters(config_parameters):
         return "contrast_level must be a string"
     if type(config_parameters["reference_level"]) != str:
         return "reference_level must be a string"
-    if type(config_parameters["use_qual_weights"]) != bool:
+    if ("use_qual_weights" in config_parameters) and \
+       (type(config_parameters["use_qual_weights"]) != bool):
         return "use_qual_weights must be a bool"
 
     return ""
@@ -143,13 +144,14 @@ def check_factor_levels(config_params, coldata):
     coldata.pop(0)
 
     for coldata_row in coldata:
-        factor_level = coldata_row[condition_col_index]
-        if factor_level == contrast_level:
-            contrast_level_found = True
-        elif factor_level == reference_level:
-            reference_level_found = True
-        else:
-            return f"Unknown factor level '{factor_level}'"
+        if coldata_row:
+            factor_level = coldata_row[condition_col_index]
+            if factor_level == contrast_level:
+                contrast_level_found = True
+            elif factor_level == reference_level:
+                reference_level_found = True
+            else:
+                return f"Unknown factor level '{factor_level}'"
 
     err_msg = ""
 
@@ -176,7 +178,8 @@ def check_coldata_rows_match_counts_cols(counts_colnames, coldata_rows):
 
     coldata_rows.pop(0)
     for coldata_row in coldata_rows:
-        samples.append(coldata_row[0])
+        if coldata_row:
+            samples.append(coldata_row[0])
 
     if not samples:
         return "no samples are listed in the coldata file"

@@ -1,4 +1,6 @@
+from distutils.command.config import config
 import os
+import sys
 import subprocess
 import shutil
 import csv
@@ -424,14 +426,22 @@ def parse_config():
 
     session_dir = get_session_dir()
     config_file_path = session_dir + "config.yml"
-    config_parameters = {}
+    config_params = {}
 
     if session_dir and os.path.exists(config_file_path):
         config_file = open(config_file_path, encoding="UTF-8")
-        config_parameters = yaml.safe_load(config_file)
+        config_params = yaml.safe_load(config_file)
         config_file.close()
 
-    return config_parameters
+    # yaml.safe_load loads numerical zero values as "None". below is a fix
+    if "min_expr" in config_params and config_params["min_expr"] == None:
+        config_params["min_expr"] = 0.0
+    if "min_prop" in config_params and config_params["min_prop"] == None:
+        config_params["min_prop"] = 0.0
+    if "padj_thresh" in config_params and config_params["padj_thresh"] == None:
+        config_params["padj_thresh"] = 0.0
+
+    return config_params
 
 
 def check_config():

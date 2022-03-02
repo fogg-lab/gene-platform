@@ -105,19 +105,22 @@
 	if (document.getElementById("progress_of_counts") == null) {
 		document.getElementById("progress_of_counts_div").style.display = 'none';
 		document.getElementById("cancel_counts_button").style.display = 'none';
-	}
+	} else {document.getElementById("progress_of_counts_div").style.backgroundPosition = "0% 0";}
+
 	if (document.getElementById("progress_of_coldata") == null) {
 		document.getElementById("progress_of_coldata_div").style.display = 'none';
 		document.getElementById("cancel_coldata_button").style.display = 'none';
-	}
+	} else {document.getElementById("progress_of_coldata_div").style.backgroundPosition = "0% 0";}
+
 	if (document.getElementById("progress_of_filter") == null) {
 		document.getElementById("progress_of_filter_div").style.display = 'none';
 		document.getElementById("cancel_filter_button").style.display = 'none';
-	}
+	} else {document.getElementById("progress_of_filter_div").style.backgroundPosition = "0% 0";}
+
 	if (document.getElementById("progress_of_config") == null) {
 		document.getElementById("progress_of_config_div").style.display = 'none';
 		document.getElementById("cancel_config_button").style.display = 'none';
-	}
+	} else {document.getElementById("progress_of_config_div").style.backgroundPosition = "0% 0";}
 	
 	// disable next button if progress counts or coldata not uploaded
 	update_next_button()
@@ -158,7 +161,9 @@
 		cancelReq.send(cancel_req_query);
 		// hide the cancel button and progress bar div
 		var cancel_button_id = "cancel_" + filename_base + "_button"
-		document.getElementById(progress_bar_id + "_div").style.display = 'none';
+		progress_div = document.getElementById(progress_bar_id + "_div")
+		progress_div.style.backgroundPosition = "100% 0";
+		progress_div.style.display = 'none';
 		document.getElementById(cancel_button_id).style.display = 'none';
 	}
 
