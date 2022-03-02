@@ -1,4 +1,5 @@
-# utility functions for app.py
+'''utility functions for app.py'''
+
 
 def check_parameter_names(config_parameters):
     '''
@@ -118,3 +119,106 @@ def get_request_parameters(form, data_type):
 
     return request_parameters
 
+
+def check_factor_levels(config_params, coldata):
+    '''
+    ensures factor levels are present in the input files
+    if the factor levels look good, returns empty string
+    '''
+
+    condition = config_params["condition"]
+    contrast_level = config_params["contrast_level"]
+    reference_level = config_params["reference_level"]
+
+    condition_col_index = 0
+    if condition in coldata[0]:
+        condition_col_index = coldata[0].index(condition)
+    else:
+        return f"Condition '{condition}' not present in coldata file (line 1)"
+
+    contrast_level_found = False
+    reference_level_found = False
+
+    # remove header row from coldata
+    coldata.pop(0)
+
+    for coldata_row in coldata:
+        factor_level = coldata_row[condition_col_index]
+        if factor_level == contrast_level:
+            contrast_level_found = True
+        elif factor_level == reference_level:
+            reference_level_found = True
+        else:
+            return f"Unknown factor level '{factor_level}'"
+
+    err_msg = ""
+
+    if not contrast_level_found:
+        err_msg = \
+            f"Contrast level '{contrast_level}' not found in coldata file"
+    elif not reference_level_found:
+        err_msg = \
+            f"Reference level '{reference_level}' not found in coldata file"
+
+    return err_msg
+
+
+def check_coldata_rows_match_counts_cols(counts_colnames, coldata_rows):
+    '''
+    ensure rows in coldata match with the column names for samples in counts
+    Assumes that sample names are listed on first row (header) of counts file
+    Also assumes that sample names are listed in first column of coldata file,
+        starting on second row of coldata file (first row after the header)
+    Returns empty string if coldata and counts sample names match
+    '''
+
+    samples = []
+
+    coldata_rows.pop(0)
+    for coldata_row in coldata_rows:
+        samples.append(coldata_row[0])
+
+    if not samples:
+        return "no samples are listed in the coldata file"
+
+    # remove leading elements from counts which are not sample names
+    while counts_colnames and counts_colnames[0] != samples[0]:
+        counts_colnames.pop(0)
+
+    if not counts_colnames:
+        return f"sample '{samples[0]}' from coldata not found in counts file"
+
+    # if counts and coldata match, err_msg will be empty
+    err_msg = ""
+
+    # make sure each sample name matches between counts and coldata
+    while samples and counts_colnames and samples[0] == counts_colnames[0]:
+        samples.pop(0)
+        counts_colnames.pop(0)
+
+    if counts_colnames and not samples:
+        err_msg = f"sample '{counts_colnames[0]}' not found in coldata file"
+
+    elif samples and not counts_colnames:
+        err_msg = f"sample '{samples[0]}' not found in counts file"
+
+    elif samples and counts_colnames and samples[0] != counts_colnames[0]:
+        err_msg = f"sample '{samples[0]}' in coldata file does not match the \
+            corresponding sample name '{counts_colnames[0]}' in counts file"
+
+    return err_msg
+
+
+def get_confirmation_message(config_params, data_type):
+    '''get analysis formula from the config parameters'''
+
+    condition = config_params["condition"]
+    contrast_level = config_params["contrast_level"]
+    reference_level = config_params["reference_level"]
+
+    analysis_formula = "User story 4 work in progress'\n"
+    analysis_formula += f"Data Type: {data_type}\n\nParameters:\n"
+    for param_name, param_val in config_params.items():
+        analysis_formula += f"{param_name}: {param_val}\n"
+
+    return analysis_formula

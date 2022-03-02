@@ -24,39 +24,66 @@ function show_hide_parameters() {
   }
 }
 
-function submitReqListener() {
+
+function analysisReqListener() {
   console.log(this.responseText);
   // analysis is complete - load the results page
-  window.location.href = "/display"
+  window.location.href = '/display';
 }
+
+
+function submission_confirmed() {
+  var analysisReq = new XMLHttpRequest();
+  analysisReq.addEventListener("load", analysisReqListener);
+  analysisReq.open("POST", "/submit");
+  analysisReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+  data_type = get_data_type();
+  data_type_req_query = "data_type=" + data_type;
+
+  analysisReq.send(data_type_req_query);
+  show_runtime();
+}
+
+
+function confirm_submission(confirmation_text) {
+  confirmed = confirm(confirmation_text)
+  if (confirmed && !(confirmation_text.includes("Error"))) {
+    submission_confirmed()
+  }
+}
+
+
+function submitReqListener() {
+  // analysis is complete - load the results page
+  var confirmation_text = this.responseText;
+  confirm_submission(confirmation_text);
+}
+
 
 function submit() {
   var submitReq = new XMLHttpRequest();
   submitReq.addEventListener("load", submitReqListener);
-  submitReq.open("POST", "/submit");
+  submitReq.open("POST", "/confirmsubmission");
   submitReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  var parameters_req_query = ""
-  var parameters = get_parameters()
+  var parameters_req_query = "";
+  var parameters = get_parameters();
   for (param of parameters) {
-    parameters_req_query += param[0]
-    parameters_req_query += "="
-    parameters_req_query += param[1]
-    parameters_req_query += "&"
+    parameters_req_query += param[0];
+    parameters_req_query += "=";
+    parameters_req_query += param[1];
+    parameters_req_query += "&";
   }
   // remove last "&" character from the query string
-  parameters_req_query = parameters_req_query.slice(0, -1)
+  parameters_req_query = parameters_req_query.slice(0, -1);
   submitReq.send(parameters_req_query);
-  show_runtime()
 }
+
 
 function get_parameters() {
   var param_labels = ["padj_thresh", "min_prop", "min_expr", "adj_method", "condition", "contrast_level", "reference_level", "use_qual_weights"]
   var params = []
-  datatype_select = document.getElementById("data_type")
-  var selection = datatype_select.options[datatype_select.selectedIndex].text
-  datatype_keyval = ["data_type", selection]
-  params.push(datatype_keyval)
-
+  
   for (param_label of param_labels) {
     param_input = document.getElementById(param_label)
     if (param_input != null) {
@@ -72,6 +99,12 @@ function get_parameters() {
   }
   
   return params
+}
+
+function get_data_type() {
+  datatype_select = document.getElementById("data_type")
+  var selection = datatype_select.options[datatype_select.selectedIndex].text
+  return selection
 }
 
 function show_runtime() {

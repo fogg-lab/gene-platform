@@ -2,10 +2,11 @@ import os
 import subprocess
 import shutil
 import csv
-import yaml
-import helpers
 from datetime import timedelta
 import tempfile
+import yaml
+import copy
+import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify
 from flask_session.__init__ import Session
@@ -21,19 +22,6 @@ Session(app)
 
 '''
 backlog:
-TODO: Validation:
-        - Supplied column names must be checked against the values present in
-            the data. If there is a mismatch (e.g., user entered “disease
-            status” but the column name is “disease_condition”), the user
-            should be informed of the issue and given the opportunity to
-            correct the data columns and resubmit.
-        - Column names for values returned by all analysis types must match
-            (e.g., “log2FoldChange” (DESeq2) and “logFC” (limma) should both
-            be abbreviated the same)
-        - Supplied factor levels must be present in the data and user should
-            be informed of errors and allowed to correct
-        - Constraint: do not allow navigating to parameters without uploading
-            all required files
 TODO: Descriptions for parameters
 TODO: User story 4 (inform user of analysis to be conducted before execution)
 TODO: Sort and filter
@@ -58,7 +46,7 @@ def index():
 
     user_files = os.listdir(session["user_session_dir"])
     uploads = {}
-    for filename in {"counts.tsv", "coldata.tsv", "filter.txt", "config.yml"}:
+    for filename in ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]:
         uploads[filename] = False
     for filename in user_files:
         if filename in uploads:
@@ -123,10 +111,6 @@ def submit():
     # get whether analysis is microarray or RNA-Seq
     data_type = request.form.get("data_type")
 
-    parameters = helpers.get_request_parameters(request.form, data_type)
-
-    generate_config(parameters)
-
     # remove old output
     delete_user_file("filter_output.tsv")
     delete_user_file("output.tsv")
@@ -138,6 +122,43 @@ def submit():
     return "analysis completed"
 
 
+@app.route("/confirmsubmission", methods=["POST"])
+def confirm_submission():
+    '''validate input and display formula before submission'''
+
+    # get whether analysis is microarray or RNA-Seq, and get params
+    data_type = request.form.get("data_type")
+    params = helpers.get_request_parameters(request.form, data_type)
+
+    # generate config file from the form parameters
+    generate_config(params)
+
+    # get the analysis formula to display for the user
+    confirmation_message = helpers.get_confirmation_message(params, data_type)
+
+    counts_file = read_user_file("counts.tsv")
+    counts_reader = csv.reader(counts_file, delimiter="\t")
+    counts_list = list(counts_reader)
+    counts_file.close()
+
+    coldata_file = read_user_file("coldata.tsv")
+    coldata_reader = csv.reader(coldata_file, delimiter="\t")
+    coldata_list = list(coldata_reader)
+    coldata_file.close()
+
+    coldata_counts_match_error = helpers.check_coldata_rows_match_counts_cols(
+        copy.deepcopy(counts_list[0]), copy.deepcopy(coldata_list))
+    factor_levels_error = helpers.check_factor_levels(
+        params, copy.deepcopy(coldata_list))
+
+    if coldata_counts_match_error:
+        confirmation_message = f"Error: {coldata_counts_match_error}"
+    elif factor_levels_error:
+        confirmation_message = f"Error: {factor_levels_error}"
+
+    return confirmation_message
+
+
 @app.route("/display")
 def display_output():
     '''
@@ -145,13 +166,13 @@ def display_output():
     '''
 
     # check here if output.tsv exists and errors.txt doesn't
-    path_to_output1 =  f"{session['user_session_dir']}output.tsv"
-    output1 = open(path_to_output1, encoding="UTF-8")
-    reader1 = csv.reader(output1, delimiter="\t")
-    output = [[elem for elem in output1] for output1 in reader1]
-    output1.close()
+    path_to_output =  f"{session['user_session_dir']}output.tsv"
+    output_file = open(path_to_output, encoding="UTF-8")
+    output_reader = csv.reader(output_file, delimiter="\t")
+    output = list(output_reader)
+    output_file.close()
 
-    return render_template("results.html",output_cols=output[:1][0],output_body=output[1:])
+    return render_template("results.html", cols=output[:1][0], data=output[1:])
 
 
 @app.route("/filter_display")
@@ -161,23 +182,26 @@ def display_filtered():
     '''
 
     #perform the same function as displaying results, but for filtered tsv
-    path_to_output2 =  f"{session['user_session_dir']}filter_output.tsv"
-    output2 = open(path_to_output2, encoding="UTF-8")
-    reader2 = csv.reader(output2, delimiter="\t")
-    filter_output = [[elem for elem in output2] for output2 in reader2]
-    output2.close()
+    path_to_output =  f"{session['user_session_dir']}filter_output.tsv"
+    output_file = open(path_to_output, encoding="UTF-8")
+    output_reader = csv.reader(output_file, delimiter="\t")
+    output = list(output_reader)
+    output_file.close()
 
-    return render_template("filter_results.html",filter_cols=filter_output[:1][0],filter_body=filter_output[1:])
+    return render_template("filter_results.html",filter_cols=output[:1][0],filter_body=output[1:])
 
 
 @app.route("/reset", methods=["GET"])
 def reset():
+    '''Deletes files from a users session'''
+
     delete_user_file("counts.tsv")
     delete_user_file("coldata.tsv")
     delete_user_file("filter.txt")
     delete_user_file("config.yml")
     delete_user_file("filter_output.tsv")
     delete_user_file("output.tsv")
+
     return redirect(url_for("index"))
 
 
@@ -276,12 +300,6 @@ def save_temp_file(file_contents, filename):
     user_file.close()
 
 
-def check_factor_levels():
-    '''ensures factor levels are present in the input files'''
-
-    pass
-
-
 def call_analysis(data_type):
     '''
     calls microarray or rna-seq analysis depending on data_type
@@ -300,7 +318,7 @@ def read_user_file(filename):
     '''
     opens a user file for reading
     just supply the filename like "counts.tsv" for example
-    returns read-only user file like counts, coldata, config, or filter
+    returns lines from a file in the users session directory
     '''
     user_file = None
 
@@ -359,10 +377,12 @@ def cleanup_old_sessions():
 
 
 def get_session_dir():
+    ''' returns session dir if it exists, otherwise returns False '''
+
     if "user_session_dir" in session:
         return session["user_session_dir"]
     else:
-        return False
+        return ""
 
 
 def generate_config(config_parameters):
@@ -396,10 +416,13 @@ def ensure_session_dir():
 
 
 def parse_config():
+    ''' parses config into a dict of parameters '''
+
     session_dir = get_session_dir()
     config_file_path = session_dir + "/config.yml"
     config_file = open(config_file_path)
     config_parameters = yaml.safe_load(config_file)
+
     return config_parameters
 
 
