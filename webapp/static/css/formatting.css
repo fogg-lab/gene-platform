@@ -93,6 +93,18 @@ pre {
 	cursor:pointer;
 }
 
+.gray_button {
+	background-color: #d3d3d3; /* Gray */
+	border: none;
+	color: white;
+	padding: 7px 15px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 15px;
+	cursor:pointer;
+}
+
 .cancel-button {
 	background-color: #e7e7e7; /* Grey */
 	border: none;

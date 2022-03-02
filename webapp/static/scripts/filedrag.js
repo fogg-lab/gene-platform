@@ -92,9 +92,6 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 				progress.style.backgroundPosition = pc + "% 0";
 			}, false);
 
-			// show cancel button
-			$id("")
-
 			// file received/failed
 			xhr.onreadystatechange = function(e) {
 				if (xhr.readyState == 4) {
@@ -121,6 +118,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 							progress.innerHTML = "File uploaded: " + file.name
 							o.style.backgroundColor = "#0c0";
 						}
+						update_next_button();
 					}
 				}
 			};
@@ -160,24 +158,25 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 
 	}
 
-	// call initialization file
-	if (window.File && window.FileList && window.FileReader) {
-		Init();
-	}
-
 
 	function get_standardized_filename(filename) {
 		if (filename.includes("config")) {
-			filename = "config"
+			filename = "config";
 		} else if (filename.includes("count")) {
-			filename = "counts"
+			filename = "counts";
 		} else if (filename.includes("col")) {
-			filename = "coldata"
+			filename = "coldata";
 		} else if (filename.includes('filt')) {
-			filename = "filter"
+			filename = "filter";
 		}
     
     	return filename
+	}
+
+
+	// call initialization file
+	if (window.File && window.FileList && window.FileReader) {
+		Init();
 	}
 
 })();

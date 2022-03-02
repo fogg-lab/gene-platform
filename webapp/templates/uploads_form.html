@@ -96,9 +96,9 @@
 <div id="messages">
 </div>
 
-<p><a href="{{ url_for('parameters') }}" class="button">Next: Parameters</a></p>
+<p><a href="{{ url_for('parameters') }}" class="button" id="next_button">Next: Parameters</a></p>
+<p><button class="gray_button" id="fake_next_button">Next: Parameters</button></p>
 
-<script src="{{ url_for('static',filename='scripts/filedrag.js') }}"></script>
 <script>
 
 	// hide progress bar divs and cancel buttonsfor files which have not been uploaded
@@ -118,6 +118,9 @@
 		document.getElementById("progress_of_config_div").style.display = 'none';
 		document.getElementById("cancel_config_button").style.display = 'none';
 	}
+	
+	// disable next button if progress counts or coldata not uploaded
+	update_next_button()
 
 	function cancelReqListener() {
 		// file upload successfully cancelled
@@ -126,10 +129,12 @@
 
 	function cancel_counts() {
 		cancel("counts.tsv");
+		update_next_button();
 	}
 
 	function cancel_coldata() {
 		cancel("coldata.tsv");
+		update_next_button();
 	}
 	
 	function cancel_filter() {
@@ -157,6 +162,25 @@
 		document.getElementById(cancel_button_id).style.display = 'none';
 	}
 
+	function update_next_button() {
+		// hide next button if progress counts or coldata not uploaded
+		if (
+		  document.getElementById("progress_of_counts") == null
+		  || document.getElementById("progress_of_coldata") == null
+		  || document.getElementById("progress_of_counts").className != "success"
+		  || document.getElementById("progress_of_coldata").className != "success"
+	  	) {
+		  	document.getElementById("next_button").style.display = 'none';
+			document.getElementById("fake_next_button").style.display = 'inline-block';
+	  	}
+	  	else {
+			document.getElementById("next_button").style.display = 'inline-block';
+			document.getElementById("fake_next_button").style.display = 'none';
+	  	}
+	}
+
 </script>
+
+<script src="{{ url_for('static',filename='scripts/filedrag.js') }}"></script>
 
 </body>

@@ -22,9 +22,14 @@ Session(app)
 
 '''
 backlog:
-TODO: Descriptions for parameters
+TODO: Do not allow navigating to parameters without uploading
+        all required files (at least counts and coldata)
+TODO: Descriptions for the columns included in the output
 TODO: User story 4 (inform user of analysis to be conducted before execution)
-TODO: Sort and filter
+TODO: Sort and filter output using server functions from the display page templates
+         - See utility_processor() function in app.py for sort/filter helper functions
+            Usage: see https://roytuts.com/context-processors-in-flask-api/
+TODO: Create a page for visualizations (choose plot, call script, display .png result)
 '''
 
 # Ensure that the current working directory is the webapp directory
@@ -419,9 +424,13 @@ def parse_config():
     ''' parses config into a dict of parameters '''
 
     session_dir = get_session_dir()
-    config_file_path = session_dir + "/config.yml"
-    config_file = open(config_file_path)
-    config_parameters = yaml.safe_load(config_file)
+    config_file_path = session_dir + "config.yml"
+    config_parameters = {}
+
+    if session_dir and os.path.exists(config_file_path):
+        config_file = open(config_file_path, encoding="UTF-8")
+        config_parameters = yaml.safe_load(config_file)
+        config_file.close()
 
     return config_parameters
 
