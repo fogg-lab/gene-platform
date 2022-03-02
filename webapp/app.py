@@ -21,22 +21,14 @@ Session(app)
 
 '''
 backlog:
-TODO: Validation:
-        - Supplied column names must be checked against the values present in
-            the data. If there is a mismatch (e.g., user entered “disease
-            status” but the column name is “disease_condition”), the user
-            should be informed of the issue and given the opportunity to
-            correct the data columns and resubmit.
-        - Column names for values returned by all analysis types must match
-            (e.g., “log2FoldChange” (DESeq2) and “logFC” (limma) should both
-            be abbreviated the same)
-        - Supplied factor levels must be present in the data and user should
-            be informed of errors and allowed to correct
-        - Constraint: do not allow navigating to parameters without uploading
-            all required files
-TODO: Descriptions for parameters
+TODO: Do not allow navigating to parameters without uploading
+        all required files (at least counts and coldata)
+TODO: Descriptions for the columns included in the output
 TODO: User story 4 (inform user of analysis to be conducted before execution)
-TODO: Sort and filter
+TODO: Sort and filter output using server functions from the display page templates
+         - See utility_processor() function in app.py for sort/filter helper functions
+            Usage: see https://roytuts.com/context-processors-in-flask-api/
+TODO: Create a page for visualizations (choose plot, call script, display .png result)
 '''
 
 # Ensure that the current working directory is the webapp directory
