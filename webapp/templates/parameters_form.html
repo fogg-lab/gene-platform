@@ -1,0 +1,51 @@
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
+
+<head>
+  <title>DGE Analysis</title>
+</head>
+
+<body>
+  <p><form id="submit" action="javascript:submit()">
+    <label> Data type </label>
+    <select class="data_type" id="data_type" name="data_type">
+      <option value=""></option>
+      <option value="microarray">microarray</option>
+      <option value="RNA-Seq">RNA-Seq</option>
+    </select>
+    <div id="form_parameters" style="visibility: hidden; display: none;">
+      <p><label>padj_thresh</label>
+      <input id="padj_thresh" type="text" name="padj_thresh" value="{{ params.get('padj_thresh', '') }}"></p>
+      <p><label>min_prop</label>
+      <input id="min_prop" type="text" name="min_prop" value="{{ params.get('min_prop', '') }}"></p>
+      <p><label>min_expr</label>
+      <input id="min_expr" type="text" name="min_expr" value="{{ params.get('min_expr', '') }}"></p>
+      <p><label>adj_method</label>
+      <input id="adj_method" type="text" name="adj_method" value="{{ params.get('adj_method', '') }}"></p>
+      <p><label>condition</label>
+      <input id="condition" type="text" name="condition" value="{{ params.get('condition', '') }}"></p>
+      <p><label>contrast_level</label>
+      <input id="contrast_level" type="text" name="contrast_level" value="{{ params.get('contrast_level', '') }}"></p>
+      <p><label>reference_level</label>
+      <input id="reference_level" type="text" name="reference_level" value="{{ params.get('reference_level', '') }}"></p>
+      {% if (params.get('use_qual_weights', None)) != None %}
+        <p><label id="use_qual_weights_label">use_qual_weights</label>
+        {% if params.get('use_qual_weights', False) %}
+        <input id="use_qual_weights" type="checkbox" name="use_qual_weights" checked>
+        {% else %}
+        <input id="use_qual_weights" type="checkbox" name="use_qual_weights">
+        {% endif %}
+        </p>
+      {% endif %}
+    </div>
+    <p>
+      <a href="{{ url_for('index') }}" class="button">Previous: Upload Files</a>
+      <input type="submit" class="button" id="submit_button" value="Submit" style="display: none;">
+      <p><button class="gray_button" id="fake_submit_button">Submit</button></p>
+    </p>
+  </form></p>
+</body>
+
+<div id="runtime_overlay"><span id="time"></span></div>
+
+<script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>

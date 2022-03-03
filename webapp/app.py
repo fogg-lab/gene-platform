@@ -1,277 +1,470 @@
+from distutils.command.config import config
 import os
+import sys
 import subprocess
 import shutil
 import csv
 from datetime import timedelta
 import tempfile
-from werkzeug.utils import secure_filename
+import yaml
+import copy
+import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
-    send_from_directory, session, Response
+    session, Response, jsonify
 from flask_session.__init__ import Session
+
 
 app = Flask(__name__)
 
-app.config['SESSION_PERMANENT'] = True
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-app.config['DROPZONE_TIMEOUT'] = 120000 # timeout for uploads in milliseconds
+app.config["SESSION_PERMANENT"] = True
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 
 Session(app)
+
+'''
+backlog:
+TODO: Descriptions for the columns included in the output
+TODO: Parameter field descriptions
+TODO: User story 4 (inform user of analysis to be conducted before execution)
+TODO: Sort and filter output using server functions from the display page templates
+         - See utility_processor() function in app.py for sort/filter helper functions
+            Usage: see https://roytuts.com/context-processors-in-flask-api/
+TODO: Create a page for visualizations (choose plot, call script, display .png result)
+'''
 
 # Ensure that the current working directory is the webapp directory
 # Get the path to the webapp dir from the path of this script
 SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = '/'.join(SCRIPT_PATH.split('/')[:-1])
+SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
 os.chdir(SCRIPT_DIR)
 
-RNA_SEQ_SCRIPT = 'Rscript ../analysis/rnaseq.R'
-MICROARRAY_SCRIPT = 'Rscript ../analysis/microarray.R'
-USER_FILES_LOCATION = 'user_files'
+RNA_SEQ_SCRIPT = "Rscript ../analysis/rnaseq.R"
+MICROARRAY_SCRIPT = "Rscript ../analysis/microarray.R"
+USER_FILES_LOCATION = "user_files"
 
-# backlog (in order)
-# - add validation of parameters
-# - add ability to handle error output if analysis script fails
 
-@app.route('/')
+@app.route("/")
 def index():
-    files = os.listdir(USER_FILES_LOCATION)
-    return render_template('input_form.html', files=files)
+    '''main page, first input page (file uploads)'''
 
-@app.route('/uploadcounts', methods=['POST'])
-def upload_counts():
-    uploaded_file = request.files['file']
-    filename = secure_filename(uploaded_file.filename)
-    if filename != '':
-        file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.tsv':
-            return 'Invalid file extension', 400
-        save_temp_file(uploaded_file, 'counts.tsv')
-    return redirect(url_for('index'))
+    ensure_session_dir()
 
-@app.route('/uploadcoldata', methods=['POST'])
-def upload_coldata():
-    uploaded_file = request.files['file']
-    filename = secure_filename(uploaded_file.filename)
-    if filename != '':
-        file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.tsv':
-            return 'Invalid file extension', 400
-        save_temp_file(uploaded_file, 'coldata.tsv')
-    return redirect(url_for('index'))
+    user_files = os.listdir(session["user_session_dir"])
+    uploads = {}
+    for filename in ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]:
+        uploads[filename] = False
+    for filename in user_files:
+        if filename in uploads:
+            uploads[filename] = True
 
-@app.route('/uploadfilter', methods=['POST'])
-def upload_filter():
-    uploaded_file = request.files['file']
-    filename = secure_filename(uploaded_file.filename)
-    if filename != '':
-        file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.txt':
-            return 'Invalid file extension', 400
-        save_temp_file(uploaded_file, 'filter.txt')
-    return redirect(url_for('index'))
+    return render_template("uploads_form.html", uploads=uploads)
 
-@app.route('/uploadconfig', methods=['POST'])
-def upload_config():
-    uploaded_file = request.files['file']
-    filename = secure_filename(uploaded_file.filename)
-    if filename != '':
-        file_ext = os.path.splitext(filename)[1]
-        if file_ext != '.yml' and file_ext != '.txt':
-            return 'Invalid file extension', 400
-        save_temp_file(uploaded_file, 'config.yml')
-    return redirect(url_for('index'))
 
-@app.route('/user_files/<filename>')
-def upload(filename):
-    return send_from_directory('user_files', filename)
+@app.route("/upload", methods=["POST"])
+def upload():
+    '''
+    handles uploading files coldata, filter, filter and config
+    one file per request
+    file contents are in request.data (a bytes object)
+    '''
 
-@app.route('/getconfig', methods=['POST'])
-def get_config():
-    parameters = {}
-    if 'user_session_dir' in session:
-        config_filepath = '%sconfig.yml' %(session['user_session_dir'])
-    if 'user_session_dir' in session and os.path.isfile(config_filepath):
-        config = open(('%sconfig.yml' %(session['user_session_dir'])), 'r')
-        parameters = get_config_parameters(config)
-        parameters["config_exists"] = True
+    result = {}
+
+    filename = request.headers.get('X_FILENAME')
+    standardized_filename = helpers.standardize_filename(filename)
+
+    if standardized_filename:
+        save_temp_file(request.data, standardized_filename)
     else:
-        parameters["config_exists"] = False
-    return parameters
+        result["error_status"] = f"Invalid filename: {filename}. \
+            Filename must end with either counts.tsv, coldata.tsv, filter.txt,\
+            config.yml or config.txt\n"
 
-# submit()
-# submits input for analysis
-# generates the config file if the parameters are filled out
-@app.route('/submit', methods=['POST'])
+    if standardized_filename == "config.yml":
+        result["error_status"] = check_config()
+
+    return jsonify(result)
+
+
+@app.route("/cancelupload", methods=["POST"])
+def cancelupload():
+    '''
+    removes uploaded file from user session directory
+    '''
+
+    filename = request.form.get("filename")
+    delete_user_file(filename)
+
+    return f"{filename} upload cancelled"
+
+
+@app.route("/parameters", methods=["GET"])
+def parameters():
+    '''loads the parameter form'''
+
+    return render_template("parameters_form.html", params=parse_config())
+
+
+@app.route("/submit", methods=["POST"])
 def submit():
+    '''
+    submit_parameters()
+    submits input for analysis if valid
+    generates a config file from the parameter form
+    '''
+
     # get whether analysis is microarray or RNA-Seq
-    data_type = request.form.get('data_type')
-    
-    # request.form.get('use_qual_weights') returns either "None" or "on"
-    # needs to be boolean True or False
-    use_qual_weights = request.form.get('use_qual_weights')
+    data_type = request.form.get("data_type")
 
-    parameters = {}
-    # if analysis type is RNASeq, use padj_thresh
-    if data_type == 'RNA-Seq':
-        parameters['padj_thresh'] = request.form.get('padj_thresh')
-    parameters['min_prop'] = request.form.get('min_prop')
-    parameters['min_expr'] = request.form.get('min_expr')
-    parameters['adj_method'] = request.form.get('adj_method')
-    parameters['condition'] = request.form.get('condition')
-    parameters['contrast_level'] = request.form.get('contrast_level')
-    parameters['reference_level'] = request.form.get('reference_level')
-    if use_qual_weights is None:
-        parameters['use_qual_weights'] = False
-    else:
-        parameters['use_qual_weights'] = True
+    # remove old output
+    delete_user_file("filter_output.tsv")
+    delete_user_file("output.tsv")
 
-    parameters_filled = True
-    for parameter_val in parameters:
-        if not parameter_val:
-            parameters_filled = False
-    
-        # if the parameters are set, generate config
-    if parameters_filled:
-        generate_config(parameters)
+    call_analysis(data_type)
 
-    if data_type == "microarray":
-        subprocess.Popen(['%s %s' \
-            %(MICROARRAY_SCRIPT, session["session_id"])], shell=True)
-    elif data_type == "RNA-Seq":
-        subprocess.Popen(['%s %s' \
-            %(RNA_SEQ_SCRIPT, session["session_id"])], shell=True)
+    wait_for_output()
 
-    # wait for the output.tsv file to appear in the session directory,
-    # then redirect to the results page
-    # TODO: error handling
-    remove_old_output()
-    analysis_done = False
-    while not analysis_done:
-        path_to_output =  session['user_session_dir'] + 'output.tsv'
-        
-        # '2>/dev/null' suppresses the expected error output 'file not found'
-        output = subprocess.Popen(['ls %s %s' %(path_to_output, '2>/dev/null')\
-            ], stdout=subprocess.PIPE, shell=True).communicate()[0]
+    return "analysis completed"
 
-        # results of the ls are returned in bytes, ends with newline character
-        analysis_done = output == str.encode(path_to_output) + b'\n'
-    
-    return redirect(url_for('display_output'))
 
-@app.route('/display')
+@app.route("/confirmsubmission", methods=["POST"])
+def confirm_submission():
+    '''validate input and display formula before submission'''
+
+    # get whether analysis is microarray or RNA-Seq, and get params
+    data_type = request.form.get("data_type")
+    params = helpers.get_request_parameters(request.form, data_type)
+
+    # generate config file from the form parameters
+    generate_config(params)
+
+    # get the analysis formula to display for the user
+    confirmation_message = helpers.get_confirmation_message(params, data_type)
+
+    counts_file = read_user_file("counts.tsv")
+    counts_reader = csv.reader(counts_file, delimiter="\t")
+    counts_list = list(counts_reader)
+    counts_file.close()
+
+    coldata_file = read_user_file("coldata.tsv")
+    coldata_reader = csv.reader(coldata_file, delimiter="\t")
+    coldata_list = list(coldata_reader)
+    coldata_file.close()
+
+    coldata_counts_match_error = helpers.check_coldata_rows_match_counts_cols(
+        copy.deepcopy(counts_list[0]), copy.deepcopy(coldata_list))
+    factor_levels_error = helpers.check_factor_levels(
+        params, copy.deepcopy(coldata_list))
+
+    if coldata_counts_match_error:
+        confirmation_message = f"Error: {coldata_counts_match_error}"
+    elif factor_levels_error:
+        confirmation_message = f"Error: {factor_levels_error}"
+
+    return confirmation_message
+
+
+@app.route("/display")
 def display_output():
+    '''
+    display output in a table
+    '''
+
     # check here if output.tsv exists and errors.txt doesn't
-    path_to_output =  session['user_session_dir'] + 'output.tsv'
-    output = open(path_to_output)
-    reader = csv.reader(output, delimiter='\t')
-    rows = [[elem for elem in row] for row in reader]
-    output.close()
+    path_to_output =  f"{session['user_session_dir']}output.tsv"
+    output_file = open(path_to_output, encoding="UTF-8")
+    output_reader = csv.reader(output_file, delimiter="\t")
+    output = list(output_reader)
+    output_file.close()
 
-    # Delete the user session directory, including the input and output files
-    cleanup_session()
-    return render_template('results.html', col_titles=rows[:1], info=rows[1:])
+    filtered_output_path = f"{session['user_session_dir']}{'filter_output.tsv'}"
+    filtered_output_exists = os.path.exists(filtered_output_path)
 
-@app.route('/getunfilteredtsv')
+    return render_template("results.html", cols=output[:1][0], data=output[1:],\
+        filtered_output_exists=filtered_output_exists)
+
+
+@app.route("/filter_display")
+def display_filtered():
+    '''
+    display filtered output in a table
+    '''
+
+    #perform the same function as displaying results, but for filtered tsv
+    path_to_output =  f"{session['user_session_dir']}filter_output.tsv"
+    output_file = open(path_to_output, encoding="UTF-8")
+    output_reader = csv.reader(output_file, delimiter="\t")
+    output = list(output_reader)
+    output_file.close()
+
+    
+
+    return render_template("filter_results.html",filter_cols=output[:1][0],filter_body=output[1:])
+
+
+@app.route("/reset", methods=["GET"])
+def reset():
+    '''Deletes files from a users session'''
+
+    delete_user_file("counts.tsv")
+    delete_user_file("coldata.tsv")
+    delete_user_file("filter.txt")
+    delete_user_file("config.yml")
+    delete_user_file("filter_output.tsv")
+    delete_user_file("output.tsv")
+
+    return redirect(url_for("index"))
+
+
+@app.context_processor
+def utility_processor():
+    '''defines functions that templates can use'''
+
+    def try_float(elem):
+        try:
+            elem = float(elem)
+        except:
+            pass
+        return elem
+
+    def data_sorted_on_col(data, col_names, sort_col):
+        col_index = col_names.index(sort_col)
+        sorted_data = sorted(data, key=lambda line: try_float(line[col_index]))
+        return sorted_data
+
+    def data_filtered(data, col_names, filter_text, filter_col=""):
+        '''
+            returns rows that contain the filter text
+            if filter column is unspecified, search all columns
+        '''
+        columns_to_search = []
+        if filter_col:
+            columns_to_search.append(filter_col)
+        else:
+            columns_to_search.append(col_names)
+        filtered_data = []
+        for row in data:
+            row_match = False
+            for colname in columns_to_search:
+                col_index = col_names[colname]
+                if filter_text in row[col_index]:
+                    row_match = True
+            if row_match:
+                filtered_data.append(row)
+
+    return dict(try_float=try_float, data_sorted_on_col=data_sorted_on_col,
+        data_filtered=data_filtered)
+
+
+@app.route("/getunfilteredtsv")
 def get_unfiltered_tsv():
-    unfiltered_output = open("%soutput.tsv" %(session['user_session_dir']))
+    '''download unfiltered output'''
+
+    unfiltered_output = open(f"{session['user_session_dir']}output.tsv", \
+        encoding="UTF-8")
+
     return Response(
         unfiltered_output,
-        mimetype="text/csv",
-        headers={"Content-disposition":
-                "attachment; filename=output.tsv"})
+        mimetype='text/csv',
+        headers={'Content-disposition':
+                'attachment; filename=output.tsv'})
 
-@app.route('/getfilteredtsv')
+
+@app.route("/getfilteredtsv")
 def get_filtered_tsv():
-    filtered_output = open("%sfilter_output.tsv" %(session['user_session_dir']))
+    '''download filtered output'''
+
+    filtered_output = open(f"{session['user_session_dir']}filter_output.tsv", \
+        encoding="UTF-8")
+
     return Response(
         filtered_output,
         mimetype="text/csv",
         headers={"Content-disposition":
                 "attachment; filename=filter_output.tsv"})
 
-# Takes a user's file and copies it into a temp directory on the server
-# directory path is stored in the user session variable "user_session_dir"
-def save_temp_file(file, filename):
-    if ('user_session_dir' not in session or
-            not os.path.exists(session['user_session_dir'])):
-        temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
-        os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
-        session['user_session_dir'] = temp_dir + '/'
-        session['session_id'] = temp_dir.split('/')[-1:]
-        schedule_session_deletion(session['user_session_dir'])
 
-    user_file_path = session['user_session_dir'] + filename
+def save_temp_file(file_contents, filename):
+    '''
+    Saves uploaded file to user session directory
+
+    Parameters:
+        file_contents: bytes object
+        filename: string
+    '''
+
+    # create session directory if none exists
+    ensure_session_dir()
+
+    user_file_path = f"{session['user_session_dir']}{filename}"
 
     if os.path.exists(user_file_path):
         os.remove(user_file_path)
-    user_file = open(user_file_path, 'w')
+
+    user_file = open(user_file_path, "w", encoding="UTF-8")
+    lines = file_contents.split(b'\n')
 
     # copy the file line by line, adding a trailing newline if none exists
-    lines = file.readlines()
     for line in lines:
-        user_file.write(line.decode('utf-8'))
+        user_file.write(f"{line.decode('UTF-8')}\n")
 
     user_file.close()
 
-# cleanup_session() cleans up the user's session
-# Removes the temp directory for the session, including input/output files
-def cleanup_session():
-    if 'user_session_dir' in session:
-        pass
-        # need to find a different way, this deletes output files prematurely
-        #shutil.rmtree(session['user_session_dir'])
+
+def call_analysis(data_type):
+    '''
+    calls microarray or rna-seq analysis depending on data_type
+    sends the session_id as an argument
+    '''
+
+    if data_type == 'microarray':
+        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']}"], \
+            shell=True)
+    elif data_type == 'RNA-Seq':
+        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']}"], \
+                shell=True)
+
+
+def read_user_file(filename):
+    '''
+    opens a user file for reading
+    just supply the filename like "counts.tsv" for example
+    returns lines from a file in the users session directory
+    '''
+    user_file = None
+
+    session_dir = get_session_dir()
+    if session_dir:
+        filepath = f"{session_dir}{filename}"
+        if os.path.isfile(filepath):
+            user_file = open(filepath, "r", encoding="UTF-8")
+
+    return user_file
+
+
+def delete_user_file(filename):
+    '''
+    deletes a user input file if it exists
+    just supply the filename like "counts.tsv" for example
+    '''
+
+    session_dir = get_session_dir()
+    if session_dir:
+        filepath = f"{session_dir}{filename}"
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+
+
+def wait_for_output():
+    '''busy-waits until output shows up in users session directory'''
+
+    analysis_done = False
+    while not analysis_done:
+        path_to_output =  f"{session['user_session_dir']}output.tsv"
+
+        # "2>/dev/null" suppresses the expected error output "file not found"
+        output = subprocess.Popen([f"ls {path_to_output} 2>/dev/null"], \
+            stdout=subprocess.PIPE, shell=True).communicate()[0]
+
+        # results of the ls are returned in bytes, ends with newline character
+        analysis_done = output == str.encode(path_to_output) + b"\n"
+
 
 def cleanup_old_sessions():
-    # Clean up other sessions older than one day (86400 seconds)
-    for old_dir in os.listdir(USER_FILES_LOCATION):
-        old_dir = '%s/%s' %(USER_FILES_LOCATION, old_dir)
+    '''Clean up other sessions older than 4 hours (14400 seconds)'''
 
-        if old_dir != '%s/.gitkeep' %(USER_FILES_LOCATION):
-            get_age = '$(($(date +%s) - $(date +%s -r ' + old_dir + ')))'
+    for old_dir in os.listdir(USER_FILES_LOCATION):
+        old_dir = f"{USER_FILES_LOCATION}/{old_dir}"
+
+        if old_dir != f"{USER_FILES_LOCATION}/.gitkeep":
+            get_age = "$(($(date +%s) - $(date +%s -r " + old_dir + ")))"
 
             # Run bash command and return the stdout output
-            age_seconds = int(subprocess.Popen(['echo %s' %(get_age)], \
+            age_seconds = int(subprocess.Popen([f"echo {get_age}"], \
                 stdout=subprocess.PIPE, shell=True).communicate()[0])
-            
-            if age_seconds > 86400:
+
+            if age_seconds > 14400:
                 shutil.rmtree(old_dir)
 
-def generate_config(parameters):
-    config_file_path = session['user_session_dir'] + '/config.yml'
-    config_file = open(config_file_path, 'w')
 
-    for param in parameters.keys():
-        if param in ['adj_method', 'condition', 'contrast_level',\
-             'reference_level']:
-            config_file.write('%s: \"%s\"\n' %(param, parameters[param]))
+def get_session_dir():
+    ''' returns session dir if it exists, otherwise returns False '''
+
+    if "user_session_dir" in session:
+        return session["user_session_dir"]
+    else:
+        return ""
+
+
+def generate_config(config_parameters):
+    '''generates a config file using user-entered parameters'''
+
+    config_file_path = f"{session['user_session_dir']}config.yml"
+    config_file = open(config_file_path, "w", encoding="UTF-8")
+
+    for param in config_parameters.keys():
+        if param in ["adj_method", "condition", "contrast_level",\
+             "reference_level"]:
+            config_file.write(f"{param}: \'{config_parameters[param]}\'\n")
         else:
-            config_file.write('%s: %s\n' %(param, parameters[param]))
+            config_file.write(f"{param}: {config_parameters[param]}\n")
 
     config_file.close()
 
-def get_config_parameters(config_file):
-    parameters = {}
-    config_lines = config_file.readlines()
-    for line in config_lines:
-        # remove quotes and newline characters
-        line = line.translate(str.maketrans('', '', '\n\"\''))
-        if line:
-            parameter_name, parameter_value = tuple(line.split(': '))
-            parameters[parameter_name] = parameter_value
-    return parameters
 
-# removes old output files from the current session
-def remove_old_output():
-    filtered_output_path = "%sfilter_output.tsv" %(session['user_session_dir'])
-    unfiltered_output_path = "%soutput.tsv" %(session['user_session_dir'])
-    filtered_output_exists = os.path.exists(filtered_output_path)
-    unfiltered_output_exists = os.path.exists(unfiltered_output_path)
-    if filtered_output_exists:
-        os.remove(filtered_output_path)
-    if unfiltered_output_exists:
-        os.remove(unfiltered_output_path)
+def ensure_session_dir():
+    '''
+    if there is no directory for the user session, create one now
+    directory path is stored in the user session variable 'user_session_dir'
+    '''
 
-def schedule_session_deletion(session_path):
-    pass
+    if ("user_session_dir" not in session or
+        not os.path.exists(session["user_session_dir"])):
+        temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
+        os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
+        session["user_session_dir"] = f"{temp_dir}/"
+        session["session_id"] = temp_dir.split("/")[-1:]
+
+
+def parse_config():
+    ''' parses config into a dict of parameters '''
+
+    session_dir = get_session_dir()
+    config_file_path = session_dir + "config.yml"
+    config_params = {}
+
+    if session_dir and os.path.exists(config_file_path):
+        config_file = open(config_file_path, encoding="UTF-8")
+        config_params = yaml.safe_load(config_file)
+        config_file.close()
+
+    # yaml.safe_load loads numerical zero values as "None". below is a fix
+    if "min_expr" in config_params and config_params["min_expr"] == None:
+        config_params["min_expr"] = 0.0
+    if "min_prop" in config_params and config_params["min_prop"] == None:
+        config_params["min_prop"] = 0.0
+    if "padj_thresh" in config_params and config_params["padj_thresh"] == None:
+        config_params["padj_thresh"] = 0.0
+
+    return config_params
+
+
+def check_config():
+    '''get config params in a dict then validate the params'''
+
+    err_msg = ""
+
+    config_params = parse_config()
+    if type(config_params) == str:
+        err_msg = config_params
+    else:
+        err_msg = helpers.validate_parameters(config_params)
+
+    if err_msg:
+        delete_user_file("config.yml")
+
+    return err_msg
+
 
 cleanup_old_sessions()

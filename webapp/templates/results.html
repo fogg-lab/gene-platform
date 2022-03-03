@@ -2,22 +2,31 @@
   <head>
     <title>Results</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/results_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
   </head>
   <body>
-    <p><a href="{{ url_for('get_unfiltered_tsv') }}">Download unfiltered output</a></p>
-    <p><a href="{{ url_for('get_filtered_tsv') }}">Download filtered output</a></p>
+    <table class="header-table">
+      <tr>
+        <th><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download unfiltered output  </a></th>
+        {% if filtered_output_exists %}
+          <th><a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output  </a></th>
+          <th><a href="{{ url_for('display_filtered') }}" class="button">View Filtered Output </a></th>
+        {% endif %}
+        <th><a href="{{ url_for('index') }}" class="button">Change input files or parameters  </a></th>
+        <th><a href="{{ url_for('reset') }}" class="button">New analysis  </a></th>
+      </tr>
+      </table>
+      <br>
     <table class="spicy-table">
       <thead>
         <tr>
-          {% for elem in col_titles %}
-          {% for item in elem %}
+          {% for item in cols %}
           <th>{{item}}</th>
-          {% endfor %}
           {% endfor %}
         </tr>
       </thead>
       <tbody>
-        {% for result in info %}
+        {% for result in data %}
         <tr class = "{{ loop.cycle('normal', 'spicy') }}">
           {% for elem in result %}
           <td>{{elem}}</td>
