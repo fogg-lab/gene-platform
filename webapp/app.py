@@ -178,7 +178,11 @@ def display_output():
     output = list(output_reader)
     output_file.close()
 
-    return render_template("results.html", cols=output[:1][0], data=output[1:])
+    filtered_output_path = f"{session['user_session_dir']}{'filter_output.tsv'}"
+    filtered_output_exists = os.path.exists(filtered_output_path)
+
+    return render_template("results.html", cols=output[:1][0], data=output[1:],\
+        filtered_output_exists=filtered_output_exists)
 
 
 @app.route("/filter_display")
@@ -193,6 +197,8 @@ def display_filtered():
     output_reader = csv.reader(output_file, delimiter="\t")
     output = list(output_reader)
     output_file.close()
+
+    
 
     return render_template("filter_results.html",filter_cols=output[:1][0],filter_body=output[1:])
 

@@ -110,7 +110,6 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 
 						if (response.error_status) {
 							progress.className = "failed";
-//							progress_div.style.backgroundColor = "#c00";
 							Output(
 								"<p class=\"" + file_status_classname +
 								"\"><strong>Error in " + file.name + ": " +
@@ -119,7 +118,6 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 						} else {
 							progress.className = "success";
 							progress.innerHTML = "File uploaded: " + file.name
-//							progress_div.style.backgroundColor = "#0c0";
 						}
 						update_next_button();
 					}

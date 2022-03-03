@@ -8,8 +8,10 @@
     <table class="header-table">
       <tr>
         <th><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download unfiltered output  </a></th>
-        <th><a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output  </a></th>
-        <th><a href="{{ url_for('display_filtered') }}" class="button">View Filtered Output </a></th>
+        {% if filtered_output_exists %}
+          <th><a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output  </a></th>
+          <th><a href="{{ url_for('display_filtered') }}" class="button">View Filtered Output </a></th>
+        {% endif %}
         <th><a href="{{ url_for('index') }}" class="button">Change input files or parameters  </a></th>
         <th><a href="{{ url_for('reset') }}" class="button">New analysis  </a></th>
       </tr>
