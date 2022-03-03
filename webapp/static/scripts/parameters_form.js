@@ -3,24 +3,35 @@ document.getElementById("data_type").onchange = show_hide_parameters;
 function show_hide_parameters() {
 
   if (!document.getElementById("data_type").value) {
-    document.getElementById("form_parameters").style.display = "none"
-    document.getElementById("form_parameters").style.visibility = "hidden"
+    document.getElementById("form_parameters").style.display = "none";
+    document.getElementById("form_parameters").style.visibility = "hidden";
+    // hide submit button
+    document.getElementById("submit_button").style.display = "none";
+    document.getElementById("submit_button").disabled = true;
+    document.getElementById("fake_submit_button").style.display = "inline-block";
   }
 
   else {
-    document.getElementById("form_parameters").style.display = "block"
-    document.getElementById("form_parameters").style.visibility = "visible"
+    document.getElementById("form_parameters").style.display = "block";
+    document.getElementById("form_parameters").style.visibility = "visible";
     
     if (document.getElementById("data_type").value == "RNA-Seq") {
-      document.getElementById("use_qual_weights_label").style.display = "none"
-      document.getElementById("use_qual_weights_label").style.visibility = "hidden"
-      document.getElementById("use_qual_weights").setAttribute("type","hidden")
+      use_qual_weights_label = document.getElementById("use_qual_weights_label");
+      if (use_qual_weights_label != null) {
+        document.getElementById("use_qual_weights_label").style.display = "none";
+        document.getElementById("use_qual_weights_label").style.visibility = "hidden";
+        document.getElementById("use_qual_weights").setAttribute("type","hidden");
+      }
     }
     else {
-      document.getElementById("use_qual_weights_label").style.display = "inline"
-      document.getElementById("use_qual_weights_label").style.visibility = "visible"
-      document.getElementById("use_qual_weights").setAttribute("type","checkbox")
+      document.getElementById("use_qual_weights_label").style.display = "inline";
+      document.getElementById("use_qual_weights_label").style.visibility = "visible";
+      document.getElementById("use_qual_weights").setAttribute("type","checkbox");
     }
+    // show the submit button
+    document.getElementById("submit_button").style.display = "inline-block";
+    document.getElementById("submit_button").disabled = false;
+    document.getElementById("fake_submit_button").style.display = "none";
   }
 }
 
@@ -117,3 +128,5 @@ function show_runtime() {
       counter += 1  
   }, 1000);  
 }
+
+document.getElementById("fake_submit_button").disabled = true;
