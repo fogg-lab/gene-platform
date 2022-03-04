@@ -1,5 +1,4 @@
 '''utility functions for app.py'''
-import sys
 
 def check_parameter_names(config_parameters):
     '''
