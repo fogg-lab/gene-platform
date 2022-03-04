@@ -85,8 +85,8 @@ function submit() {
     parameters_req_query += param[1];
     parameters_req_query += "&";
   }
-  // remove last "&" character from the query string
-  parameters_req_query = parameters_req_query.slice(0, -1);
+  data_type = get_data_type();
+  parameters_req_query += "data_type=" + data_type;
   submitReq.send(parameters_req_query);
 }
 
