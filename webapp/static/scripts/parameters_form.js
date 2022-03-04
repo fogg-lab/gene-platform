@@ -58,9 +58,11 @@ function submission_confirmed() {
 
 
 function confirm_submission(confirmation_text) {
-  confirmed = confirm(confirmation_text)
+  confirmed = confirmation_dialog(confirmation_text);
+  dialog_box = document.body.createElement("div");
+  dialog_box.style.display="none";
   if (confirmed && !(confirmation_text.includes("Error"))) {
-    submission_confirmed()
+    submission_confirmed();
   }
 }
 
@@ -71,6 +73,21 @@ function submitReqListener() {
   confirm_submission(confirmation_text);
 }
 
+
+function confirmation_dialog(confirmation_text) {
+  dialog_box = document.body.createElement("div");
+  dialog_box.id = "confirm_div_id";
+  dialog_box.innerHTML = confirmation_text;
+  dialog_box.innerHTML += "<button id='okay_btn_id'>Okay</button>\n"
+  dialog_box.innerHTML += "\n<button id='cancel_btn_id'>Cancel</button>\n"
+  dialog_box.style.display="block";
+  document.getElementById('okay_btn_id').onclick = function(){
+    return true;
+  };
+  document.getElementById('okay_btn_id').onclick = function(){
+    return false;
+  };
+}
 
 function submit() {
   var submitReq = new XMLHttpRequest();
