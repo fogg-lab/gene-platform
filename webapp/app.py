@@ -361,14 +361,15 @@ def wait_for_output():
 
     analysis_done = False
     while not analysis_done:
-        path_to_output =  f"{session['user_session_dir']}output.tsv"
-
-        # "2>/dev/null" suppresses the expected error output "file not found"
-        output = subprocess.Popen([f"ls {path_to_output} 2>/dev/null"], \
-            stdout=subprocess.PIPE, shell=True).communicate()[0]
+        unfilt_output_path =  f"{session['user_session_dir']}output.tsv"
+        filt_output_path =  f"{session['user_session_dir']}filter_output.tsv"
+        filter_path = f"{session['user_session_dir']}filter.txt"
+        is_output = os.path.exists(unfilt_output_path)
+        if is_output and os.path.exists(filter_path):
+            is_output = os.path.exists(filt_output_path)
 
         # results of the ls are returned in bytes, ends with newline character
-        analysis_done = output == str.encode(path_to_output) + b"\n"
+        analysis_done = is_output
 
 
 def cleanup_old_sessions():
@@ -381,11 +382,15 @@ def cleanup_old_sessions():
             get_age = "$(($(date +%s) - $(date +%s -r " + old_dir + ")))"
 
             # Run bash command and return the stdout output
-            age_seconds = int(subprocess.Popen([f"echo {get_age}"], \
-                stdout=subprocess.PIPE, shell=True).communicate()[0])
+            age_seconds = subprocess.Popen([f"echo {get_age}"], \
+                stdout=subprocess.PIPE, shell=True).communicate()[0]
 
-            if age_seconds > 14400:
-                shutil.rmtree(old_dir)
+            try:
+                age_seconds = int(age_seconds)
+                if age_seconds > 14400:
+                    shutil.rmtree(old_dir)
+            except ValueError:
+                pass
 
 
 def get_session_dir():
