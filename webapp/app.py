@@ -1,13 +1,11 @@
-from distutils.command.config import config
 import os
-import sys
 import subprocess
 import shutil
 import csv
 from datetime import timedelta
 import tempfile
-import yaml
 import copy
+import yaml
 import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify
@@ -26,7 +24,6 @@ Session(app)
 backlog:
 TODO: Descriptions for the columns included in the output
 TODO: Parameter field descriptions
-TODO: User story 4 (inform user of analysis to be conducted before execution)
 TODO: Sort and filter output using server functions from the display page templates
          - See utility_processor() function in app.py for sort/filter helper functions
             Usage: see https://roytuts.com/context-processors-in-flask-api/
