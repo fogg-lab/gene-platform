@@ -145,3 +145,40 @@ pre {
 table, th, td {
 	border: 1px solid;
 }
+
+body { font-family: sans-serif; }
+
+#confirm_div_id {
+    display: none;
+    background-color: #eee;
+    border-radius: 5px;
+    border: 1px solid #aaa;
+    position: fixed;
+    width: 300px;
+    left: 50%;
+    margin-left: -150px;
+    padding: 6px 8px 8px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+#confirm_div_id button {
+    background-color: #ccc;
+    display: inline-block;
+    border-radius: 3px;
+    border: 1px solid #aaa;
+    padding: 2px;
+    text-align: center;
+    width: 80px;
+    cursor: pointer;
+}
+
+#confirm_div_id button:hover {
+    background-color: #ddd;
+}
+
+#confirmBox .message {
+    text-align: left;
+    margin-bottom: 8px;
+}
+

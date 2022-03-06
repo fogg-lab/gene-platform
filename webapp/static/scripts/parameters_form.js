@@ -58,10 +58,25 @@ function submission_confirmed() {
 
 
 function confirm_submission(confirmation_text) {
-  confirmed = confirm(confirmation_text)
-  if (confirmed && !(confirmation_text.includes("Error"))) {
-    submission_confirmed()
+  dialog_box = document.getElementById("confirm_div_id")
+  if (dialog_box == null) {
+    dialog_box = document.createElement("div");
   }
+  dialog_box.id = "confirm_div_id";
+  dialog_box.innerHTML = confirmation_text;
+  dialog_box.innerHTML += "<button id='okay_btn_id'>Okay</button>\n";
+  dialog_box.innerHTML += "\n<button id='cancel_btn_id'>Cancel</button>\n";
+  dialog_box.style.display="block";
+  document.body.appendChild(dialog_box)
+  document.getElementById('okay_btn_id').onclick = function() {
+    dialog_box.style.display="none";
+    if (!(confirmation_text.includes("Error"))) {
+      submission_confirmed();
+    }
+  };
+  document.getElementById('cancel_btn_id').onclick = function() {
+    dialog_box.style.display="none";
+  };
 }
 
 
@@ -85,8 +100,8 @@ function submit() {
     parameters_req_query += param[1];
     parameters_req_query += "&";
   }
-  // remove last "&" character from the query string
-  parameters_req_query = parameters_req_query.slice(0, -1);
+  data_type = get_data_type();
+  parameters_req_query += "data_type=" + data_type;
   submitReq.send(parameters_req_query);
 }
 

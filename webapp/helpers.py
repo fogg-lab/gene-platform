@@ -1,5 +1,4 @@
 '''utility functions for app.py'''
-import sys
 
 def check_parameter_names(config_parameters):
     '''
@@ -219,8 +218,10 @@ def get_confirmation_message(config_params, data_type):
     contrast_level = config_params["contrast_level"]
     reference_level = config_params["reference_level"]
 
-    analysis_formula = "User story 4 work in progress'\n"
-    analysis_formula += f"Data Type: {data_type}\n\nParameters:\n"
+    analysis_formula = "User story 4 work in progress\n"
+    analysis_formula += f"<b>Current Analysis Being Performed<b>:\n"
+    analysis_formula += f"<i>condition ~ (intercept) + condition_tumor<i>\n\n"
+    analysis_formula += f"<b>Data Type:<b> {data_type}\n\n<b>Parameters:<b>\n"
     for param_name, param_val in config_params.items():
         analysis_formula += f"{param_name}: {param_val}\n"
 
