@@ -1,13 +1,11 @@
-{% extends "upload_template.html" %}
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
 
-{% block head %}
-{% block title %}Parameters{% endblock %}
-  {{ super() }}
-{% endblock %}
+<head>
+  <title>DGE Analysis</title>
+</head>
+
 <body>
-{% block central %}
   <p><form id="submit" action="javascript:submit()">
     <label> Data type </label>
     <select class="data_type" id="data_type" name="data_type">
@@ -46,7 +44,8 @@
       <p><button class="gray_button" id="fake_submit_button">Submit</button></p>
     </p>
   </form></p>
-  <div id="runtime_overlay"><span id="time"></span></div>
-  <script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>
 </body>
-{% endblock %}
+
+<div id="runtime_overlay"><span id="time"></span></div>
+
+<script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>

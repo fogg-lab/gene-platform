@@ -1,19 +1,18 @@
 
 <!-- credit for the HTML5 drag-and-drop API for file uploads: https://blogs.sitepointstatic.com/examples/tech/filedrag/3/index.html -->
-{% extends "upload_template.html" %}
 
-{% block head %}
-{% block title %}Uploads{% endblock %}
+<head>
+<title>DGE Analysis</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
-{% endblock %}
+</head>
 <body>
-{% block central %}
+
 <h1>DGE Analysis - Upload Files</h1>
 
 <form id="upload" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
 
 <fieldset>
-<legend>Upload files: counts, coldata, filter (optional), and config (optional)</legend>
+<legend>Upload Files: counts, coldata, filter (optional), and config (optional)</legend>
 
 <input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
 
@@ -32,7 +31,7 @@
 </form>
 
 <h1>Status</h1>
-    
+
 <table>
 	<tr>
 		<th>File Name</th>
@@ -175,18 +174,18 @@
 		  || document.getElementById("progress_of_coldata") == null
 		  || document.getElementById("progress_of_counts").className != "success"
 		  || document.getElementById("progress_of_coldata").className != "success"
-		  ) {
-			  document.getElementById("next_button").style.display = 'none';
+	  	) {
+		  	document.getElementById("next_button").style.display = 'none';
 			document.getElementById("fake_next_button").style.display = 'inline-block';
-		  }
-		  else {
+	  	}
+	  	else {
 			document.getElementById("next_button").style.display = 'inline-block';
 			document.getElementById("fake_next_button").style.display = 'none';
-		  }
+	  	}
 	}
 
 </script>
 
 <script src="{{ url_for('static',filename='scripts/filedrag.js') }}"></script>
-{% endblock %}
+
 </body>
