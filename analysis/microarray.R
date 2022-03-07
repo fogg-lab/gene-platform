@@ -12,6 +12,7 @@ FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "filtered_microarray_volcano.png"
 suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(limma)))
 suppressMessages(suppressWarnings(library(yaml)))
+suppressMessages(suppressWarnings(library(ggrepel)))
 
 
 args = commandArgs(trailingOnly = TRUE)
