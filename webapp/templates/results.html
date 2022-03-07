@@ -10,7 +10,11 @@
         <th><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download unfiltered output  </a></th>
         {% if filtered_output_exists %}
           <th><a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output  </a></th>
-          <th><a href="{{ url_for('display_filtered') }}" class="button">View Filtered Output </a></th>
+          <label for="output_select">Display:</label>
+          <select name="output_select" id="output_select">
+            <option value="filtered">Filtered Results</option>
+            <option value="unfiltered">Unfiltered Results</option>
+          </select>
         {% endif %}
         <th><a href="{{ url_for('index') }}" class="button">Change input files or parameters  </a></th>
         <th><a href="{{ url_for('reset') }}" class="button">New analysis  </a></th>
@@ -37,3 +41,16 @@
     </table>
   </body>
 </html>
+
+<script>
+  output_selection = document.getElementById("data_type");
+  if (output_selection != null) {
+    output_selection.onchange = display_data;
+    display_data({{ cols|tojson }}, {{ data|tojson }});
+  }
+
+  function display_rows(cols, data) {
+    
+  }
+
+</script>

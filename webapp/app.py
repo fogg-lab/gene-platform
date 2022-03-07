@@ -225,8 +225,8 @@ def utility_processor():
             pass
         return elem
 
-    def data_sorted_on_col(data, col_names, sort_col):
-        col_index = col_names.index(sort_col)
+    def data_sorted_on_col(data, cols, sort_col):
+        col_index = cols.index(sort_col)
         sorted_data = sorted(data, key=lambda line: try_float(line[col_index]))
         return sorted_data
 
