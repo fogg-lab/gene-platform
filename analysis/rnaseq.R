@@ -15,6 +15,8 @@ suppressMessages(suppressWarnings(library(DESeq2)))
 suppressMessages(suppressWarnings(library(BiocParallel)))
 suppressMessages(suppressWarnings(library(parallel)))
 suppressMessages(suppressWarnings(library(yaml)))
+suppressMessages(suppressWarnings(library(ggrepel)))
+suppressMessages(suppressWarnings(library(ggpubr)))
 
 # write("Libraries loaded, preforming analysis...", stderr())
 
