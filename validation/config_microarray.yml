@@ -2,6 +2,7 @@ min_expr: 50
 min_prop: 0.25
 adj_method: "BH"
 condition: "condition"
-use_weight: True
+use_qual_weights: True
 contrast_level: "endometriosis"
 reference_level: "normal"
+padj_thresh: 0.05
