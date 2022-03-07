@@ -6,7 +6,7 @@
 
 MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "microarray_mean_variance_trend.png"
 MICRO_ARRAY_VOLCANO_IMAGE_FILE = "micrrarray_volcano.png"
-FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "filtered_microarray_mean_variance_trend.png"
+#FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "filtered_microarray_mean_variance_trend.png"
 FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "filtered_microarray_volcano.png"
 
 suppressMessages(suppressWarnings(library(tidyverse)))
