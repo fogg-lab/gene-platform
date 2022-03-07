@@ -3,7 +3,7 @@
 # generating the plot. Preprocess data haven't done yet.
 
 RNA_SEQ_MEAN_DIFF_IMAGE_FILE = "rna_mean_difference.png"
-RNA-SEQ_VOLCANO_IMAGE_FILE = "rna_seq_volcano.png"
+RNA_SEQ_VOLCANO_IMAGE_FILE = "rna_seq_volcano.png"
 FILTERED_RNA_SEQ_MEAN_DIFF_IMAGE_FILE = "filtered_rna_mean_difference.png"
 FILTERED_RNA_SEQ_VOLCANO_IMAGE_FILE = "filtered_rna_seq_volcano.png"
 
