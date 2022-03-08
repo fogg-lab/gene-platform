@@ -8,7 +8,7 @@ import copy
 import yaml
 import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
-    session, Response, jsonify
+    session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
 
 
@@ -169,35 +169,46 @@ def display_output():
     '''
 
     # check here if output.tsv exists and errors.txt doesn't
-    path_to_output =  f"{session['user_session_dir']}output.tsv"
-    output_file = open(path_to_output, encoding="UTF-8")
-    output_reader = csv.reader(output_file, delimiter="\t")
-    output = list(output_reader)
-    output_file.close()
+    unfiltered_output_path =  f"{session['user_session_dir']}output.tsv"
+    unfiltered_output_file = open(unfiltered_output_path, encoding="UTF-8")
+    output_reader = csv.reader(unfiltered_output_file, delimiter="\t")
+    unfiltered_output = list(output_reader)
+    unfiltered_output_file.close()
 
-    filtered_output_path = f"{session['user_session_dir']}{'filter_output.tsv'}"
-    filtered_output_exists = os.path.exists(filtered_output_path)
+    filter_output_path = f"{session['user_session_dir']}{'filter_output.tsv'}"
+    filter_output_exists = os.path.exists(filter_output_path)
+    filtered_data = None
+    if filter_output_exists:
+        filter_output_file = open(filter_output_path, encoding="UTF-8")
+        output_reader = csv.reader(filter_output_file, delimiter="\t")
+        filtered_output = list(output_reader)
+        filter_output_file.close()
+        filtered_data = filtered_output[1:]
 
-    return render_template("results.html", cols=output[:1][0], data=output[1:],\
-        filtered_output_exists=filtered_output_exists)
+    return render_template("results.html", cols = unfiltered_output[:1][0],\
+         data=unfiltered_output[1:], filtered_data=filtered_data)
 
 
-@app.route("/filter_display")
-def display_filtered():
+@app.route("/plots")
+def plots():
     '''
-    display filtered output in a table
+    display plots
     '''
 
-    #perform the same function as displaying results, but for filtered tsv
-    path_to_output =  f"{session['user_session_dir']}filter_output.tsv"
-    output_file = open(path_to_output, encoding="UTF-8")
-    output_reader = csv.reader(output_file, delimiter="\t")
-    output = list(output_reader)
-    output_file.close()
+    session_dir = f"{session['user_session_dir']}"
+    plot_filenames = []
 
+    if session_dir:
+        for filename in os.listdir(session_dir):
+            if ".png" in filename:
+                plot_filenames.append(filename)
     
+    return render_template("plots.html", plot_filenames=plot_filenames)
 
-    return render_template("filter_results.html",filter_cols=output[:1][0],filter_body=output[1:])
+
+@app.route('/getplot/<filename>')
+def getplot(filename):
+    return send_from_directory(session['user_session_dir'], filename)
 
 
 @app.route("/reset", methods=["GET"])
@@ -212,46 +223,6 @@ def reset():
     delete_user_file("output.tsv")
 
     return redirect(url_for("index"))
-
-
-@app.context_processor
-def utility_processor():
-    '''defines functions that templates can use'''
-
-    def try_float(elem):
-        try:
-            elem = float(elem)
-        except:
-            pass
-        return elem
-
-    def data_sorted_on_col(data, col_names, sort_col):
-        col_index = col_names.index(sort_col)
-        sorted_data = sorted(data, key=lambda line: try_float(line[col_index]))
-        return sorted_data
-
-    def data_filtered(data, col_names, filter_text, filter_col=""):
-        '''
-            returns rows that contain the filter text
-            if filter column is unspecified, search all columns
-        '''
-        columns_to_search = []
-        if filter_col:
-            columns_to_search.append(filter_col)
-        else:
-            columns_to_search.append(col_names)
-        filtered_data = []
-        for row in data:
-            row_match = False
-            for colname in columns_to_search:
-                col_index = col_names[colname]
-                if filter_text in row[col_index]:
-                    row_match = True
-            if row_match:
-                filtered_data.append(row)
-
-    return dict(try_float=try_float, data_sorted_on_col=data_sorted_on_col,
-        data_filtered=data_filtered)
 
 
 @app.route("/getunfilteredtsv")
@@ -272,8 +243,8 @@ def get_unfiltered_tsv():
 def get_filtered_tsv():
     '''download filtered output'''
 
-    filtered_output = open(f"{session['user_session_dir']}filter_output.tsv", \
-        encoding="UTF-8")
+    filtered_output = open(f"{session['user_session_dir']}filter_output.tsv",\
+         encoding="UTF-8")
 
     return Response(
         filtered_output,
@@ -442,11 +413,11 @@ def parse_config():
         config_file.close()
 
     # yaml.safe_load loads numerical zero values as "None". below is a fix
-    if "min_expr" in config_params and config_params["min_expr"] == None:
+    if "min_expr" in config_params and config_params["min_expr"] is None:
         config_params["min_expr"] = 0.0
-    if "min_prop" in config_params and config_params["min_prop"] == None:
+    if "min_prop" in config_params and config_params["min_prop"] is None:
         config_params["min_prop"] = 0.0
-    if "padj_thresh" in config_params and config_params["padj_thresh"] == None:
+    if "padj_thresh" in config_params and config_params["padj_thresh"] is None:
         config_params["padj_thresh"] = 0.0
 
     return config_params
@@ -458,7 +429,7 @@ def check_config():
     err_msg = ""
 
     config_params = parse_config()
-    if type(config_params) == str:
+    if isinstance(config_params, str):
         err_msg = config_params
     else:
         err_msg = helpers.validate_parameters(config_params)

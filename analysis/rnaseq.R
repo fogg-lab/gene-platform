@@ -124,10 +124,10 @@ dge_res_df <- as_tibble(fit_res, rownames = "symbol")
 
 colnames(dge_res_df) <- c("symbol", "base_avg", "l2fc", "l2fc_se", "test_stat", "pval", "padj")
 
-# write("Analysis complete, writing output files", stderr())
+write("Analysis complete, writing output files", stderr())
 
 write_tsv(dge_res_df, paste(user_directory,"output.tsv", sep=""))
-volcano_plot(dge_res_df, RNA-SEQ_VOLCANO_IMAGE_FILE)
+volcano_plot(dge_res_df, RNA_SEQ_VOLCANO_IMAGE_FILE)
 mean_difference(dge_res_df, RNA_SEQ_MEAN_DIFF_IMAGE_FILE)
 
 if (file.info(filter_filepath)$size != 0) {

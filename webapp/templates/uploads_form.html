@@ -96,8 +96,7 @@
 <div id="messages">
 </div>
 
-<p><a href="{{ url_for('parameters') }}" class="button" id="next_button">Next: Parameters</a></p>
-<p><button class="gray_button" id="fake_next_button">Next: Parameters</button></p>
+<button onclick="goto('/parameters')" class="button" id="next_button" disabled>Next: Parameters</button>
 
 <script>
 
@@ -124,6 +123,10 @@
 	
 	// disable next button if progress counts or coldata not uploaded
 	update_next_button()
+
+	function goto(url) {
+    	window.location.href = url;
+  	}
 
 	function cancelReqListener() {
 		// file upload successfully cancelled
@@ -175,12 +178,10 @@
 		  || document.getElementById("progress_of_counts").className != "success"
 		  || document.getElementById("progress_of_coldata").className != "success"
 	  	) {
-		  	document.getElementById("next_button").style.display = 'none';
-			document.getElementById("fake_next_button").style.display = 'inline-block';
+		  	document.getElementById("next_button").disabled = true;
 	  	}
 	  	else {
-			document.getElementById("next_button").style.display = 'inline-block';
-			document.getElementById("fake_next_button").style.display = 'none';
+			document.getElementById("next_button").disabled = false;
 	  	}
 	}
 
