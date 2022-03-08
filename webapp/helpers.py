@@ -221,7 +221,7 @@ def get_confirmation_message(config_params, data_type):
     contrast_level = config_params["contrast_level"]
     reference_level = config_params["reference_level"]
 
-    analysis_formula += f"<p><b>Current Analysis Being Performed</b>:</p>\n"
+    analysis_formula = f"<p><b>Current Analysis Being Performed</b>:</p>\n"
     analysis_formula += f"<p><i>{condition} ~ (intercept) + {contrast_level}</i></p>\n\n"
     analysis_formula += f"<p><b>Data Type:</b> {data_type}\n</p>"
     analysis_formula += f"<p><b>Parameters:</b></p>\n"
