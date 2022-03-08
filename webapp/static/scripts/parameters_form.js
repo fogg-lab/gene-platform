@@ -5,10 +5,8 @@ function show_hide_parameters() {
   if (!document.getElementById("data_type").value) {
     document.getElementById("form_parameters").style.display = "none";
     document.getElementById("form_parameters").style.visibility = "hidden";
-    // hide submit button
-    document.getElementById("submit_button").style.display = "none";
+    // disable submit button
     document.getElementById("submit_button").disabled = true;
-    document.getElementById("fake_submit_button").style.display = "inline-block";
   }
 
   else {
@@ -28,10 +26,8 @@ function show_hide_parameters() {
       document.getElementById("use_qual_weights_label").style.visibility = "visible";
       document.getElementById("use_qual_weights").setAttribute("type","checkbox");
     }
-    // show the submit button
-    document.getElementById("submit_button").style.display = "inline-block";
+    // enable submit button
     document.getElementById("submit_button").disabled = false;
-    document.getElementById("fake_submit_button").style.display = "none";
   }
 }
 
@@ -143,5 +139,3 @@ function show_runtime() {
       counter += 1  
   }, 1000);  
 }
-
-document.getElementById("fake_submit_button").disabled = true;

@@ -16,7 +16,8 @@ def check_parameter_names(config_parameters):
     config_error_status = ""
 
     for parameter_name, parameter_value in config_parameters.items():
-        if (parameter_value in {"", None}) and (parameter_name in all_parameters):
+        if (parameter_value in {"", None})\
+          and (parameter_name in all_parameters):
             config_error_status += \
                 f"Missing value for parameter: {parameter_name}\n"
         elif parameter_name not in all_parameters:
@@ -38,34 +39,36 @@ def check_parameter_names(config_parameters):
 def validate_parameters(config_parameters):
     '''
     returns an error message if config parameters are invalid
-    otherwise, returns an empty string
+    returns an empty string if config parameters are valid
     '''
-    error_msg = check_parameter_names(config_parameters)
-    if error_msg:
-        return error_msg
-    if type(config_parameters["min_expr"]) not in [int, float]:
-        return "min_expr must be a number"
-    if config_parameters["min_expr"] < 0:
-        return "min_expr must be a non-negative"
-    if type(config_parameters["min_prop"]) not in [int, float]:
-        return "min_prop must be a number"
-    if config_parameters["min_prop"] < 0:
-        return "min_prop must be a non-negative"
-    if type(config_parameters["padj_thresh"]) not in [int, float]:
-        return "padj_thresh must be a number"
-    if type(config_parameters["adj_method"]) != str:
-        return "adj_method must be a string"
-    if type(config_parameters["condition"]) != str:
-        return "condition must be a string"
-    if type(config_parameters["contrast_level"]) != str:
-        return "contrast_level must be a string"
-    if type(config_parameters["reference_level"]) != str:
-        return "reference_level must be a string"
-    if ("use_qual_weights" in config_parameters) and \
-       (type(config_parameters["use_qual_weights"]) != bool):
-        return "use_qual_weights must be a bool"
 
-    return ""
+    error_msg = ""
+    param_names_invalid = check_parameter_names(config_parameters)
+    if param_names_invalid:
+        error_msg = param_names_invalid
+    elif type(config_parameters["min_expr"]) not in [int, float]:
+        error_msg = "min_expr must be a number"
+    elif config_parameters["min_expr"] < 0:
+        error_msg = "min_expr must be a non-negative"
+    elif type(config_parameters["min_prop"]) not in [int, float]:
+        error_msg = "min_prop must be a number"
+    elif config_parameters["min_prop"] < 0:
+        error_msg = "min_prop must be a non-negative"
+    elif type(config_parameters["padj_thresh"]) not in [int, float]:
+        error_msg = "padj_thresh must be a number"
+    elif not isinstance(config_parameters["adj_method"], str):
+        error_msg = "adj_method must be a string"
+    elif not isinstance(config_parameters["condition"], str):
+        error_msg = "condition must be a string"
+    elif not isinstance(config_parameters["contrast_level"], str):
+        error_msg = "contrast_level must be a string"
+    elif not isinstance(config_parameters["reference_level"], str):
+        error_msg = "reference_level must be a string"
+    elif "use_qual_weights" in config_parameters and \
+       not isinstance(config_parameters["use_qual_weights"], bool):
+        error_msg = "use_qual_weights must be a bool"
+
+    return error_msg
 
 
 def standardize_filename(filename):

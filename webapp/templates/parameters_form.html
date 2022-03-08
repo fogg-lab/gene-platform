@@ -6,7 +6,7 @@
 </head>
 
 <body>
-  <p><form id="submit" action="javascript:submit()">
+  <form id="submit" action="javascript:submit()">
     <label> Data type </label>
     <select class="data_type" id="data_type" name="data_type">
       <option value=""></option>
@@ -38,14 +38,18 @@
         </p>
       {% endif %}
     </div>
-    <p>
-      <a href="{{ url_for('index') }}" class="button">Previous: Upload Files</a>
-      <input type="submit" class="button" id="submit_button" value="Submit" style="display: none;">
-      <p><button class="gray_button" id="fake_submit_button">Submit</button></p>
-    </p>
-  </form></p>
+    <p></p>
+    <a href="{{ url_for('index') }}" class="button">Previous: Upload Files</a>
+    <input type="submit" class="button" id="submit_button" value="Submit" disabled>
+  </form>
 </body>
 
 <div id="runtime_overlay"><span id="time"></span></div>
+
+<script>
+  function goto(url) {
+    window.location.href = url;
+  }
+</script>
 
 <script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>

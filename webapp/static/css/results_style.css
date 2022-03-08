@@ -1,20 +1,36 @@
+html, body { width: 100%; height: 100%; margin: 0 auto; text-align: center; }
+
+.output_filter_div{
+    margin:auto;
+}
+
 .spicy-table{
     border-collapse: collapse;
     margin-left: auto;
     margin-right: auto;
     font-size: 0.9em;
-    font-family: Verdana;
+    font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
     min-width: 400px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
-.spicy-table thead tr {
+.spicy-table thead {
+    position:relative;
+}
+
+.spicy-table thead th {
+    background:white;
+    position:sticky;
+    top:0;
+}
+
+.spicy-header-div {
     background-color: #8aca8a;
     color: #ffffff;
     text-align: left;
+    font-size: 1.2em;
 }
 
-.spicy-table th,
 .spicy-table td {
     padding: 12px 15px;
 }
