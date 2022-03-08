@@ -1,13 +1,12 @@
 
 <!-- credit for the HTML5 drag-and-drop API for file uploads: https://blogs.sitepointstatic.com/examples/tech/filedrag/3/index.html -->
-{% extends "upload_template.html" %}
 
-{% block head %}
-{% block title %}Uploads{% endblock %}
+<head>
+<title>DGE Analysis</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
-{% endblock %}
+</head>
 <body>
-{% block central %}
+
 <h1>DGE Analysis - Upload Files</h1>
 
 <form id="upload" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
@@ -188,5 +187,5 @@
 </script>
 
 <script src="{{ url_for('static',filename='scripts/filedrag.js') }}"></script>
-{% endblock %}
+
 </body>
