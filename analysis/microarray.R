@@ -1,153 +1,104 @@
-# Name: Ai Vu
-# Source: based on the provided microrray analysis pipeline in R
-# Description: Given the input files: microrray_coldata(.tsv), micro_array_count(.tsv),
-# parameters (yaml), +/- filter_gene(.txt). Output the results of microarray analysis (.tsv)
-# for filter and unfiltered genes.
-# To use the program, specify the path to input files in lines 40-43
+# Ai: this program analyse the microarray part of the gene expression analysis.
+# Input: microarray files (coldata (.tsv), countdata(.tsv), config parameters(.yml)).
+# Optional Input: filter_gene.txt
+# Output: gene expression analysis for unfilter +/- filtered genes (.tsv)
+# and 2 plots (mean microarray_mean_variance_trend(.png) and volcano_plot(.png)
 
-# Loading libraries required for microarray analysis.
-# Suppress Messages/Warnings are used to hide long output from Bioconductor packages
+MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "microarray_mean_variance_trend.png"
+MICRO_ARRAY_VOLCANO_IMAGE_FILE = "micrrarray_volcano.png"
+#FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "filtered_microarray_mean_variance_trend.png"
+FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "filtered_microarray_volcano.png"
+
 suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(limma)))
-suppressMessages(suppressWarnings(library(stringr)))
-suppressMessages(suppressWarnings(library(BiocGenerics)))
-suppressMessages(suppressWarnings(library(tibble)))
 suppressMessages(suppressWarnings(library(yaml)))
+suppressMessages(suppressWarnings(library(ggrepel)))
 
-# check if the filepath exists
-checkFilePath = function(path){
-    return(file.exists(path))}
 
-#try to read the .txt files
-tryReadTXTFile= function(file){
-    tryRead <- try(read.table(file, sep = "", header = FALSE), silent = TRUE)
-    if (class(tryRead) != "try-error") {
-        name <- read.table(file, sep = "", header = FALSE)
-    }else{
-        message("File doesn't exist, please check")
-    }
-
-    return(name)
-}
-
-# try to read the .tsv file
-tryReadTSVFile = function(file){
-    tryRead <- try(read_tsv(file), silent = TRUE)
-    if (class(tryRead) != "try-error") {
-        name <- read_tsv(file)
-    } else {
-        message("File doesn't exist, please check")
-    }
-    return(name)
-}
-
-# Command arguments stored in args variable, used to get Session ID from Flask app
 args = commandArgs(trailingOnly = TRUE)
-print(args)
 
-# Grabs directory where User session is located, creates variables for each file required for analysis
 user_directory <- paste("user_files/", gsub("[][]","",args[1]), "/", sep="")
 counts_filepath <- paste(user_directory, "counts.tsv", sep="")
 coldata_filepath <- paste(user_directory, "coldata.tsv", sep="")
 config_filepath <- paste(user_directory, "config.yml", sep="")
 filter_filepath <- paste(user_directory, "filter.txt", sep="")
-print(user_directory)
+
+mean_variance_trend = function(fit, filename){
+  micro_array_mean_variance_trend_path <- paste(user_directory, filename)
+  png(micro_array_mean_variance_trend_path)
+  plot<- plotSA(fit, xlab="Average log-expression", ylab="log2(sigma)", zero.weights=FALSE, pch=16, cex=0.2)
+  dev.off()
+}
+
+volcano_plot = function(fit, filename){
+  micro_array_volcano_path <- paste(user_directory, filename)
+  de <- fit
+  de$diffexpressed <- "NO"
+  de$diffexpressed[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
+  de$diffexpressed[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
+  de$delabel <- NA
+  de$delabel[de$diffexpressed != "NO"] <- de$symbol[de$diffexpressed != "NO"]
+  plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=diffexpressed, label=delabel)) +
+    geom_point() +
+    theme_minimal() +
+    scale_color_manual(values=c("blue", "black", "red")) +
+    geom_vline(xintercept=c(-0.6, 0.6), col="red") +
+    geom_hline(yintercept=-log10(0.05), col="red")
+  ggsave(micro_array_volcano_path,  width = 20, height = 20, units = "cm")
+}
 
 
-if (checkFilePath(counts_filepath) &
-    checkFilePath(coldata_filepath) &
-    checkFilePath(config_filepath)){
-    #read files
-    counts_df <- tryReadTSVFile(counts_filepath)
-    coldata_df <- tryReadTSVFile(coldata_filepath)
-    input_config <- read_yaml(config_filepath)
+counts_df <- read_tsv(counts_filepath, col_types=cols())
+coldata_df <- read_tsv(coldata_filepath, col_types=cols())
 
-    # get the parameters from user
-    min_expr = log(input_config$min_expr,2)
-    min_prop <- input_config$min_prop
-    condition <- input_config$condition
-    adj_method <- input_config$adj_method
-    use_qual_weights <- input_config$use_qual_weights
-    contrast_level <- input_config$contrast_level
-    reference_level <- input_config$reference_level
-    # check if there is contents in files
-    if (nrow(counts_df) > 1 & nrow(coldata_df) > 1){
+config_yml <- read_yaml(config_filepath)
 
-        # run the main analysis for microrray
-        coldata_df <- coldata_df %>%
-        mutate(condition = factor(condition, levels = c(contrast_level, reference_level)))
+min_expr <- config_yml$min_expr #log2(50) = 5.6438
+min_prop <- config_yml$min_prop #0.25
+padj_thresh <- config_yml$padj_thresh #0.05
+adj_method <- config_yml$adj_method #"BH"
+condition_col <- config_yml$condition #"condition"
+contrast_level <- config_yml$contrast_level #"endometriosis"
+reference_level <- config_yml$reference_level #"normal"
+use_qual_weights <- config_yml$use_qual_weights #TRUE
 
-        coef_name = gsub(" ", "", paste(condition, reference_level))
+coldata_df <- coldata_df %>%
+    mutate(condition = factor(condition, levels = c(reference_level, contrast_level)))
 
-        filt_counts_df <- counts_df %>%
-            dplyr::filter(rowSums(.[-1] > min_expr) / (ncol(.) - 1) >= min_prop)
+filt_counts_df <- counts_df %>%
+    filter(rowSums(.[-1] > min_expr) / (ncol(.) - 1) >= min_prop)
+filt_expr <- filt_counts_df %>%
+    column_to_rownames("symbol") %>%
+    as.matrix()
 
-        filt_expr <- filt_counts_df %>%
-            column_to_rownames("symbol") %>%
-            as.matrix()
+design <- model.matrix(~ condition, data = coldata_df)
+rownames(design) <- coldata_df$sample_name
 
-        design <- model.matrix(~ condition, data = coldata_df)
-        rownames(design) <- coldata_df$sample_name
-        design
-        all(colnames(filt_expr) == rownames(design))
+all(colnames(filt_expr) == rownames(design))
 
-        if (isTRUE(use_qual_weights)){
-            qual_weights <- arrayWeights(filt_expr, design = design)
-        }else{
-            qual_weights <- 0
-        }
+if (use_qual_weights) {
+    qual_weights <- arrayWeights(filt_expr, design = design)
+} else {
+    qual_weights <- NULL
+}
 
-        lm_fit <- lmFit(filt_expr, design = design, weights = qual_weights)
-        bayes_fit <- eBayes(lm_fit)
-        bayes_fit$coefficients %>% colnames()
+lm_fit <- lmFit(filt_expr, design = design, weights = qual_weights)
+bayes_fit <- eBayes(lm_fit)
+mean_variance_trend(bayes_fit, MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE)
+bayes_fit$coefficients %>% colnames()
 
-        fit_de_res_df_unfiltered_genes <- topTable(bayes_fit, coef = coef_name, number = nrow(filt_counts_df), adjust.method = adj_method) %>%
-            rename(lfc = logFC, ave_expr = AveExpr, pval = P.Value, padj = adj.P.Val) %>%
-           as_tibble(rownames = "symbol")
+fit_de_res_df <- topTable(bayes_fit, coef = paste(condition_col, contrast_level, sep=""), number = nrow(filt_counts_df), adjust.method = adj_method, p.value = padj_thresh) %>%
+    rename(lfc = logFC, ave_expr = AveExpr, pval = P.Value, padj = adj.P.Val) %>%
+    as_tibble(rownames = "symbol")
 
-        #if there is filter-gene file: create another output for unfiltered gene
-        if (checkFilePath(filter_filepath)){
-            filter_gene_df <- tryReadTXTFile(filter_filepath)
-            if(nrow(filter_gene_df) > 1){
-                gene_vec <- filter_gene_df[['V1']]
-                modified_counts_df <- counts_df[counts_df$symbol %in% gene_vec,]
+colnames(fit_de_res_df) <- c("symbol", "l2fc", "base_avg", "test_stat", "pval", "padj", "B")
 
-                modified_filt_counts_df <- modified_counts_df %>%
-                    dplyr::filter(rowSums(.[-1] > min_expr) / (ncol(.) - 1) >= min_prop)
+write_tsv(fit_de_res_df, paste(user_directory,"output.tsv", sep=""))
+volcano_plot(fit_de_res_df, MICRO_ARRAY_VOLCANO_IMAGE_FILE)
 
-                modified_filt_expr <- modified_filt_counts_df %>%
-                    column_to_rownames("symbol") %>%
-                    as.matrix()
-
-                design <- model.matrix(~ condition, data = coldata_df)
-                rownames(design) <- coldata_df$sample_name
-
-                design
-                all(colnames(modified_filt_expr) == rownames(design))
-                print(design)
-
-                if (isTRUE(use_qual_weights)){
-                    modified_qual_weights <- arrayWeights(modified_filt_expr, design = design)
-                }else{
-                    modified_qual_weights <- 0
-                }
-                modified_lm_fit <- lmFit(modified_filt_expr, design = design, weights = modified_qual_weights)
-                modified_bayes_fit <- eBayes(modified_lm_fit)
-                modified_bayes_fit$coefficients %>% colnames()
-
-                fit_de_res_df_filtered_genes <- topTable(modified_bayes_fit, coef = coef_name, number = nrow(modified_filt_counts_df), adjust.method = adj_method) %>%
-                rename(lfc = logFC, ave_expr = AveExpr, pval = P.Value, padj = adj.P.Val) %>%
-                as_tibble(rownames = "symbol")
-
-                # save the filtered output as tsv
-                write.table(fit_de_res_df_filtered_genes,
-                    file=paste(user_directory, "filter_output.tsv", sep=""), quote=FALSE, sep='\t', col.names = NA)
-                
-                # save the unfiltered output as tsv
-                write.table(fit_de_res_df_unfiltered_genes,
-                    file=paste(user_directory, "output.tsv", sep=""), quote=FALSE, sep='\t', col.names = NA)
-            }
-        }
-    }
-
+if (file.info(filter_filepath)$size != 0) {
+    filter_list <- scan(filter_filepath, what="character")
+    filtered_df <- fit_de_res_df[fit_de_res_df$symbol %in% filter_list,]
+    write_tsv(filtered_df, paste(user_directory, "filter_output.tsv", sep=""))
+    volcano_plot(filtered_df, FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE)
 }

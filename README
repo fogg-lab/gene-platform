@@ -7,6 +7,7 @@ R Packages:
   - yaml
   - tidyverse
   - BiocManager
+  - ggpubr
 
 BiocManager packages:
   - BiocParallel

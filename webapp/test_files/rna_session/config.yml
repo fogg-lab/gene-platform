@@ -5,4 +5,3 @@ adj_method: "BH"
 condition: "condition"
 contrast_level: "tumor"
 reference_level: "healthy"
-use_qual_weights: FALSE

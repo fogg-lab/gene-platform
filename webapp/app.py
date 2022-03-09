@@ -2,12 +2,13 @@ import os
 import subprocess
 import shutil
 import csv
-import yaml
-import helpers
 from datetime import timedelta
 import tempfile
+import copy
+import yaml
+import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
-    session, Response
+    session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
 
 
@@ -21,23 +22,12 @@ Session(app)
 
 '''
 backlog:
-TODO: Add button to remove uploaded file (cancel button next to progress bar)
-TODO: Validation:
-        - Supplied column names must be checked against the values present in
-            the data. If there is a mismatch (e.g., user entered “disease
-            status” but the column name is “disease_condition”), the user
-            should be informed of the issue and given the opportunity to
-            correct the data columns and resubmit.
-        - Column names for values returned by all analysis types must match
-            (e.g., “log2FoldChange” (DESeq2) and “logFC” (limma) should both
-            be abbreviated the same)
-        - Supplied factor levels must be present in the data and user should
-            be informed of errors and allowed to correct
-        - Constraint: do not allow navigating to parameters without uploading
-            all required files
-TODO: Descriptions for parameters
-TODO: User story 4 (inform user of analysis to be conducted before execution)
-TODO: Sort and filter
+TODO: Descriptions for the columns included in the output
+TODO: Parameter field descriptions
+TODO: Sort and filter output using server functions from the display page templates
+         - See utility_processor() function in app.py for sort/filter helper functions
+            Usage: see https://roytuts.com/context-processors-in-flask-api/
+TODO: Create a page for visualizations (choose plot, call script, display .png result)
 '''
 
 # Ensure that the current working directory is the webapp directory
@@ -58,7 +48,12 @@ def index():
     ensure_session_dir()
 
     user_files = os.listdir(session["user_session_dir"])
-    uploads = [filename for filename in user_files if "output" not in filename]
+    uploads = {}
+    for filename in ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]:
+        uploads[filename] = False
+    for filename in user_files:
+        if filename in uploads:
+            uploads[filename] = True
 
     return render_template("uploads_form.html", uploads=uploads, title="Uploads")
 
@@ -86,7 +81,19 @@ def upload():
     if standardized_filename == "config.yml":
         result["error_status"] = check_config()
 
-    return result
+    return jsonify(result)
+
+
+@app.route("/cancelupload", methods=["POST"])
+def cancelupload():
+    '''
+    removes uploaded file from user session directory
+    '''
+
+    filename = request.form.get("filename")
+    delete_user_file(filename)
+
+    return f"{filename} upload cancelled"
 
 
 @app.route("/parameters", methods=["GET"])
@@ -116,10 +123,6 @@ def submit():
     # get whether analysis is microarray or RNA-Seq
     data_type = request.form.get("data_type")
 
-    parameters = helpers.get_request_parameters(request.form, data_type)
-
-    generate_config(parameters)
-
     # remove old output
     delete_user_file("filter_output.tsv")
     delete_user_file("output.tsv")
@@ -131,6 +134,43 @@ def submit():
     return "analysis completed"
 
 
+@app.route("/confirmsubmission", methods=["POST"])
+def confirm_submission():
+    '''validate input and display formula before submission'''
+
+    # get whether analysis is microarray or RNA-Seq, and get params
+    data_type = request.form.get("data_type")
+    params = helpers.get_request_parameters(request.form, data_type)
+
+    # generate config file from the form parameters
+    generate_config(params)
+
+    # get the analysis formula to display for the user
+    confirmation_message = helpers.get_confirmation_message(params, data_type)
+
+    counts_file = read_user_file("counts.tsv")
+    counts_reader = csv.reader(counts_file, delimiter="\t")
+    counts_list = list(counts_reader)
+    counts_file.close()
+
+    coldata_file = read_user_file("coldata.tsv")
+    coldata_reader = csv.reader(coldata_file, delimiter="\t")
+    coldata_list = list(coldata_reader)
+    coldata_file.close()
+
+    coldata_counts_match_error = helpers.check_coldata_rows_match_counts_cols(
+        copy.deepcopy(counts_list[0]), copy.deepcopy(coldata_list))
+    factor_levels_error = helpers.check_factor_levels(
+        params, copy.deepcopy(coldata_list))
+
+    if coldata_counts_match_error:
+        confirmation_message = f"Error: {coldata_counts_match_error}"
+    elif factor_levels_error:
+        confirmation_message = f"Error: {factor_levels_error}"
+
+    return confirmation_message
+
+
 @app.route("/display")
 def display_output():
     '''
@@ -138,79 +178,60 @@ def display_output():
     '''
 
     # check here if output.tsv exists and errors.txt doesn't
-    path_to_output1 =  f"{session['user_session_dir']}output.tsv"
-    output1 = open(path_to_output1, encoding="UTF-8")
-    reader1 = csv.reader(output1, delimiter="\t")
-    output = [[elem for elem in output1] for output1 in reader1]
-    output1.close()
+    unfiltered_output_path =  f"{session['user_session_dir']}output.tsv"
+    unfiltered_output_file = open(unfiltered_output_path, encoding="UTF-8")
+    output_reader = csv.reader(unfiltered_output_file, delimiter="\t")
+    unfiltered_output = list(output_reader)
+    unfiltered_output_file.close()
 
-    return render_template("results.html",output_cols=output[:1][0],output_body=output[1:])
+    filter_output_path = f"{session['user_session_dir']}{'filter_output.tsv'}"
+    filter_output_exists = os.path.exists(filter_output_path)
+    filtered_data = None
+    if filter_output_exists:
+        filter_output_file = open(filter_output_path, encoding="UTF-8")
+        output_reader = csv.reader(filter_output_file, delimiter="\t")
+        filtered_output = list(output_reader)
+        filter_output_file.close()
+        filtered_data = filtered_output[1:]
 
-@app.route("/filter_display")
-def display_filtered():
+    return render_template("results.html", cols = unfiltered_output[:1][0],\
+         data=unfiltered_output[1:], filtered_data=filtered_data)
+
+
+@app.route("/plots")
+def plots():
     '''
-    display filtered output in a table
+    display plots
     '''
 
-    #perform the same function as displaying results, but for filtered tsv
-    path_to_output2 =  f"{session['user_session_dir']}filter_output.tsv"
-    output2 = open(path_to_output2, encoding="UTF-8")
-    reader2 = csv.reader(output2, delimiter="\t")
-    filter_output = [[elem for elem in output2] for output2 in reader2]
-    output2.close()
+    session_dir = f"{session['user_session_dir']}"
+    plot_filenames = []
 
-    return render_template("filter_results.html",filter_cols=filter_output[:1][0],filter_body=filter_output[1:])
+    if session_dir:
+        for filename in os.listdir(session_dir):
+            if ".png" in filename:
+                plot_filenames.append(filename)
+    
+    return render_template("plots.html", plot_filenames=plot_filenames)
+
+
+@app.route('/getplot/<filename>')
+def getplot(filename):
+    return send_from_directory(session['user_session_dir'], filename)
 
 
 @app.route("/reset", methods=["GET"])
 def reset():
+    '''Deletes files from a users session'''
+
     delete_user_file("counts.tsv")
     delete_user_file("coldata.tsv")
     delete_user_file("filter.txt")
     delete_user_file("config.yml")
     delete_user_file("filter_output.tsv")
     delete_user_file("output.tsv")
+
     return redirect(url_for("index"))
-
-
-@app.context_processor
-def utility_processor():
-    '''defines functions that templates can use'''
-
-    def try_float(elem):
-        try:
-            elem = float(elem)
-        except:
-            pass
-        return elem
-
-    def data_sorted_on_col(data, col_names, sort_col):
-        col_index = col_names.index(sort_col)
-        sorted_data = sorted(data, key=lambda line: try_float(line[col_index]))
-        return sorted_data
-
-    def data_filtered(data, col_names, filter_text, filter_col=""):
-        '''
-            returns rows that contain the filter text
-            if filter column is unspecified, search all columns
-        '''
-        columns_to_search = []
-        if filter_col:
-            columns_to_search.append(filter_col)
-        else:
-            columns_to_search.append(col_names)
-        filtered_data = []
-        for row in data:
-            row_match = False
-            for colname in columns_to_search:
-                col_index = col_names[colname]
-                if filter_text in row[col_index]:
-                    row_match = True
-            if row_match:
-                filtered_data.append(row)
-
-    return dict(try_float=try_float, data_sorted_on_col=data_sorted_on_col,
-        data_filtered=data_filtered)
 
 
 @app.route("/getunfilteredtsv")
@@ -231,8 +252,8 @@ def get_unfiltered_tsv():
 def get_filtered_tsv():
     '''download filtered output'''
 
-    filtered_output = open(f"{session['user_session_dir']}filter_output.tsv", \
-        encoding="UTF-8")
+    filtered_output = open(f"{session['user_session_dir']}filter_output.tsv",\
+         encoding="UTF-8")
 
     return Response(
         filtered_output,
@@ -268,14 +289,6 @@ def save_temp_file(file_contents, filename):
     user_file.close()
 
 
-
-
-def check_factor_levels():
-    '''ensures factor levels are present in the input files'''
-
-    pass
-
-
 def call_analysis(data_type):
     '''
     calls microarray or rna-seq analysis depending on data_type
@@ -294,7 +307,7 @@ def read_user_file(filename):
     '''
     opens a user file for reading
     just supply the filename like "counts.tsv" for example
-    returns read-only user file like counts, coldata, config, or filter
+    returns lines from a file in the users session directory
     '''
     user_file = None
 
@@ -313,7 +326,8 @@ def delete_user_file(filename):
     just supply the filename like "counts.tsv" for example
     '''
 
-    if session_dir := get_session_dir():
+    session_dir = get_session_dir()
+    if session_dir:
         filepath = f"{session_dir}{filename}"
         if os.path.isfile(filepath):
             os.remove(filepath)
@@ -324,14 +338,15 @@ def wait_for_output():
 
     analysis_done = False
     while not analysis_done:
-        path_to_output =  f"{session['user_session_dir']}output.tsv"
-
-        # "2>/dev/null" suppresses the expected error output "file not found"
-        output = subprocess.Popen([f"ls {path_to_output} 2>/dev/null"], \
-            stdout=subprocess.PIPE, shell=True).communicate()[0]
+        unfilt_output_path =  f"{session['user_session_dir']}output.tsv"
+        filt_output_path =  f"{session['user_session_dir']}filter_output.tsv"
+        filter_path = f"{session['user_session_dir']}filter.txt"
+        is_output = os.path.exists(unfilt_output_path)
+        if is_output and os.path.exists(filter_path):
+            is_output = os.path.exists(filt_output_path)
 
         # results of the ls are returned in bytes, ends with newline character
-        analysis_done = output == str.encode(path_to_output) + b"\n"
+        analysis_done = is_output
 
 
 def cleanup_old_sessions():
@@ -344,24 +359,30 @@ def cleanup_old_sessions():
             get_age = "$(($(date +%s) - $(date +%s -r " + old_dir + ")))"
 
             # Run bash command and return the stdout output
-            age_seconds = int(subprocess.Popen([f"echo {get_age}"], \
-                stdout=subprocess.PIPE, shell=True).communicate()[0])
+            age_seconds = subprocess.Popen([f"echo {get_age}"], \
+                stdout=subprocess.PIPE, shell=True).communicate()[0]
 
-            if age_seconds > 14400:
-                shutil.rmtree(old_dir)
+            try:
+                age_seconds = int(age_seconds)
+                if age_seconds > 14400:
+                    shutil.rmtree(old_dir)
+            except ValueError:
+                pass
 
 
 def get_session_dir():
+    ''' returns session dir if it exists, otherwise returns False '''
+
     if "user_session_dir" in session:
         return session["user_session_dir"]
     else:
-        return False
+        return ""
 
 
 def generate_config(config_parameters):
     '''generates a config file using user-entered parameters'''
 
-    config_file_path = f"{session['user_session_dir']}/config.yml"
+    config_file_path = f"{session['user_session_dir']}config.yml"
     config_file = open(config_file_path, "w", encoding="UTF-8")
 
     for param in config_parameters.keys():
@@ -389,11 +410,26 @@ def ensure_session_dir():
 
 
 def parse_config():
+    ''' parses config into a dict of parameters '''
+
     session_dir = get_session_dir()
-    config_file_path = session_dir + "/config.yml"
-    config_file = open(config_file_path)
-    config_parameters = yaml.safe_load(config_file)
-    return config_parameters
+    config_file_path = session_dir + "config.yml"
+    config_params = {}
+
+    if session_dir and os.path.exists(config_file_path):
+        config_file = open(config_file_path, encoding="UTF-8")
+        config_params = yaml.safe_load(config_file)
+        config_file.close()
+
+    # yaml.safe_load loads numerical zero values as "None". below is a fix
+    if "min_expr" in config_params and config_params["min_expr"] is None:
+        config_params["min_expr"] = 0.0
+    if "min_prop" in config_params and config_params["min_prop"] is None:
+        config_params["min_prop"] = 0.0
+    if "padj_thresh" in config_params and config_params["padj_thresh"] is None:
+        config_params["padj_thresh"] = 0.0
+
+    return config_params
 
 
 def check_config():
@@ -402,7 +438,7 @@ def check_config():
     err_msg = ""
 
     config_params = parse_config()
-    if type(config_params) == str:
+    if isinstance(config_params, str):
         err_msg = config_params
     else:
         err_msg = helpers.validate_parameters(config_params)

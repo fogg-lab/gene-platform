@@ -76,15 +76,23 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			}
 
 			// create progress bar and set id for tracking
-			var o = $id("progress");
-			var progress = o.appendChild(document.createElement("p"));
+			var progress_div_id = "progress_of_" + standard_filename + "_div"
+			var progress_div = $id(progress_div_id);
+			var progress = progress_div.appendChild(document.createElement("p"));
 			progress.appendChild(document.createTextNode("upload " + file.name));
 			progress.id = "progress_of_" + standard_filename;
+			
+			// show progress div and cancel button
+			progress_div.style.display = 'table-cell';
+			$id("cancel_" + standard_filename + "_button").style.display = "inline-block";
+			
+			// initially set progress bar to grey
+			progress_div.style.backgroundPosition = "100% 0"
 
 			// progress bar
-			xhr.upload.addEventListener("progress", function(e) {
+			xhr.upload.addEventListener('progress', function(e) {
 				var pc = parseInt(100 - (e.loaded / e.total * 100));
-				progress.style.backgroundPosition = pc + "% 0";
+				progress_div.style.backgroundPosition = pc + "% 0";
 			}, false);
 
 			// file received/failed
@@ -94,14 +102,14 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 						var response = JSON.parse(xhr.responseText);
 						
 						// remove prior status messages
-						file_status_classname = "status_of" + standard_filename
-						old_file_status = document.getElementsByClassName(file_status_classname);
+						var file_status_classname = "status_of" + standard_filename
+						var old_file_status = document.getElementsByClassName(file_status_classname);
 						for (status_message of old_file_status) {
 							status_message.remove()
 						}
 
 						if (response.error_status) {
-							progress.className = "failure";
+							progress.className = "failed";
 							Output(
 								"<p class=\"" + file_status_classname +
 								"\"><strong>Error in " + file.name + ": " +
@@ -111,6 +119,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 							progress.className = "success";
 							progress.innerHTML = "File uploaded: " + file.name
 						}
+						update_next_button();
 					}
 				}
 			};
@@ -150,24 +159,25 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 
 	}
 
-	// call initialization file
-	if (window.File && window.FileList && window.FileReader) {
-		Init();
-	}
-
 
 	function get_standardized_filename(filename) {
 		if (filename.includes("config")) {
-			filename = "config.yml"
+			filename = "config";
 		} else if (filename.includes("count")) {
-			filename = "counts.tsv"
+			filename = "counts";
 		} else if (filename.includes("col")) {
-			filename = "coldata.tsv"
+			filename = "coldata";
 		} else if (filename.includes('filt')) {
-			filename = "filter.txt"
+			filename = "filter";
 		}
     
     	return filename
+	}
+
+
+	// call initialization file
+	if (window.File && window.FileList && window.FileReader) {
+		Init();
 	}
 
 })();
