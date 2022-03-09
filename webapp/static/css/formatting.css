@@ -87,7 +87,6 @@ pre {
 	padding: 7px 15px;
 	text-align: center;
 	text-decoration: none;
-	display: inline-block;
 	font-size: 15px;
 	cursor:pointer;
 }
@@ -123,4 +122,21 @@ pre {
 	color: white;
 	transform: translate(-50%,-50%);
 	-ms-transform: translate(-50%,-50%);
+}
+
+#header h1{
+	max-width: fit-content;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.upload_form {
+	width:70%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.buttons {
+	margin-left:auto;
+	margin-right:auto;
 }

@@ -3,45 +3,60 @@
 {% extends "upload_template.html" %}
 
 {% block head %}
-{% block title %}Uploads{% endblock %}
-<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/formatting.css') }}">
+	{{ super() }}
 {% endblock %}
-<body>
-{% block central %}
-<h1>DGE Analysis - Upload Files</h1>
 
-<form id="upload" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+<br><br><br><br>
+{%block header%}<h1>DGE Analysis - Upload Files</h1>{% endblock %}
 
-<fieldset>
-<legend>Upload files: counts, coldata, filter (optional), and config (optional)</legend>
-
-<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
-
-<div>
-	<label for="fileselect">Files to upload:</label>
-	<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" accept=".txt,.tsv,.yml">
-	<div id="filedrag" style="display: block;">or drop files here</div>
-</div>
-
-<div id="submitbutton">
-	<button type="submit">Upload Files</button>
-</div>
-
-</fieldset>
-
-</form>
-
-<div id="progress">
-  {% for upload in uploads -%}
-    <p class="success" id="progress_of_{{upload}}">File uploaded: {{upload}}</p>
-  {%- endfor %}
-</div>
-
-<div id="messages">
-</div>
-
-<p><a href="{{ url_for('parameters') }}" class="button">Next: Parameters</a></p>
-
-<script src="{{ url_for('static',filename='scripts/filedrag.js') }}"></script>
+{% block contents %}
+	<br><br><br><br>
+	<table class="upload_form">
+		<tr>
+			<td>
+				<form id="upload" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+				
+					<fieldset>
+						<legend>Upload files: counts, coldata, filter (optional), and config (optional)</legend>
+						
+						<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
+						
+						<div>
+							<label for="fileselect">Files to upload:</label>
+							<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" accept=".txt,.tsv,.yml">
+							<div id="filedrag" style="display: block;">or drop files here</div>
+						</div>
+					
+						<div id="submitbutton">
+							<button type="submit">Upload Files</button>
+						</div>
+				
+					</fieldset>
+				
+				</form>
+			
+				<div id="progress">
+					{% for upload in uploads -%}
+    					<p class="success" id="progress_of_{{upload}}">File uploaded: {{upload}}</p>
+					{%- endfor %}
+				</div>
+			
+				<div id="messages">
+				</div>
+			</td>
+		</tr>
+	</table>
 {% endblock %}
-</body>
+
+{% block buttons %}
+	<br><br><br>
+	<table class="buttons">
+		<tr>
+			<td>
+				<a href="{{ url_for('parameters') }}" class="button">Next: Parameters</a>
+
+				<script src="{{ url_for('static',filename='scripts/filedrag.js') }}"></script>
+			</td>
+		</tr>
+	</table>
+{% endblock %}
