@@ -20,19 +20,33 @@
           </select>
           <div id="form_parameters" style="visibility: hidden; display: none;">
             <p><label>padj_thresh</label>
-            <input id="padj_thresh" type="text" name="padj_thresh" value="{{ params.get('padj_thresh', '') }}"></p>
+            <input id="padj_thresh" type="text" name="padj_thresh" value="{{ params.get('padj_thresh', '') }}">
+            <img src="{{ url_for('static', filename='img/info.png') }}" title="{{ padj_thresh }}">
+          </p>
             <p><label>min_prop</label>
-            <input id="min_prop" type="text" name="min_prop" value="{{ params.get('min_prop', '') }}"></p>
+            <input id="min_prop" type="text" name="min_prop" value="{{ params.get('min_prop', '') }}">
+            <img src="{{ url_for('static', filename='img/info.png') }}" title="{{ min_prop }}">
+          </p>
             <p><label>min_expr</label>
-            <input id="min_expr" type="text" name="min_expr" value="{{ params.get('min_expr', '') }}"></p>
+            <input id="min_expr" type="text" name="min_expr" value="{{ params.get('min_expr', '') }}">
+            <img src="{{ url_for('static', filename='img/info.png') }}" title="{{ min_expr }}">
+          </p>
             <p><label>adj_method</label>
-            <input id="adj_method" type="text" name="adj_method" value="{{ params.get('adj_method', '') }}"></p>
+            <input id="adj_method" type="text" name="adj_method" value="{{ params.get('adj_method', '') }}">
+            <img src="{{ url_for('static', filename='img/info.png') }}" title="{{ adj_method }}">
+          </p>
             <p><label>condition</label>
-            <input id="condition" type="text" name="condition" value="{{ params.get('condition', '') }}"></p>
+            <input id="condition" type="text" name="condition" value="{{ params.get('condition', '') }}">
+            <img src="{{ url_for('static', filename='img/info.png') }}" title="{{ condition }}">
+          </p>
             <p><label>contrast_level</label>
-            <input id="contrast_level" type="text" name="contrast_level" value="{{ params.get('contrast_level', '') }}"></p>
+            <input id="contrast_level" type="text" name="contrast_level" value="{{ params.get('contrast_level', '') }}">
+            <img src="{{ url_for('static', filename='img/info.png') }}" title="{{ contrast_level }}">
+          </p>
             <p><label>reference_level</label>
-            <input id="reference_level" type="text" name="reference_level" value="{{ params.get('reference_level', '') }}"></p>
+            <input id="reference_level" type="text" name="reference_level" value="{{ params.get('reference_level', '') }}">
+            <img src="{{ url_for('static', filename='img/info.png') }}" title="{{ reference_level }}">
+          </p>
             {% if (params.get('use_qual_weights', None)) != None %}
               <p><label id="use_qual_weights_label">use_qual_weights</label>
               {% if params.get('use_qual_weights', False) %}
