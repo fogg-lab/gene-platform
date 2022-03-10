@@ -224,7 +224,7 @@ def get_confirmation_message(config_params):
     contrast_level = config_params["contrast_level"]
     reference_level = config_params["reference_level"]
 
-    analysis_formula = "<p><b>You are performing the following analysis:</b>:</p>\n"
+    analysis_formula = "<p><b>You are performing the following analysis:</b></p>\n"
     analysis_formula += f"<p><i>{condition} ~ (intercept) + {contrast_level}</i></p>\n\n"
     analysis_formula += f"<p>where the reference group is <i>{reference_level}</i>.\n</p>"
 
