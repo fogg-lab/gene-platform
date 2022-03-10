@@ -1,5 +1,8 @@
 '''utility functions for app.py'''
 
+from weakref import ref
+
+
 def check_parameter_names(config_parameters):
     '''
     ensures config parameters contain the required parameters,
@@ -214,20 +217,15 @@ def check_coldata_rows_match_counts_cols(counts_colnames, coldata_rows):
     return err_msg
 
 
-def get_confirmation_message(config_params, data_type):
+def get_confirmation_message(config_params):
     '''get analysis formula from the config parameters'''
 
     condition = config_params["condition"]
     contrast_level = config_params["contrast_level"]
     reference_level = config_params["reference_level"]
 
-    analysis_formula = f"<p><b>Current Analysis Being Performed</b>:</p>\n"
+    analysis_formula = "<p><b>You are performing the following analysis:</b>:</p>\n"
     analysis_formula += f"<p><i>{condition} ~ (intercept) + {contrast_level}</i></p>\n\n"
-    analysis_formula += f"<p><b>Data Type:</b> {data_type}\n</p>"
-    analysis_formula += f"<p><b>Parameters:</b></p>\n"
-
-
-    for param_name, param_val in config_params.items():
-        analysis_formula += f"<p><b>{param_name}:</b> {param_val} </p>\n"
+    analysis_formula += f"<p>where the reference group is <i>{reference_level}</i>.\n</p>"
 
     return analysis_formula

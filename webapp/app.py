@@ -146,7 +146,7 @@ def confirm_submission():
     generate_config(params)
 
     # get the analysis formula to display for the user
-    confirmation_message = helpers.get_confirmation_message(params, data_type)
+    confirmation_message = helpers.get_confirmation_message(params)
 
     counts_file = read_user_file("counts.tsv")
     counts_reader = csv.reader(counts_file, delimiter="\t")
