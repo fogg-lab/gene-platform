@@ -78,7 +78,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			// create progress bar and set id for tracking
 			var progress_div_id = "progress_of_" + standard_filename + "_div"
 			var progress_div = $id(progress_div_id);
-			var progress = progress_div.appendChild(document.createElement("p"));
+			var progress = progress_div.appendChild(document.createElement("div"));
 			progress.appendChild(document.createTextNode("upload " + file.name));
 			progress.id = "progress_of_" + standard_filename;
 			
