@@ -23,11 +23,6 @@ Session(app)
 '''
 backlog:
 TODO: Descriptions for the columns included in the output
-TODO: Parameter field descriptions
-TODO: Sort and filter output using server functions from the display page templates
-         - See utility_processor() function in app.py for sort/filter helper functions
-            Usage: see https://roytuts.com/context-processors-in-flask-api/
-TODO: Create a page for visualizations (choose plot, call script, display .png result)
 '''
 
 # Ensure that the current working directory is the webapp directory
