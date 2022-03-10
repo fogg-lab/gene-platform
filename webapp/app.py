@@ -55,7 +55,7 @@ def index():
         if filename in uploads:
             uploads[filename] = True
 
-    return render_template("uploads_form.html", uploads=uploads)
+    return render_template("uploads_form.html", uploads=uploads, title="Uploads")
 
 
 @app.route("/upload", methods=["POST"])
@@ -99,8 +99,17 @@ def cancelupload():
 @app.route("/parameters", methods=["GET"])
 def parameters():
     '''loads the parameter form'''
+    desc = []
+    with open('static/files/description.txt') as infile:
+        line = infile.readline()
+        desc.append(line)
+        while line:
+            line = infile.readline()
+            desc.append(line)
 
-    return render_template("parameters_form.html", params=parse_config())
+    return render_template("parameters_form.html", params=parse_config(), title="Parameters", 
+        padj_thresh = desc[0], min_prop = desc[1], min_expr = desc[2], adj_method = desc[3], condition = desc[4],
+        contrast_level = desc[5], reference_level = desc[6])
 
 
 @app.route("/submit", methods=["POST"])

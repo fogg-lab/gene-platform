@@ -141,9 +141,16 @@ pre {
 	padding: 7px 15px;
 	text-align: center;
 	text-decoration: none;
-	display: inline-block;
 	font-size: 15px;
 	cursor:pointer;
+}
+
+.central {
+	border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
 .cancel-button {
@@ -181,6 +188,23 @@ pre {
 	color: white;
 	transform: translate(-50%,-50%);
 	-ms-transform: translate(-50%,-50%);
+}
+
+#header h1{
+	max-width: fit-content;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.upload_form {
+	width:70%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.buttons {
+	margin-left:auto;
+	margin-right:auto;
 }
 
 table, th, td {
