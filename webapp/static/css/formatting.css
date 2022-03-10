@@ -64,7 +64,7 @@ pre {
 
 .progress_div {
 	display: table-cell;
-	padding: 2px 5px;
+	padding: 2px 0px;
 	margin: 2px 0;
 	border: 1px inset #446;
 	border-radius: 5px;

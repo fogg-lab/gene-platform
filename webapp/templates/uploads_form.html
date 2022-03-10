@@ -6,11 +6,10 @@
 	{{ super() }}
 {% endblock %}
 
-<br><br><br><br>
 {%block header%}<h1>DGE Analysis - Upload Files</h1>{% endblock %}
 
 {% block contents %}
-	<br><br><br><br>
+	<br>
 	<table class="upload_form">
 		<tr>
 			<td>
@@ -48,9 +47,9 @@
 							<th>
 								<div><div class="progress_div" id="progress_of_counts_div">
 								{% if uploads["counts.tsv"] -%}
-									<p class="success" id="progress_of_counts">
+									<div class="success" id="progress_of_counts">
 										File uploaded: counts.tsv
-									</p>
+									</div>
 								{%- endif %}
 								</div></div>
 							</th>
@@ -61,9 +60,9 @@
 							<th>
 								<div class="progress_div" id="progress_of_coldata_div">
 								{% if uploads["coldata.tsv"] -%}
-									<p class="success" id="progress_of_coldata">
+									<div class="success" id="progress_of_coldata">
 										File uploaded: coldata.tsv
-									</p>
+									</div>
 								{%- endif %}
 								</div>
 							</th>
@@ -74,9 +73,9 @@
 							<th>
 								<div class="progress_div" id="progress_of_filter_div">
 								{% if uploads["filter.txt"] -%}
-									<p class="success" id="progress_of_filter">
+									<div class="success" id="progress_of_filter">
 										File uploaded: filter.txt
-									</p>
+									</div>
 								{%- endif %}
 								</div>
 							</th>
@@ -87,9 +86,9 @@
 							<th>
 								<div class="progress_div" id="progress_of_config_div">
 								{% if uploads["config.yml"] -%}
-									<p class="success" id="progress_of_config">
+									<div class="success" id="progress_of_config">
 										File uploaded: config.yml
-									</p>
+									</div>
 								{%- endif %}
 								</div>
 							</th>
