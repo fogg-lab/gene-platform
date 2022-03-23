@@ -1,0 +1,21 @@
+geo_accession	series	title	condition	endometriosis_stage	phase	tissue
+GSM175766	GSE7305	Endometrium/Ovary-Disease 1	endometriosis	unknown	menstrual_follicular	ovary
+GSM175767	GSE7305	Endometrium/Ovary-Disease 2	endometriosis	unknown	menstrual_follicular	ovary
+GSM175768	GSE7305	Endometrium/Ovary-Disease 3	endometriosis	unknown	menstrual_luteal	ovary
+GSM175769	GSE7305	Endometrium/Ovary-Disease 4	endometriosis	unknown	menstrual_luteal	ovary
+GSM175770	GSE7305	Endometrium/Ovary-Disease 5	endometriosis	unknown	menstrual_follicular	ovary
+GSM175771	GSE7305	Endometrium/Ovary-Disease 6	endometriosis	unknown	menstrual_follicular	ovary
+GSM175772	GSE7305	Endometrium/Ovary-Disease 7	endometriosis	unknown	menstrual_follicular	ovary
+GSM175773	GSE7305	Endometrium/Ovary-Disease 8	endometriosis	unknown	menstrual_follicular	ovary
+GSM175774	GSE7305	Endometrium/Ovary-Disease 9	endometriosis	unknown	menstrual_follicular	ovary
+GSM175775	GSE7305	Endometrium/Ovary-Disease 10	endometriosis	unknown	menstrual_follicular	ovary
+GSM175776	GSE7305	Endometrium-Normal 1	normal	none	menstrual_follicular	uterus
+GSM175777	GSE7305	Endometrium-Normal 2	normal	none	menstrual_follicular	uterus
+GSM175778	GSE7305	Endometrium-Normal 3	normal	none	menstrual_luteal	uterus
+GSM175779	GSE7305	Endometrium-Normal 4	normal	none	menstrual_luteal	uterus
+GSM175780	GSE7305	Endometrium-Normal 5	normal	none	menstrual_follicular	uterus
+GSM175781	GSE7305	Endometrium-Normal 6	normal	none	menstrual_follicular	uterus
+GSM175782	GSE7305	Endometrium-Normal 7	normal	none	menstrual_follicular	uterus
+GSM175783	GSE7305	Endometrium-Normal 8	normal	none	menstrual_follicular	uterus
+GSM175784	GSE7305	Endometrium-Normal 9	normal	none	menstrual_follicular	uterus
+GSM175785	GSE7305	Endometrium-Normal 10	normal	none	menstrual_follicular	uterus
