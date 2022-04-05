@@ -1,22 +1,38 @@
+html, body { width: 100%; height: 100%; margin: 0 auto; text-align: center; }
+
+.output_filter_div{
+    margin:auto;
+}
+
 .spicy-table{
     border-collapse: collapse;
     margin-left: auto;
     margin-right: auto;
-    font-size: 0.9em;
-    font-family: Verdana;
+    font-size: 0.85em;
+    font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
     min-width: 400px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
-.spicy-table thead tr {
-    background-color: #8aca8a;
-    color: #ffffff;
-    text-align: left;
+.spicy-table thead {
+    position:relative;
 }
 
-.spicy-table th,
+.spicy-table thead th {
+    background:white;
+    position:sticky;
+    top:0;
+}
+
+.spicy-header-div {
+    background-color: #8aca8a;
+    color: #ffffff;
+    text-align: center;
+    font-size: 1.2em;
+}
+
 .spicy-table td {
-    padding: 12px 15px;
+    padding: 7px 7px;
 }
 
 .spicy-table tbody tr {
@@ -33,4 +49,16 @@
 .spicy-table tbody tr.spicy {
     font-weight: bold;
     color: #76b376;
+}
+
+.header-table {
+    border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.header-table th {
+    padding: 5px 10px;
 }

@@ -1,0 +1,197 @@
+
+{% extends "upload_template.html" %}
+<!-- credit for the HTML5 drag-and-drop API for file uploads: https://blogs.sitepointstatic.com/examples/tech/filedrag/3/index.html -->
+
+{% block head %}
+	{{ super() }}
+{% endblock %}
+
+{%block header%}<h1>DGE Analysis - Upload Files</h1>{% endblock %}
+
+{% block contents %}
+	<table class="upload_form">
+		<tr>
+			<td>
+				<form id="upload" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+
+					<fieldset>
+					<legend>Upload Files: counts, coldata, filter (optional), and config (optional)</legend>
+					
+					<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
+					
+					<div>
+						<label for="fileselect">Files to upload:</label>
+						<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" accept=".txt,.tsv,.yml">
+						<div id="filedrag" style="display: block;">or drop files here</div>
+					</div>
+					
+					<div id="submitbutton">
+						<button type="submit">Upload Files</button>
+					</div>
+					
+					</fieldset>
+					
+					</form>
+			
+					<h3>Status</h3>
+
+					<table>
+						<tr>
+							<th>File Name</th>
+							<th>Upload Progress</th>
+							<th>Actions</th>
+						</tr>
+						<tr>
+							<th>counts.tsv</th>
+							<th>
+								<div><div class="progress_div" id="progress_of_counts_div">
+								{% if uploads["counts.tsv"] -%}
+									<div class="success" id="progress_of_counts">
+										File uploaded: counts.tsv
+									</div>
+								{%- endif %}
+								</div></div>
+							</th>
+							<th><button onclick="cancel_counts()" class="cancel_button" id="cancel_counts_button">Cancel</button></th>
+						</tr>
+						<tr>
+							<th>coldata.tsv</th>
+							<th>
+								<div class="progress_div" id="progress_of_coldata_div">
+								{% if uploads["coldata.tsv"] -%}
+									<div class="success" id="progress_of_coldata">
+										File uploaded: coldata.tsv
+									</div>
+								{%- endif %}
+								</div>
+							</th>
+							<th><button onclick="cancel_coldata()" class="cancel_button" id="cancel_coldata_button">Cancel</button></th>
+						</tr>
+						<tr>
+							<th>filter.txt (optional)</th>
+							<th>
+								<div class="progress_div" id="progress_of_filter_div">
+								{% if uploads["filter.txt"] -%}
+									<div class="success" id="progress_of_filter">
+										File uploaded: filter.txt
+									</div>
+								{%- endif %}
+								</div>
+							</th>
+							<th><button onclick="cancel_filter()" class="cancel_button" id="cancel_filter_button">Cancel</button></th>
+						</tr>
+						<tr>
+							<th>config.yml (optional)</th>
+							<th>
+								<div class="progress_div" id="progress_of_config_div">
+								{% if uploads["config.yml"] -%}
+									<div class="success" id="progress_of_config">
+										File uploaded: config.yml
+									</div>
+								{%- endif %}
+								</div>
+							</th>
+							<th><button onclick="cancel_config()" class="cancel_button" id="cancel_config_button">Cancel</button></th>
+						</tr>
+						
+					</table>
+					
+					<div id="messages">
+					</div>
+					
+					<button onclick="goto('/parameters')" class="button" id="next_button" disabled>Next: Parameters</button>
+					
+					<script>
+					
+						// hide progress bar divs and cancel buttonsfor files which have not been uploaded
+						if (document.getElementById("progress_of_counts") == null) {
+							document.getElementById("progress_of_counts_div").style.display = 'none';
+							document.getElementById("cancel_counts_button").style.display = 'none';
+						} else {document.getElementById("progress_of_counts_div").style.backgroundPosition = "0% 0";}
+					
+						if (document.getElementById("progress_of_coldata") == null) {
+							document.getElementById("progress_of_coldata_div").style.display = 'none';
+							document.getElementById("cancel_coldata_button").style.display = 'none';
+						} else {document.getElementById("progress_of_coldata_div").style.backgroundPosition = "0% 0";}
+					
+						if (document.getElementById("progress_of_filter") == null) {
+							document.getElementById("progress_of_filter_div").style.display = 'none';
+							document.getElementById("cancel_filter_button").style.display = 'none';
+						} else {document.getElementById("progress_of_filter_div").style.backgroundPosition = "0% 0";}
+					
+						if (document.getElementById("progress_of_config") == null) {
+							document.getElementById("progress_of_config_div").style.display = 'none';
+							document.getElementById("cancel_config_button").style.display = 'none';
+						} else {document.getElementById("progress_of_config_div").style.backgroundPosition = "0% 0";}
+						
+						// disable next button if progress counts or coldata not uploaded
+						update_next_button()
+					
+						function goto(url) {
+							window.location.href = url;
+						  }
+					
+						function cancelReqListener() {
+							// file upload successfully cancelled
+							console.log(this.responseText);
+						}
+					
+						function cancel_counts() {
+							cancel("counts.tsv");
+							update_next_button();
+						}
+					
+						function cancel_coldata() {
+							cancel("coldata.tsv");
+							update_next_button();
+						}
+						
+						function cancel_filter() {
+							cancel("filter.txt");
+						}
+					
+						function cancel_config() {
+							cancel("config.yml");
+						}
+					
+						function cancel(filename, progress_bar_id) {
+							var cancelReq = new XMLHttpRequest();
+							filename_base = filename.split(".")[0];
+							var progress_bar_id = "progress_of_" + filename_base;
+							cancelReq.addEventListener("load", cancelReqListener);
+							cancelReq.open("POST", "/cancelupload");
+							cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+							var cancel_req_query = "filename=" + filename;
+							var file_progress_bar = document.getElementById(progress_bar_id);
+							file_progress_bar.remove();
+							cancelReq.send(cancel_req_query);
+							// hide the cancel button and progress bar div
+							var cancel_button_id = "cancel_" + filename_base + "_button"
+							progress_div = document.getElementById(progress_bar_id + "_div")
+							progress_div.style.backgroundPosition = "100% 0";
+							progress_div.style.display = 'none';
+							document.getElementById(cancel_button_id).style.display = 'none';
+						}
+					
+						function update_next_button() {
+							// hide next button if progress counts or coldata not uploaded
+							if (
+							  document.getElementById("progress_of_counts") == null
+							  || document.getElementById("progress_of_coldata") == null
+							  || document.getElementById("progress_of_counts").className != "success"
+							  || document.getElementById("progress_of_coldata").className != "success"
+							  ) {
+								  document.getElementById("next_button").disabled = true;
+							  }
+							  else {
+								document.getElementById("next_button").disabled = false;
+							  }
+						}
+					
+					</script>
+					
+					<script src="{{ url_for('static',filename='scripts/filedrag.js') }}"></script>
+			</td>
+		</tr>
+	</table>
+{% endblock %}

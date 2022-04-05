@@ -1,16 +1,36 @@
 Gene Expression Analysis Platform
 
-Instructions
 
-1. Setup web app:
+Prerequisites - R and Python3, with the following packages:
+
+R Packages:
+  - yaml
+  - tidyverse
+  - BiocManager
+  - ggpubr
+
+BiocManager packages:
+  - BiocParallel
+  - affycoretools
+  - affyPLM
+  - hgu133plus2.db
+  - qvalue
+
+Python3 packages (in requirements.txt):
+  - flask
+  - flask-session
+  - pyyaml
+
+
+Instructions to set up and start the web app:
+
+1. Setup web app in your environment
 cd webapp
 pip3 install --upgrade pip
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
-2. Set FLASK_APP environmental variable (required):
+2. Set FLASK_APP environmental variable (required)
 export FLASK_APP=app
 
-3. Run the web app
-flask run
-# or run the web app on a specific port (replace xxxx with port#):
+3. Run the web app (replace xxxx with a port #)
 flask run -h 0.0.0.0 -p xxxx
