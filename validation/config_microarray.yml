@@ -1,4 +1,4 @@
-min_expr: 50
+min_expr: 5
 min_prop: 0.25
 adj_method: "BH"
 condition: "condition"
