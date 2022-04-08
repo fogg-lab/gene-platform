@@ -1,25 +1,82 @@
-
 body {
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-	font-size: 110%;
-	margin: 10px;
+	background-color: #FFF;
 	color: #333;
-	background-color: #fff;
-}
+	font: 15px Helvetica, arial, freesans, clean, sans-serif;
+	word-wrap: break-word;
+	line-height: 1.7;
+	padding: 0 20px 20px 20px;
+	width: 722px;
+	-webkit-font-smoothing: antialiased;
+	}
 
-h1, h2 {
-	font-size: 1.7em;
-	font-weight: normal;
-}
+a {
+	color: #4183c4;
+	text-decoration: none;
+	}
 
-h2 {
-	font-size: 1.5em;
-}
+a:hover {
+	text-decoration: underline;
+	}
 
+p, blockquote, ul, ol, dl, table, pre {
+	margin: 15px 0;
+	}
+
+ul, ol {
+	padding-left: 30px;
+	}
+	h1 {
+		border-bottom: 1px solid #ddd;
+		color: #000;
+		font-size: 2.5em;
+		}
+	
+	h2 {
+		border-bottom: 1px solid #eee;
+		color: #000;
+		font-size: 2.0em;
+		}
+	
+	h3 {
+		font-size: 1.5em;
+		}
+	
+	h4 {
+		font-size: 1.2em;
+		}
+	
+	h5 {
+		font-size: 1.0em;
+		}
+	
+	h6 {
+		color: #777;
+		font-size: 1.0em;
+		}
+	
+	h1, h2, h3, h4, h5, h6 {
+		font-weight: bold;
+		line-height: 1.7;
+		margin: 1em 0 15px 0;
+		}
+	
+	h1 + p, h2 + p, h3 + p {
+		margin-top: 10px;
+		}
+		
+	img {
+		max-width: 100%;
+		}
+	
 legend {
 	font-weight: bold;
 	color: #333;
 }
+
+.upload_div {
+	margin: 1.5%;
+	padding: 1.5%;
+	}
 
 #filedrag {
 	display: none;
@@ -142,18 +199,6 @@ pre {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
-.cancel-button {
-	background-color: #e7e7e7; /* Grey */
-	border: none;
-	color: black;
-	padding: 5px 13px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 13px;
-	cursor:pointer;
-}
-
 #overlay {
 	position: fixed; /* Sit on top of the page content */
 	display: none; /* Hidden by default */
@@ -191,6 +236,23 @@ pre {
 	margin-right: auto;
 }
 
+.upload_action_button {
+	content: 'Browse';
+	display: inline-block;
+	background: rgb(235, 235, 235);
+	border: 1px solid #999;
+	border-radius: 3px;
+	padding: 5px 8px;
+	outline: none;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	user-select: none;
+	cursor: pointer;
+	text-shadow: 1px 1px #fff;
+	font-weight: 700;
+	font-size: 10pt;
+}
+
 .buttons {
 	margin-left:auto;
 	margin-right:auto;
@@ -198,10 +260,6 @@ pre {
 
 table, th, td {
 	border: 1px solid;
-}
-
-body {
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
 }
 
 #confirm_div_id {
@@ -236,4 +294,3 @@ body {
     text-align: left;
     margin-bottom: 8px;
 }
-
