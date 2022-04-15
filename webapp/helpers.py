@@ -74,33 +74,6 @@ def validate_parameters(config_parameters):
     return error_msg
 
 
-def standardize_filename(filename):
-    '''
-    standardize filename to one of the following:
-    counts.tsv, coldata.tsv, filter.txt or config.yml
-    then return the standardized filename
-    if the file name isn't recognized, return empty string
-
-    FILE NAMING REQUIREMENTS FOR THE USER: The server recognizes filenames
-        based on whether they contain one of the following unique substrings:
-        "config" or ".yml": File is identified as the config.yml file
-        "count": File is identified as the counts.tsv file
-        "col": File is identified as the coldata.tsv file
-        "filt": File is identified as the filter.txt file
-    '''
-
-    if "config" in filename or ".yml" in filename:
-        filename = "config.yml"
-    elif "count" in filename:
-        filename = "counts.tsv"
-    elif "col" in filename:
-        filename = "coldata.tsv"
-    elif "filt" in filename:
-        filename = "filter.txt"
-
-    return filename
-
-
 def get_request_parameters(form, data_type):
     '''returns request parameters from the parameter form'''
 
