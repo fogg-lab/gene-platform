@@ -56,7 +56,7 @@ def index():
 @app.route("/upload", methods=["POST"])
 def upload():
     '''
-    handles uploading files coldata, filter, filter and config
+    handles uploading counts, coldata, filter, and config file
     one file per request
     file contents are in request.data (a bytes object)
     '''
@@ -64,16 +64,10 @@ def upload():
     result = {}
 
     filename = request.headers.get('X_FILENAME')
-    standardized_filename = helpers.standardize_filename(filename)
 
-    if standardized_filename:
-        save_temp_file(request.data, standardized_filename)
-    else:
-        result["error_status"] = f"Invalid filename: {filename}. \
-            Filename must end with either counts.tsv, coldata.tsv, filter.txt,\
-            config.yml or config.txt\n"
-
-    if standardized_filename == "config.yml":
+    save_temp_file(request.data, filename)
+    
+    if filename == "config.yml":
         result["error_status"] = check_config()
 
     return jsonify(result)
@@ -442,6 +436,5 @@ def check_config():
         delete_user_file("config.yml")
 
     return err_msg
-
 
 cleanup_old_sessions()
