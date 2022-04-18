@@ -1,43 +1,109 @@
-
 body {
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-	font-size: 110%;
-	margin: 10px;
+	background-color: #FFF;
 	color: #333;
-	background-color: #fff;
-}
+	font: 15px Helvetica, arial, freesans, clean, sans-serif;
+	word-wrap: break-word;
+	line-height: 1.7;
+	padding: 0 20px 20px 20px;
+	width: 722px;
+	-webkit-font-smoothing: antialiased;
+	}
 
-h1, h2 {
-	font-size: 1.7em;
-	font-weight: normal;
-}
+a {
+	color: #4183c4;
+	text-decoration: none;
+	}
 
-h2 {
-	font-size: 1.5em;
-}
+a:hover {
+	text-decoration: underline;
+	}
 
+p, blockquote, ul, ol, dl, table, pre {
+	margin: 15px 0;
+	}
+
+ul, ol {
+	padding-left: 30px;
+	}
+	h1 {
+		border-bottom: 1px solid #ddd;
+		color: #000;
+		font-size: 2.5em;
+		}
+	
+	h2 {
+		border-bottom: 1px solid #eee;
+		color: #000;
+		font-size: 2.0em;
+		}
+	
+	h3 {
+		font-size: 1.5em;
+		}
+	
+	h4 {
+		font-size: 1.2em;
+		}
+	
+	h5 {
+		font-size: 1.0em;
+		}
+	
+	h6 {
+		color: #777;
+		font-size: 1.0em;
+		}
+	
+	h1, h2, h3, h4, h5, h6 {
+		font-weight: bold;
+		line-height: 1.7;
+		margin: 1em 0 15px 0;
+		}
+	
+	h1 + p, h2 + p, h3 + p {
+		margin-top: 10px;
+		}
+		
+	img {
+		max-width: 100%;
+		}
+	
 legend {
 	font-weight: bold;
 	color: #333;
 }
 
-#filedrag {
-	display: none;
-	font-weight: bold;
-	text-align: center;
-	padding: 1em 0;
-	margin: 1em 0;
-	color: #555;
-	border: 2px dashed #555;
-	border-radius: 7px;
-	cursor: default;
+.upload_div {
+	margin: 1.5%;
+	padding: 1.5%;
+	pointer-events: none;
 }
 
-#filedrag.hover {
-	color: #f00;
-	border-color: #f00;
-	border-style: solid;
+.filedrag {
+	text-align: center;
+	cursor: default;
+	display: block;
+	font: 13px Helvetica, arial, freesans, clean, sans-serif;
+	color: #333;
+	margin: 6px;
+	padding:5px;
+	border: 2px dashed #555;
+	height: 10em;
+	width: 10em;
+}
+
+.filedrag_hover {
+	text-align: center;
+	cursor: default;
+	display: block;
+	font: 13px Helvetica, arial, freesans, clean, sans-serif;
+	margin: 6px;
+	padding:5px;
+	color: green;
+	border: 2px dashed green;
 	box-shadow: inset 0 3px 4px #888;
+	height: 10em;
+	width: 10em;
 }
 
 img {
@@ -59,27 +125,39 @@ pre {
 #messages {
 	padding: 0 10px;
 	margin: 1em 0;
-	border: 1px solid #999;
+	/*border: 1px solid #999;*/
 }
 
 .progress_div {
-	display: table-cell;
-	padding: 2px 0px;
+	display: inline-block;
+	padding: 0px 0px;
 	margin: 2px 0;
+	margin-top: 2em;
 	border: 1px inset #446;
 	border-radius: 5px;
-	width: 50%;
+	width: 100%;
+	height: 1.5em;
 	background: #eee url("progress.png") 100% 0 repeat-y;
+	text-align: center;
+	pointer-events: none;
 }
 
 .success {
 	height: 100%;
 	width: 100%;
 	background: #0c0 none 0 0 no-repeat;
+	text-align: center;
+	padding: 1px 0;
+	font-size: 13px;
 }
 
 .failed {
 	background: #c00 none 0 0 no-repeat;
+	text-align: center;
+	padding: 1px 0;
+	height: 100%;
+	width: 100%;
+	font-size: 13px;
 }
 
 /* CSS */
@@ -142,18 +220,6 @@ pre {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
-.cancel-button {
-	background-color: #e7e7e7; /* Grey */
-	border: none;
-	color: black;
-	padding: 5px 13px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 13px;
-	cursor:pointer;
-}
-
 #overlay {
 	position: fixed; /* Sit on top of the page content */
 	display: none; /* Hidden by default */
@@ -185,10 +251,24 @@ pre {
 	margin-right: auto;
 }
 
-.upload_form {
-	width:100%;
-	margin-left: auto;
-	margin-right: auto;
+.upload_action_button {
+	display: block;
+	margin: auto;
+	width: 70%;
+	text-align: center;
+	background: rgb(235, 235, 235);
+	border: 1px solid #999;
+	border-radius: 3px;
+	padding: 3px 5px;
+	outline: none;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	user-select: none;
+	cursor: pointer;
+	text-shadow: 1px 1px #fff;
+	font-weight: 700;
+	font-size: 10pt;
+	pointer-events: all;
 }
 
 .buttons {
@@ -198,10 +278,7 @@ pre {
 
 table, th, td {
 	border: 1px solid;
-}
-
-body {
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+	margin: 5px;
 }
 
 #confirm_div_id {
@@ -231,9 +308,3 @@ body {
 #confirm_div_id button:hover {
     background-color: #ddd;
 }
-
-#confirmBox .message {
-    text-align: left;
-    margin-bottom: 8px;
-}
-
