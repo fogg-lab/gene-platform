@@ -1,8 +1,6 @@
-'''utility functions for app.py'''
+'''utility functions for app.py.  '''
 
 from weakref import ref
-
-
 def check_parameter_names(config_parameters):
     '''
     ensures config parameters contain the required parameters,
@@ -14,27 +12,38 @@ def check_parameter_names(config_parameters):
     if invalid, returns error message
     '''
 
-    all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method", \
-        "condition", "contrast_level", "reference_level", "use_qual_weights"}
+    all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method",
+                      "condition", "contrast_level", "reference_level", "use_qual_weights"}
     config_error_status = ""
-
+    unknown_variables = "Unknown parameter(s): "
+    is_unknown = False
+    no_value_parameters = "Missing values for parameter(s): "
+    is_missing_value = False
+    no_parameter_field = "Missing parameter(s): "
+    is_missing_field = False
     for parameter_name, parameter_value in config_parameters.items():
-        if (parameter_value in {"", None})\
-          and (parameter_name in all_parameters):
-            config_error_status += \
-                f"Missing value for parameter: {parameter_name}\n"
-        elif parameter_name not in all_parameters:
-            config_error_status += f"Unknown parameter: {parameter_name}\n"
-        else:
-            all_parameters.remove(parameter_name)
+        if parameter_name in all_parameters and parameter_value in [None, ""]:
+            no_value_parameters += parameter_name + " "
+            is_missing_value = True
 
-    # use_qual_weights is not required
-    if "use_qual_weights" in all_parameters:
-        all_parameters.remove("use_qual_weights")
+        if parameter_name not in all_parameters:
+            unknown_variables += parameter_name + " "
+            is_unknown = True
+        all_parameters.remove(parameter_name)
 
     # if any parameters are missing, list them
-    for missing_parameter in all_parameters:
-        config_error_status += f"Missing parameter: {missing_parameter}\n"
+    if all_parameters is not None:
+        for missing_parameter in all_parameters:
+            if missing_parameter != "use_qual_weights":
+                no_parameter_field += missing_parameter + " "
+                is_missing_field = True
+
+    if is_missing_value:
+        config_error_status += no_value_parameters + "\n"
+    if is_unknown:
+        config_error_status += unknown_variables + "\n"
+    if is_missing_field:
+        config_error_status += no_parameter_field + "\n"
 
     return config_error_status
 
@@ -49,29 +58,97 @@ def validate_parameters(config_parameters):
     param_names_invalid = check_parameter_names(config_parameters)
     if param_names_invalid:
         error_msg = param_names_invalid
-    elif type(config_parameters["min_expr"]) not in [int, float]:
-        error_msg = "min_expr must be a number"
-    elif config_parameters["min_expr"] < 0:
-        error_msg = "min_expr must be a non-negative"
-    elif type(config_parameters["min_prop"]) not in [int, float]:
-        error_msg = "min_prop must be a number"
-    elif config_parameters["min_prop"] < 0:
-        error_msg = "min_prop must be a non-negative"
-    elif type(config_parameters["padj_thresh"]) not in [int, float]:
-        error_msg = "padj_thresh must be a number"
-    elif not isinstance(config_parameters["adj_method"], str):
-        error_msg = "adj_method must be a string"
-    elif not isinstance(config_parameters["condition"], str):
-        error_msg = "condition must be a string"
-    elif not isinstance(config_parameters["contrast_level"], str):
-        error_msg = "contrast_level must be a string"
-    elif not isinstance(config_parameters["reference_level"], str):
-        error_msg = "reference_level must be a string"
-    elif "use_qual_weights" in config_parameters and \
-       not isinstance(config_parameters["use_qual_weights"], bool):
-        error_msg = "use_qual_weights must be a bool"
+    else:
+        if type(config_parameters["min_expr"]) not in [int, float]:
+            error_msg += '"min_expr" must be a number\n'
+        if config_parameters["min_expr"] < 0:
+            error_msg += '"min_expr" must be a non-negative\n'
+
+        if type(config_parameters["min_prop"]) not in [int, float]:
+            error_msg += '"min_prop" must be a number\n'
+        if config_parameters["min_prop"] < 0 or config_parameters["min_prop"] > 1:
+            error_msg += '"min_prop" must be a number in range [0,1]\n'
+
+        if type(config_parameters["padj_thresh"]) not in [int, float]:
+            error_msg += '"padj_thresh" must be a number\n'
+        if config_parameters["padj_thresh"] < 0 or config_parameters["padj_thresh"] > 1:
+            error_msg += '"padj_thresh" must be a number in range [0,1]\n'
+
+        if not isinstance(config_parameters["adj_method"], str):
+            error_msg += '"adj_method" must be a string"\n'
+
+        if config_parameters["adj_method"] != "BH":
+            error_msg += 'Currently, program only support adj_method named "BH". ' \
+                         'You entered "' + config_parameters["adj_method"] + '".\n'
+
+        if not isinstance(config_parameters["condition"], str):
+            error_msg += '"condition" must be a string"\n'
+        if config_parameters["condition"] != "condition":
+            error_msg += 'Currently, program only support condition named "condition". ' \
+                         'You entered "' + config_parameters["condition"] + '"\n'
+
+        if not isinstance(config_parameters["contrast_level"], str):
+            error_msg += "contrast_level must be a string\n"
+
+        if not isinstance(config_parameters["reference_level"], str):
+            error_msg += '"reference_level must be a string. ' \
+                         'You entered "' + config_parameters["reference_level"] + '"\n'
+
+        if config_parameters["reference_level"] == config_parameters["contrast_level"]:
+            error_msg += '"reference_level" and "contrast_level" cannot refer to the same value.\n'
+
+        if "use_qual_weights" in config_parameters:
+            if not isinstance(config_parameters["use_qual_weights"], bool):
+                error_msg += "use_qual_weights must be a bool.\n"
+            if config_parameters["contrast_level"] not in ["normal", "endometriosis"]:
+                error_msg += '"contrast_level" supported by Microarray analysis is ' \
+                         'either "normal" or "endometriosis".' \
+                             ' You entered "' + config_parameters["contrast_level"] + '"\n'
+
+            if config_parameters["reference_level"] not in ["normal", "endometriosis"]:
+                error_msg += '"reference_level" supported by Microarray analysis is ' \
+                         'either "normal" or "endometriosis". You entered "' \
+                             + config_parameters["reference_level"] + '"\n'
+
+        if "use_qual_weights" not in config_parameters:
+            if config_parameters["contrast_level"] not in ["tumor", "healthy"]:
+                error_msg += '"contrast_level" supported by RNA-sequence analysis is ' \
+                         'either "tumor" or "healthy". ' \
+                             'You entered "' + config_parameters["contrast_level"] + '"\n'
+
+            if config_parameters["reference_level"] not in ["tumor", "healthy"]:
+                error_msg += '"reference_level" supported by RNA-sequence analysis is ' \
+                         'either "tumor" or "healthy". ' \
+                             'You entered "' + config_parameters["reference_level"] + '"\n'
 
     return error_msg
+
+
+def standardize_filename(filename):
+    '''
+    standardize filename to one of the following:
+    counts.tsv, coldata.tsv, filter.txt or config.yml
+    then return the standardized filename
+    if the file name isn't recognized, return empty string
+
+    FILE NAMING REQUIREMENTS FOR THE USER: The server recognizes filenames
+        based on whether they contain one of the following unique substrings:
+        "config" or ".yml": File is identified as the config.yml file
+        "count": File is identified as the counts.tsv file
+        "col": File is identified as the coldata.tsv file
+        "filt": File is identified as the filter.txt file
+    '''
+
+    if "config" in filename or ".yml" in filename:
+        filename = "config.yml"
+    elif "count" in filename:
+        filename = "counts.tsv"
+    elif "col" in filename:
+        filename = "coldata.tsv"
+    elif "filt" in filename:
+        filename = "filter.txt"
+
+    return filename
 
 
 def get_request_parameters(form, data_type):
