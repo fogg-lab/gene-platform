@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <title>{{title}}</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
+  </head>	
+  <body>
+    <h2>Fogg Lab</h2>
+    <p class="hp">Differential Gene Expression Analysis Platform</p>
+    <a href="{{ url_for('uploadsetup') }}" class="hbutton">Get Started</a>
+  </body>
+</html>
+  

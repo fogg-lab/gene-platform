@@ -14,7 +14,7 @@
         {% else %}
           <th><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download output</a></th>
         {% endif %}
-        <th><a href="{{ url_for('index') }}" class="button">Change input</a></th>
+        <th><a href="{{ url_for('uploadsetup') }}" class="button">Change input</a></th>
         <th><a href="{{ url_for('reset') }}" class="button">New analysis</a></th>
         <th><a href="{{ url_for('plots') }}" class="button">Plots</a></th>
       </tr>
