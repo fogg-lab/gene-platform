@@ -40,7 +40,12 @@ USER_FILES_LOCATION = "user_files"
 
 @app.route("/")
 def index():
-    '''main page, first input page (file uploads)'''
+    '''main page'''
+    return render_template("home.html", title="Welcome!")
+    
+@app.route("/uploadsetup")
+def uploadsetup():
+    '''first input page (file uploads)'''
 
     ensure_session_dir()
 
