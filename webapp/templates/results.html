@@ -6,18 +6,19 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
   </head>
   <body>
-    <table class="header-table">
+    <table class="linkbar">
       <tr>
+        <td><a href="{{ url_for('index') }}" class="button">Home</a>
         {% if filtered_data %}
-          <th><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download full output</a></th>
-          <th><a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output</a></th>
+          <a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download full output</a>
+          <a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output</a>
         {% else %}
-          <th><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download output</a></th>
+          <a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download output</a>
         {% endif %}
-        <th><a href="{{ url_for('uploadsetup') }}" class="button">Change input</a></th>
-        <th><a href="{{ url_for('reset') }}" class="button">New analysis</a></th>
-        <th><a href="{{ url_for('plots') }}" class="button">Plots</a></th>
-        <th><a href="{{ url_for('index') }}" class="button">Home</a></th>
+        <a href="{{ url_for('uploadsetup') }}" class="button">Change input</a>
+        <a href="{{ url_for('reset') }}" class="button">New analysis</a>
+        <a href="{{ url_for('plots') }}" class="button">Plots</a></td>
+        <p class="Fogg">Fogg Lab</p></td>
       </tr>
     </table>
     <br>

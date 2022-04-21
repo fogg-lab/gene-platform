@@ -275,11 +275,6 @@ pre {
 	margin-right:auto;
 }
 
-table, th, td {
-	border: 1px solid;
-	margin: 5px;
-}
-
 #confirm_div_id {
     display: none;
     background-color: #eee;
@@ -364,4 +359,39 @@ h2 {
 	color: darkblue;
 	font-variant: small-caps;
 	text-transform: capitalize;
+}
+
+.centerinfo {
+	border: none;
+	border-collapse: collapse;
+    border-spacing: 0;
+    margin-left: auto;
+	margin-right:auto;
+	min-width:400px;
+	text-align: center;
+}
+
+.linkbar {
+	border: none;
+	border-collapse: collapse;
+    border-spacing: 0;
+	width: 100%;
+}
+
+.Fogg {
+	margin: 0;
+	padding: 0;
+	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+	font-size: 50px;
+	font-variant: small-caps;
+	text-transform: capitalize;
+	font-weight: 900;
+	letter-spacing: 5px;
+	position: absolute;
+	top: 0;
+	right: 0;
+	background: url(science_bg.jpg) 50% 50%;
+	background-size: cover;
+	-webkit-text-fill-color: transparent;
+	-webkit-background-clip: text;
 }
