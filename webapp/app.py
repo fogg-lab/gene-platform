@@ -6,7 +6,8 @@ from datetime import timedelta
 import tempfile
 import copy
 import yaml
-from webapp import helpers
+#from webapp import helpers
+import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
@@ -22,7 +23,8 @@ Session(app)
 
 '''
 backlog:
-TODO: Descriptions for the columns included in the output
+TODO: Descriptions for the columns included in the output\
+TODO: Validate string parameters
 '''
 
 # Ensure that the current working directory is the webapp directory

@@ -21,7 +21,7 @@ def check_parameter_names(config_parameters):
 
     for parameter_name, parameter_value in config_parameters.items():
         if parameter_name in all_parameters and parameter_value in [None, ""]:
-            params_missing_value += parameter_name + " "
+            params_missing_value.append(parameter_name)
 
         if parameter_name not in all_parameters:
             unknown_params.append(parameter_name)
@@ -51,6 +51,7 @@ def validate_parameters(config_parameters):
 
     error_msg = ""
     param_names_invalid = check_parameter_names(config_parameters)
+
     if param_names_invalid:
         error_msg = param_names_invalid
     else:
@@ -69,8 +70,13 @@ def validate_parameters(config_parameters):
         elif not (0 <= config_parameters["padj_thresh"] <= 1):
             error_msg += '"padj_thresh" must be between 0 and 1\n'
 
+        adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY", \
+                        "fdr", "none"]
         if not isinstance(config_parameters["adj_method"], str):
             error_msg += '"adj_method" must be a string"\n'
+        elif config_parameters["adj_method"] not in adj_methods:
+            error_msg += f"Unknown adj_method: {config_parameters['adj_method']}"
+            error_msg += f"Valid adj_methods: {adj_methods}"
 
         if not isinstance(config_parameters["condition"], str):
             error_msg += '"condition" must be a string"\n'
