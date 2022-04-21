@@ -1,6 +1,5 @@
 '''utility functions for app.py.  '''
 
-from weakref import ref
 def check_parameter_names(config_parameters):
     '''
     ensures config parameters contain the required parameters,
@@ -20,7 +19,6 @@ def check_parameter_names(config_parameters):
     params_missing_value = []
     missing_params = []
 
-    is_missing_field = False
     for parameter_name, parameter_value in config_parameters.items():
         if parameter_name in all_parameters and parameter_value in [None, ""]:
             params_missing_value += parameter_name + " "
