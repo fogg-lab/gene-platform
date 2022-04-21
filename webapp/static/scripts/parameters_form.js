@@ -21,7 +21,7 @@ function show_hide_parameters() {
         document.getElementById("use_qual_weights").setAttribute("type","hidden");
       }
     }
-    else {
+    else if (document.getElementById("use_qual_weights_label") != null) {
       document.getElementById("use_qual_weights_label").style.display = "inline";
       document.getElementById("use_qual_weights_label").style.visibility = "visible";
       document.getElementById("use_qual_weights").setAttribute("type","checkbox");

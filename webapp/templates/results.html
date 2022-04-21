@@ -229,7 +229,7 @@
     page_num_input = document.getElementById("page_num_input")
     page_num = parseInt(page_num_input.value, 10);
     num_pages = get_num_pages();
-    if (page_num > num_pages) {
+    if (page_num > num_pages || page_num < 1) {
       page_num = 1;
       page_num_input.value = 1;
     }
