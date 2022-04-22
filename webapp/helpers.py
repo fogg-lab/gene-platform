@@ -21,7 +21,7 @@ def check_parameter_names(config_parameters):
 
     for parameter_name, parameter_value in config_parameters.items():
         if parameter_name in all_parameters and parameter_value in [None, ""]:
-            params_missing_value += parameter_name + " "
+            params_missing_value.append(parameter_name)
 
         if parameter_name not in all_parameters:
             unknown_params.append(parameter_name)
@@ -51,6 +51,7 @@ def validate_parameters(config_parameters):
 
     error_msg = ""
     param_names_invalid = check_parameter_names(config_parameters)
+
     if param_names_invalid:
         error_msg = param_names_invalid
     else:
@@ -69,8 +70,13 @@ def validate_parameters(config_parameters):
         elif not (0 <= config_parameters["padj_thresh"] <= 1):
             error_msg += '"padj_thresh" must be between 0 and 1\n'
 
+        adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY", \
+                        "fdr", "none"]
         if not isinstance(config_parameters["adj_method"], str):
             error_msg += '"adj_method" must be a string"\n'
+        elif config_parameters["adj_method"] not in adj_methods:
+            error_msg += f"Unknown adj_method: {config_parameters['adj_method']}"
+            error_msg += f"Valid adj_methods: {adj_methods}"
 
         if not isinstance(config_parameters["condition"], str):
             error_msg += '"condition" must be a string"\n'
@@ -132,7 +138,7 @@ def check_factor_levels(config_params, coldata):
     if condition in coldata[0]:
         condition_col_index = coldata[0].index(condition)
     else:
-        return f"Condition '{condition}' not present in coldata file (line 1)"
+        return f"Condition '{condition}' not present in coldata (line 1)"
 
     contrast_level_found = False
     reference_level_found = False
@@ -153,16 +159,14 @@ def check_factor_levels(config_params, coldata):
     err_msg = ""
 
     if not contrast_level_found:
-        err_msg = \
-            f"Contrast level '{contrast_level}' not found in coldata file"
-    elif not reference_level_found:
-        err_msg = \
-            f"Reference level '{reference_level}' not found in coldata file"
+        err_msg += f"Contrast level '{contrast_level}' not found in coldata"
+    if not reference_level_found:
+        err_msg += f"Reference level '{reference_level}' not found in coldata"
 
     return err_msg
 
 
-def check_coldata_rows_match_counts_cols(counts_colnames, coldata_rows):
+def check_coldata_matches_counts(counts_colnames, coldata_rows):
     '''
     ensure rows in coldata match with the column names for samples in counts
     Assumes that sample names are listed on first row (header) of counts file

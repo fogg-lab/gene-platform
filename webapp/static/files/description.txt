@@ -5,3 +5,4 @@ This is a placeholder for description for adj method
 This is a placeholder for description for condition
 This is a placeholder for description for contrast level
 This is a placeholder for description for reference level
+This is a placeholder for description for use_qual_weights

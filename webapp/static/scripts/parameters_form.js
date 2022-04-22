@@ -140,6 +140,7 @@ function show_runtime() {
   
   var timer = setInterval(function () {
       document.getElementById("time").innerHTML = "Please wait... Analysis runtime: " + counter + " seconds"
-      counter += 1  
+      counter += 1
+      // 
   }, 1000);  
 }
