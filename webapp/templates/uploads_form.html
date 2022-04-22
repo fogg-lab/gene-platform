@@ -6,90 +6,103 @@
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
 	</head>	
 	<body>
-		<h1>DGE Analysis - Upload Files</h1>
-
-		<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
-
-		<table style="border: 1px solid black;">
+		<table class="linkbar">
 			<tr>
-				<th>Counts</th>
-				<th>Coldata</th>
-				<th>Filter (optional)</th>
-				<th>Config (optional)</th>
-			</tr>
-			<tr>
-				<td>
-					<form class="filedrag" id="upload_counts" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-						<div class="upload_div" id="counts_upload_div">
-							<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
-							<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
-						</div>
-						<div class="progress_div" id="progress_of_counts_div">
-						{% if uploads["counts.tsv"] -%}
-							<div class="success" id="progress_of_counts">
-								Uploaded counts
-							</div>
-						{%- endif %}
-						</div>
-						<button type="button" onclick="cancel_counts()" class="upload_action_button" id="cancel_counts_button">Cancel</button>
-					</form>
-				</td>
-				<td>
-					<form class="filedrag" id="upload_coldata" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-						<div class="upload_div" id="coldata_upload_div">
-							<input type="file" class="fileselect" id="fileselect_coldata" name="fileselect[]" style="display:none">
-							<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
-						</div>
-						<div class="progress_div" id="progress_of_coldata_div">
-						{% if uploads["coldata.tsv"] -%}
-							<div class="success" id="progress_of_coldata">
-								Uploaded coldata
-							</div>
-						{%- endif %}
-						</div>
-						<button type="button" onclick="cancel_coldata()" class="upload_action_button" id="cancel_coldata_button">Cancel</button>
-					</form>
-				</td>
-				<td>
-					<form class="filedrag" id="upload_filter" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-						<div class="upload_div" id="filter_upload_div">
-							<input type="file" class="fileselect" id="fileselect_filter" name="fileselect[]" style="display:none">
-							<p>Drop .txt file<br>here or<label for="fileselect_filter" class="upload_action_button">Browse</label></p>
-						</div>
-						<div class="progress_div" id="progress_of_filter_div">
-						{% if uploads["filter.txt"] -%}
-							<div class="success" id="progress_of_filter">
-								Uploaded filter
-							</div>
-						{%- endif %}
-						</div>
-						<button type="button" onclick="cancel_filter()" class="upload_action_button" id="cancel_filter_button">Cancel</button>
-					</form>
-				</td>
-				<td>
-					<form class="filedrag" id="upload_config" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-						<div class="upload_div" id="config_upload_div">
-							<input type="file" class="fileselect" id="fileselect_config" name="fileselect[]" style="display:none">
-							<p>Drop .yml file<br>here or<label for="fileselect_config" class="upload_action_button">Browse</label></p>
-						</div>
-						<div class="progress_div" id="progress_of_config_div">
-						{% if uploads["config.yml"] -%}
-							<div class="success" id="progress_of_config">
-								Uploaded config
-							</div>
-						{%- endif %}
-						</div>
-						<button type="button" onclick="cancel_config()" class="upload_action_button" id="cancel_config_button">Cancel</button>
-					</form>
-				</td>
+				<td><div id="messages">
+				</div>
+
+				<a href="{{ url_for('index') }}" class="button">Home</a>
+				<button onclick="goto('/parameters')" class="button" id="next_button" disabled>Next: Parameters</button></td>
+				<td><p class="Fogg">Fogg Lab</p></td>
 			</tr>
 		</table>
+		<table class="centerinfo">
+			<tr>
+				<td><h1>DGE Analysis - Upload Files</h1></td>
+			</tr>
 
-		<div id="messages">
-		</div>
+			<tr>
+				<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
+			</tr>
 
-		<button onclick="goto('/parameters')" class="button" id="next_button" disabled>Next: Parameters</button>
-		<a href="{{ url_for('index') }}" class="button">Home</a>
+			<tr>
+				<td><table style="border: 1px solid black;">
+					<tr>
+						<th>Counts</th>
+						<th>Coldata</th>
+						<th>Filter (optional)</th>
+						<th>Config (optional)</th>
+					</tr>
+					<tr>
+						<td>
+							<form class="filedrag" id="upload_counts" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+								<div class="upload_div" id="counts_upload_div">
+									<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
+									<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
+								</div>
+								<div class="progress_div" id="progress_of_counts_div">
+								{% if uploads["counts.tsv"] -%}
+									<div class="success" id="progress_of_counts">
+										Uploaded counts
+									</div>
+								{%- endif %}
+								</div>
+								<button type="button" onclick="cancel_counts()" class="upload_action_button" id="cancel_counts_button">Cancel</button>
+							</form>
+						</td>
+						<td>
+							<form class="filedrag" id="upload_coldata" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+								<div class="upload_div" id="coldata_upload_div">
+									<input type="file" class="fileselect" id="fileselect_coldata" name="fileselect[]" style="display:none">
+									<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
+								</div>
+								<div class="progress_div" id="progress_of_coldata_div">
+								{% if uploads["coldata.tsv"] -%}
+									<div class="success" id="progress_of_coldata">
+										Uploaded coldata
+									</div>
+								{%- endif %}
+								</div>
+								<button type="button" onclick="cancel_coldata()" class="upload_action_button" id="cancel_coldata_button">Cancel</button>
+							</form>
+						</td>
+						<td>
+							<form class="filedrag" id="upload_filter" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+								<div class="upload_div" id="filter_upload_div">
+									<input type="file" class="fileselect" id="fileselect_filter" name="fileselect[]" style="display:none">
+									<p>Drop .txt file<br>here or<label for="fileselect_filter" class="upload_action_button">Browse</label></p>
+								</div>
+								<div class="progress_div" id="progress_of_filter_div">
+								{% if uploads["filter.txt"] -%}
+									<div class="success" id="progress_of_filter">
+										Uploaded filter
+									</div>
+								{%- endif %}
+								</div>
+								<button type="button" onclick="cancel_filter()" class="upload_action_button" id="cancel_filter_button">Cancel</button>
+							</form>
+						</td>
+						<td>
+							<form class="filedrag" id="upload_config" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+								<div class="upload_div" id="config_upload_div">
+									<input type="file" class="fileselect" id="fileselect_config" name="fileselect[]" style="display:none">
+									<p>Drop .yml file<br>here or<label for="fileselect_config" class="upload_action_button">Browse</label></p>
+								</div>
+								<div class="progress_div" id="progress_of_config_div">
+								{% if uploads["config.yml"] -%}
+									<div class="success" id="progress_of_config">
+										Uploaded config
+									</div>
+								{%- endif %}
+								</div>
+								<button type="button" onclick="cancel_config()" class="upload_action_button" id="cancel_config_button">Cancel</button>
+							</form>
+						</td>
+					</tr>
+				</table>
+			</tr></td>
+		</table>
+
 
 		<script>
 

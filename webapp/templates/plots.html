@@ -5,9 +5,15 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
     </head>
     <body>
-        <a href="{{ url_for('display_output') }}" class="button">Previous: Display Results</a>
-        <a href="{{ url_for('index') }}" class="button">Home</a>
-        <p></p>
+        <table class="linkbar">
+			<tr>
+				<td>
+                    <a href="{{ url_for('index') }}" class="button">Home</a>
+                    <a href="{{ url_for('display_output') }}" class="button">Previous: Display Results</a></td>
+				<td><p class="Fogg">Fogg Lab</p>
+                </td>
+			</tr>
+		</table>
         {% for plot in plot_filenames %}
             <p>
             <a href="{{ url_for('getplot', filename=plot) }}">{{plot}}</a>
