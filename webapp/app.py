@@ -4,14 +4,11 @@ import shutil
 import csv
 from datetime import timedelta
 import tempfile
-import copy
 import yaml
 from webapp import helpers
-#import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
-
 
 app = Flask(__name__)
 
@@ -144,8 +141,10 @@ def confirm_submission():
     # validate the config, counts and coldata
     config_file_error = check_config()
 
+    counts_colnames = get_tsv_rows("counts.tsv")[0]
+
     coldata_counts_match_error = helpers.check_coldata_matches_counts(
-        get_tsv_rows("counts.tsv"), get_tsv_rows("coldata.tsv"))
+        counts_colnames, get_tsv_rows("coldata.tsv"))
     
     factor_levels_error = helpers.check_factor_levels(
         params, get_tsv_rows("coldata.tsv"))
@@ -154,16 +153,31 @@ def confirm_submission():
     confirmation_message = ""
 
     if coldata_counts_match_error:
-        confirmation_message += f"Error: {coldata_counts_match_error}\n"
+        confirmation_message += f"<p>Error: {coldata_counts_match_error}</p>"
     if factor_levels_error:
-        confirmation_message += f"Error: {factor_levels_error}\n"
+        confirmation_message += f"<p>Error: {factor_levels_error}</p>"
     if config_file_error:
-        confirmation_message += f"Error: {config_file_error}\n"
+        confirmation_message += f"<p>Error: {config_file_error}</p>"
 
     if not confirmation_message:
         confirmation_message = helpers.get_confirmation_message(params)
 
     return confirmation_message
+
+
+@app.route("/getconsoleoutput")
+def get_console_output():
+    '''
+    returns the contents of the log file in user session directory
+    the log file contains terminal output from the analysis script
+    '''
+
+    log = read_user_file("log")
+
+    if not log:
+        return ("", 204)
+
+    return Response(log, mimetype='text/plain')
 
 
 @app.route("/display")

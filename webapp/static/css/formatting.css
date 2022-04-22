@@ -236,9 +236,29 @@ pre {
 
 #time{
 	position: absolute;
-	top: 50%;
+	top: 30%;
 	left: 50%;
 	font-size: 50px;
+	color: white;
+	transform: translate(-50%,-50%);
+	-ms-transform: translate(-50%,-50%);
+}
+
+#console_log {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	font-size: 16px;
+	color: white;
+	transform: translate(-50%,-50%);
+	-ms-transform: translate(-50%,-50%);
+}
+
+#cancel_analysis_button {
+	position: absolute;
+	top: 70%;
+	left: 50%;
+	font-size: 16px;
 	color: white;
 	transform: translate(-50%,-50%);
 	-ms-transform: translate(-50%,-50%);
