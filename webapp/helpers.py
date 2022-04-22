@@ -70,12 +70,13 @@ def validate_parameters(config_parameters):
         elif not (0 <= config_parameters["padj_thresh"] <= 1):
             error_msg += '"padj_thresh" must be between 0 and 1\n'
 
-        adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY", \
+        adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY",\
                         "fdr", "none"]
         if not isinstance(config_parameters["adj_method"], str):
             error_msg += '"adj_method" must be a string"\n'
         elif config_parameters["adj_method"] not in adj_methods:
-            error_msg += f"Unknown adj_method: {config_parameters['adj_method']}"
+            error_msg += "Unknown adjustment method: "\
+                            f"{config_parameters['adj_method']}"
             error_msg += f"Valid adj_methods: {adj_methods}"
 
         if not isinstance(config_parameters["condition"], str):
