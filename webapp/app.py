@@ -6,8 +6,8 @@ from datetime import timedelta
 import tempfile
 import copy
 import yaml
-#from webapp import helpers
-import helpers
+from webapp import helpers
+#import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
@@ -141,28 +141,27 @@ def confirm_submission():
     # generate config file from the form parameters
     generate_config(params)
 
-    # get the analysis formula to display for the user
-    confirmation_message = helpers.get_confirmation_message(params)
+    # validate the config, counts and coldata
+    config_file_error = check_config()
 
-    counts_file = read_user_file("counts.tsv")
-    counts_reader = csv.reader(counts_file, delimiter="\t")
-    counts_list = list(counts_reader)
-    counts_file.close()
-
-    coldata_file = read_user_file("coldata.tsv")
-    coldata_reader = csv.reader(coldata_file, delimiter="\t")
-    coldata_list = list(coldata_reader)
-    coldata_file.close()
-
-    coldata_counts_match_error = helpers.check_coldata_rows_match_counts_cols(
-        copy.deepcopy(counts_list[0]), copy.deepcopy(coldata_list))
+    coldata_counts_match_error = helpers.check_coldata_matches_counts(
+        get_tsv_rows("counts.tsv"), get_tsv_rows("coldata.tsv"))
+    
     factor_levels_error = helpers.check_factor_levels(
-        params, copy.deepcopy(coldata_list))
+        params, get_tsv_rows("coldata.tsv"))
+
+    # get the analysis formula to display for the user
+    confirmation_message = ""
 
     if coldata_counts_match_error:
-        confirmation_message = f"Error: {coldata_counts_match_error}"
-    elif factor_levels_error:
-        confirmation_message = f"Error: {factor_levels_error}"
+        confirmation_message += f"Error: {coldata_counts_match_error}\n"
+    if factor_levels_error:
+        confirmation_message += f"Error: {factor_levels_error}\n"
+    if config_file_error:
+        confirmation_message += f"Error: {config_file_error}\n"
+
+    if not confirmation_message:
+        confirmation_message = helpers.get_confirmation_message(params)
 
     return confirmation_message
 
@@ -291,18 +290,20 @@ def call_analysis(data_type):
     sends the session_id as an argument
     '''
 
+    log = get_session_dir() + "log"
+
     if data_type == 'microarray':
-        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']}"], \
-            shell=True)
+        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']} "\
+                            f"1> {log} 2>& 1"], shell=True)
     elif data_type == 'RNA-Seq':
-        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']}"], \
-                shell=True)
+        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']} "\
+                            f"1> {log} 2>& 1"], shell=True)
 
 
 def read_user_file(filename):
     '''
     opens a user file for reading
-    just supply the filename like "counts.tsv" for example
+    pass in the filename i.e "counts.tsv"
     returns lines from a file in the users session directory
     '''
     user_file = None
@@ -319,7 +320,7 @@ def read_user_file(filename):
 def delete_user_file(filename):
     '''
     deletes a user input file if it exists
-    just supply the filename like "counts.tsv" for example
+    pass in the filename i.e "counts.tsv"
     '''
 
     session_dir = get_session_dir()
@@ -443,5 +444,18 @@ def check_config():
         delete_user_file("config.yml")
 
     return err_msg
+
+def get_tsv_rows(filename):
+    '''
+    returns the rows of the user input file as a 2d array
+    '''
+
+    tsv_file = read_user_file(filename)
+    data_reader = csv.reader(tsv_file, delimiter="\t")
+    rows = list(data_reader)
+    tsv_file.close()
+
+    return rows
+
 
 cleanup_old_sessions()

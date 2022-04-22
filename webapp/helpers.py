@@ -138,7 +138,7 @@ def check_factor_levels(config_params, coldata):
     if condition in coldata[0]:
         condition_col_index = coldata[0].index(condition)
     else:
-        return f"Condition '{condition}' not present in coldata file (line 1)"
+        return f"Condition '{condition}' not present in coldata (line 1)"
 
     contrast_level_found = False
     reference_level_found = False
@@ -159,16 +159,14 @@ def check_factor_levels(config_params, coldata):
     err_msg = ""
 
     if not contrast_level_found:
-        err_msg = \
-            f"Contrast level '{contrast_level}' not found in coldata file"
-    elif not reference_level_found:
-        err_msg = \
-            f"Reference level '{reference_level}' not found in coldata file"
+        err_msg += f"Contrast level '{contrast_level}' not found in coldata"
+    if not reference_level_found:
+        err_msg += f"Reference level '{reference_level}' not found in coldata"
 
     return err_msg
 
 
-def check_coldata_rows_match_counts_cols(counts_colnames, coldata_rows):
+def check_coldata_matches_counts(counts_colnames, coldata_rows):
     '''
     ensure rows in coldata match with the column names for samples in counts
     Assumes that sample names are listed on first row (header) of counts file
