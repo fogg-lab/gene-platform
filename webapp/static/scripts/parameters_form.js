@@ -1,4 +1,7 @@
 document.getElementById("data_type").onchange = show_hide_parameters;
+analysis_cancelled = false;
+counter = 0
+
 
 function show_hide_parameters() {
 
@@ -21,7 +24,7 @@ function show_hide_parameters() {
         document.getElementById("use_qual_weights").setAttribute("type","hidden");
       }
     }
-    else {
+    else if (document.getElementById("use_qual_weights_label") != null) {
       document.getElementById("use_qual_weights_label").style.display = "inline";
       document.getElementById("use_qual_weights_label").style.visibility = "visible";
       document.getElementById("use_qual_weights").setAttribute("type","checkbox");
@@ -35,7 +38,16 @@ function show_hide_parameters() {
 function analysisReqListener() {
   console.log(this.responseText);
   // analysis is complete - load the results page
-  window.location.href = '/display';
+  if (!analysis_cancelled) {
+    window.location.href = "/display";
+  }
+}
+
+
+function analysisLogReqListener() {
+  console.log(this.responseText);
+  analysis_log = document.getElementById("analysis_log");
+  analysis_log.innerHTML = this.responseText;
 }
 
 
@@ -53,9 +65,19 @@ function submission_confirmed() {
 }
 
 
+function request_console_output() {
+  var analysisLogReq = new XMLHttpRequest();
+  analysisLogReq.addEventListener("load", analysisLogReqListener);
+  analysisLogReq.open("GET", "/getconsoleoutput");
+  analysisLogReq.send();
+}
+
+
 function confirm_submission(confirmation_text) {
   overlay = document.getElementById("overlay");
   overlay.style.display="flex";
+  console_log = document.getElementById("console_log");
+  console_log.style.display="none";
   dialog_box = document.getElementById("confirm_div_id")
   if (dialog_box == null) {
     dialog_box = document.createElement("div");
@@ -127,19 +149,44 @@ function get_parameters() {
   return params
 }
 
+
 function get_data_type() {
   datatype_select = document.getElementById("data_type")
   var selection = datatype_select.options[datatype_select.selectedIndex].text
   return selection
 }
 
+
+var timer = {}
+
+
 function show_runtime() {
-  counter = 0
   overlay_div = document.getElementById('overlay')
   overlay_div.style.display = "flex";
-  
-  var timer = setInterval(function () {
-      document.getElementById("time").innerHTML = "Please wait... Analysis runtime: " + counter + " seconds"
-      counter += 1  
-  }, 1000);  
+  console_log = document.getElementById("console_log");
+  console_log.style.display="block";
+  analysis_cancelled = false;
+  const cancel_analysis_button = document.createElement("button");
+  cancel_analysis_button.id = "cancel_analysis_button";
+  cancel_analysis_button.innerHTML = "Cancel Analysis";
+  cancel_analysis_button.onclick = cancel_analysis;
+  overlay_div.appendChild(cancel_analysis_button);
+  cancel_analysis_button.className = "button";
+  timer = setInterval(function () {
+    document.getElementById("time").innerHTML = "Please wait... Analysis runtime: " + counter + " seconds"
+    counter += 1
+    request_console_output()
+  }, 1000);
+}
+
+
+function cancel_analysis() {
+  analysis_cancelled = true;
+  overlay_div = document.getElementById('overlay')
+  overlay_div.style.display = "none";
+  cancel_analysis_button = document.getElementById("cancel_analysis_button")
+  cancel_analysis_button.remove()
+  clearInterval(timer);
+  counter = 0;
+  document.getElementById("time").innerHTML = "";
 }

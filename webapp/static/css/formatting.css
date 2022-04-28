@@ -5,7 +5,6 @@ body {
 	word-wrap: break-word;
 	line-height: 1.7;
 	padding: 0 20px 20px 20px;
-	width: 722px;
 	-webkit-font-smoothing: antialiased;
 	}
 
@@ -163,7 +162,7 @@ pre {
 /* CSS */
 .button {
   appearance: none;
-  background-color: #2ea44f;
+  background-color: #e5a70a;
   border: 1px solid rgba(27, 31, 35, .15);
   border-radius: 6px;
   box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
@@ -192,7 +191,7 @@ pre {
 }
 
 .button:hover {
-  background-color: #2c974b;
+  background-color: #bd8a0a;
 }
 
 .button:focus {
@@ -201,14 +200,14 @@ pre {
 }
 
 .button:disabled {
-  background-color: #94d3a2;
+  background-color: #e4c064;
   border-color: rgba(27, 31, 35, .1);
   color: rgba(255, 255, 255, .8);
   cursor: default;
 }
 
 .button:active {
-  background-color: #298e46;
+  background-color: #e5a70a;
   box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
 }
 
@@ -237,9 +236,29 @@ pre {
 
 #time{
 	position: absolute;
-	top: 50%;
+	top: 30%;
 	left: 50%;
 	font-size: 50px;
+	color: white;
+	transform: translate(-50%,-50%);
+	-ms-transform: translate(-50%,-50%);
+}
+
+#console_log {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	font-size: 16px;
+	color: white;
+	transform: translate(-50%,-50%);
+	-ms-transform: translate(-50%,-50%);
+}
+
+#cancel_analysis_button {
+	position: absolute;
+	top: 70%;
+	left: 50%;
+	font-size: 16px;
 	color: white;
 	transform: translate(-50%,-50%);
 	-ms-transform: translate(-50%,-50%);
@@ -276,11 +295,6 @@ pre {
 	margin-right:auto;
 }
 
-table, th, td {
-	border: 1px solid;
-	margin: 5px;
-}
-
 #confirm_div_id {
     display: none;
     background-color: #eee;
@@ -307,4 +321,97 @@ table, th, td {
 
 #confirm_div_id button:hover {
     background-color: #ddd;
+}
+
+h2 {
+	margin: 0;
+	padding: 0;
+	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+	font-size: 100px;
+	text-transform: uppercase;
+	font-weight: 900;
+	letter-spacing: 20px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	margin: 0;
+	background: url(science_bg.jpg) 50% 50%;
+	background-size: cover;
+	-webkit-text-fill-color: transparent;
+	-webkit-background-clip: text;
+}
+
+.hbutton {
+	appearance: none;
+	background-color: #e5a70a;
+	border: 1px solid rgba(27, 31, 35, .15);
+	border-radius: 6px;
+	box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+	box-sizing: border-box;
+	color: #fff;
+	cursor: pointer;
+	display: inline-block;
+	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 20px;
+	padding: 6px 16px;
+	position: absolute;
+	bottom: 10%;
+	left: 45%;
+	text-align: center;
+	text-decoration: none;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+	vertical-align: middle;
+	white-space: nowrap;
+  }
+
+.hp {
+	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+	position: absolute;
+	bottom: 35%;
+	left: 38%;
+	margin-left: auto;
+	margin-right: auto;
+	color: darkblue;
+	font-variant: small-caps;
+	text-transform: capitalize;
+}
+
+.centerinfo {
+	border: none;
+	border-collapse: collapse;
+    border-spacing: 0;
+    margin-left: auto;
+	margin-right:auto;
+	min-width:400px;
+	text-align: center;
+}
+
+.linkbar {
+	border: none;
+	border-collapse: collapse;
+    border-spacing: 0;
+	width: 100%;
+}
+
+.Fogg {
+	margin: 0;
+	padding: 0;
+	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+	font-size: 50px;
+	font-variant: small-caps;
+	text-transform: capitalize;
+	font-weight: 900;
+	letter-spacing: 5px;
+	position: absolute;
+	top: 0;
+	right: 0;
+	background: url(science_bg.jpg) 50% 50%;
+	background-size: cover;
+	-webkit-text-fill-color: transparent;
+	-webkit-background-clip: text;
 }
