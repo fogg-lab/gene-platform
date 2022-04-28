@@ -32,13 +32,13 @@ filter_filepath <- paste(user_directory, "filter.txt", sep="")
 
 mean_difference = function(fit, name){
   mean_diff_rna_seq_path <- paste(user_directory, name)
-  diff_express = data.frame(fit)
-  colnames(diff_express) <- c("symbol", "baseMean", "log2FoldChange", "l2fc_se", "test_stat", "pval", "padj")
+  differential_expression = data.frame(fit)
+  colnames(differential_expression) <- c("symbol", "baseMean", "log2FoldChange", "l2fc_se", "test_stat", "pval", "padj")
   options(ggrepel.max.overlaps = Inf)
-  ggpubr::ggmaplot(diff_express, main = expression("Group 1" %->% "Group 2"),
+  ggpubr::ggmaplot(differential_expression, main = expression("Group 1" %->% "Group 2"),
                    fdr = 0.05, fc = 2, size = 0.4,
                    palette = c("#B31B21", "#1465AC", "darkgray"),
-                   genenames =  as.vector(diff_express$symbol),
+                   genenames =  as.vector(differential_expression$symbol),
                    legend = "top", top = 20,
                    font.label = c("bold", 11), label.rectangle = TRUE,
                    font.legend = "bold",
@@ -54,12 +54,12 @@ mean_difference = function(fit, name){
 volcano_plot = function(fit, name){
   rna_volcano_path <- paste(user_directory, name)
   de <- fit
-  de$diffexpressed <- "NO"
-  de$diffexpressed[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
-  de$diffexpressed[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
+  de$differential_expression <- "NO"
+  de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
+  de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
   de$delabel <- NA
-  de$delabel[de$diffexpressed != "NO"] <- de$symbol[de$diffexpressed != "NO"]
-  plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=diffexpressed, label=delabel)) +
+  de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "NO"]
+  plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=differential_expression, label=delabel)) +
     geom_point() +
     theme_minimal() +
     scale_color_manual(values=c("blue", "black", "red")) +
