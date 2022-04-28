@@ -2,15 +2,56 @@
 
 import unittest
 import yaml
-from webapp import newHelpers
+from webapp import helpers
 import os
+import csv
+import copy
 
 
 def read_yaml(filename):
     config_file = open(filename, 'r')
     contents = yaml.safe_load(config_file)
     config_file.close()
-    return newHelpers.validate_parameters(contents)
+    return helpers.validate_parameters(contents)
+
+
+def get_inputs_files(filename):
+    print(filename)
+    with open(filename, newline='') as inp:
+        input = csv.reader(inp, delimiter="\t")
+        input_as_list = list(input)
+        return input_as_list
+
+
+def test_input_files(col_file, count_file):
+    """tests all input .tsv files"""
+    col_data_list = get_inputs_files(col_file)
+    counts_list = get_inputs_files(count_file)
+
+    col_counts_match_error = helpers.check_coldata_rows_match_counts_cols(
+        copy.deepcopy(counts_list[0]), copy.deepcopy(col_data_list))
+
+    confirmation_message = ""
+    if col_counts_match_error:
+        confirmation_message = f"Error: {coldata_counts_match_error}\n"
+    return confirmation_message
+
+
+class TestInput(unittest.TestCase):
+
+    # def tearDown(self):
+    #     try:
+    #         os.remove(self.col)
+    #         os.remove(self.count)
+    #     except FileNotFoundError as fnf:
+    #         print(fnf)
+
+    def test1(self):
+        self.col = "rna_seq_ucec_coldata.tsv"
+        self.count = "rna_seq_ucec_counts.tsv"
+        result = test_input_files(self.col, self.count)
+        expected = ''
+        self.assertEqual(result, expected)
 
 
 class TestParam(unittest.TestCase):

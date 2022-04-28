@@ -1,3 +1,4 @@
+# Ai Vu: display plots of analysis
 <html>
     <head>
         <title>Plots</title>
@@ -13,12 +14,25 @@
 				<td><p class="Fogg">Fogg Lab</p>
                 </td>
 			</tr>
+            <tr>
+            </tr>
 		</table>
+        <h3 style="text-align:center; font-family:verdana; color:purple;"> Data Visualization</h3>
+        <h3><mark style="background-color:powderblue;"> Please click the image you want to download</mark></h3>
+        <br>
+        <br>
+        <h3>
         {% for plot in plot_filenames %}
-            <p>
-            <a href="{{ url_for('getplot', filename=plot) }}">{{plot}}</a>
-            </p>
+            <div style="text-align: center;">
+                <a href="{{ url_for('getplot', filename=plot) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot) }}" alt="Plots of current analysis"
+                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+                </a>
+            </div>
+            <h3 style="text-align:center">Image file name: {{plot}}</h3>
+            <br>
+            <br>
         {% endfor %}
-
+        </h3>
     </body>
 </html>
