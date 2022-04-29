@@ -31,6 +31,10 @@ function populate_rows(start_index, end_index) {
             spicy_row = true;
         }
         for (elem of row) {
+            numeric_val = parseFloat(elem);
+            if (!isNaN(numeric_val)) {
+                elem = numeric_val.toPrecision(6)
+            }
             new_cell = table_row.insertCell()
             new_cell.innerHTML = elem;
         }
