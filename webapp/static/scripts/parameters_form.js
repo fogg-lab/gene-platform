@@ -13,7 +13,7 @@ function show_hide_parameters() {
   }
 
   else {
-    document.getElementById("form_parameters").style.display = "block";
+    document.getElementById("form_parameters").style.display = "table";
     document.getElementById("form_parameters").style.visibility = "visible";
     
     if (document.getElementById("data_type").value == "RNA-Seq") {

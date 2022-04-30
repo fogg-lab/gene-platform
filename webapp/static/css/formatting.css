@@ -342,6 +342,42 @@ h2 {
 	-webkit-background-clip: text;
 }
 
+.tooltip {
+	position: relative;
+	display: inline-block;
+	border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+	visibility: hidden;
+	width: 300px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px 0;
+	position: absolute;
+	z-index: 1;
+	top: 150%;
+	left: 50%;
+	margin-left: -60px;
+}
+  
+.tooltip .tooltiptext::after {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: transparent transparent black transparent;
+}
+  
+.tooltip:hover .tooltiptext {
+	visibility: visible;
+}
+
 .hbutton {
 	appearance: none;
 	background-color: #e5a70a;
@@ -391,11 +427,45 @@ h2 {
 	text-align: center;
 }
 
+#form_parameters td {
+	padding: 5px;
+	position: relative;
+}
+
+#form_parameters {
+	text-align: left;
+	position: relative;
+	padding: 5px;
+}
+
+#form_parameters input {
+	width: 70%;
+}
+
+#form_parameters th {
+	text-align: right;
+	position: relative;
+}
+
+#form-parameters td {
+	text-align: left;
+}
+
+#prev_uploads_button {
+	margin: auto;
+}
+
 .linkbar {
 	border: none;
 	border-collapse: collapse;
     border-spacing: 0;
 	width: 100%;
+}
+
+.bottom-buttons {
+	width: 100%;
+	margin: auto;
+	text-align: center;
 }
 
 .Fogg {
