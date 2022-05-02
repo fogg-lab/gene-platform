@@ -4,9 +4,8 @@ body {
 	font: 15px Helvetica, arial, freesans, clean, sans-serif;
 	word-wrap: break-word;
 	line-height: 1.7;
-	padding: 0 20px 20px 20px;
 	-webkit-font-smoothing: antialiased;
-	}
+}
 
 a {
 	color: #4183c4;
