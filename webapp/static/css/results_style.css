@@ -28,7 +28,7 @@ html, body { width: 100%; height: 100%; margin: 0 auto; text-align: center; }
 }
 
 .spicy-header-div {
-    background-color: #d73f09;
+    background-color: #dc4405;
     color: #ffffff;
     text-align: center;
     font-size: 1.2em;
@@ -45,7 +45,7 @@ html, body { width: 100%; height: 100%; margin: 0 auto; text-align: center; }
 
 .spicy-table tbody tr.spicy {
     font-weight: bold;
-    color: #d73f09;
+    color: #dc4405;
 }
 
 .header-table {
