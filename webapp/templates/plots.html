@@ -1,22 +1,17 @@
-# Ai Vu: display plots of analysis
 <html>
     <head>
-        <title>Plots</title>
+        <title>Data Visualization</title>
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
     </head>
     <body>
-        <table class="linkbar">
-			<tr>
-				<td>
-                    <a href="{{ url_for('index') }}" class="button">Home</a>
-                    <a href="{{ url_for('display_output') }}" class="button">Previous: Display Results</a></td>
-				<td><p class="Fogg">Fogg Lab</p>
-                </td>
-			</tr>
-            <tr>
-            </tr>
-		</table>
+		<div class="topnav">
+			<a href="{{ url_for('index') }}">Home</a>
+			<a class="active" href="#">Analysis</a>
+			<a href="#">Batch Correction</a>
+			<span class="Fogg">Fogg Lab</p>
+		</div>
+        <a href="{{ url_for('display_output') }}" class="button">Previous: Display Results</a></td>
         <h3 style="text-align:center; font-family:verdana; color:purple;"> Data Visualization</h3>
         <h3><mark style="background-color:powderblue;"> Please click the image you want to download</mark></h3>
         <br>

@@ -6,23 +6,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
   </head>
   <body>
+    <div class="topnav">
+			<a href="{{ url_for('index') }}">Home</a>
+			<a class="active" href="#">Analysis</a>
+			<a href="#">Batch Correction</a>
+			<span class="Fogg">Fogg Lab</span>
+		</div>
     <table class="linkbar">
       <tr>
-        <td><a href="{{ url_for('index') }}" class="button">Home</a>
         {% if filtered_data %}
-          <a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download full output</a>
-          <a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output</a>
+          <td><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download full output</a></td>
+          <td><a href="{{ url_for('get_filtered_tsv') }}" class="button">Download filtered output</a></td>
         {% else %}
-          <a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download output</a>
+          <td><a href="{{ url_for('get_unfiltered_tsv') }}" class="button">Download output</a></td>
         {% endif %}
-        <a href="{{ url_for('uploadsetup') }}" class="button">Change input</a>
-        <a href="{{ url_for('reset') }}" class="button">New analysis</a>
-        <a href="{{ url_for('plots') }}" class="button">Plots</a></td>
-        <p class="Fogg">Fogg Lab</p></td>
+        <td><a href="{{ url_for('uploadsetup') }}" class="button">Change input</a></td>
+        <td><a href="{{ url_for('reset') }}" class="button">New analysis</a></td>
+        <td><a href="{{ url_for('plots') }}" class="button">Data Plots</a></td>
       </tr>
     </table>
-    <br>
-    <p></p>
+
     {% if filtered_data %}
     <div style="width:100%;">
     <div class="output_filter_div">
