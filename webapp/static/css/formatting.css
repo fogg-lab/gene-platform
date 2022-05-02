@@ -161,7 +161,7 @@ pre {
 /* CSS */
 .button {
   appearance: none;
-  background-color: #d73f09;
+  background-color: #dc4405;
   border: 1px solid rgba(27, 31, 35, .15);
   border-radius: 6px;
   box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
@@ -199,7 +199,7 @@ pre {
 }
 
 .button:disabled {
-  background-color: #d73f09;
+  background-color: #dc4405;
   border-color: rgba(27, 31, 35, .1);
   color: rgba(255, 255, 255, .8);
   cursor: default;
@@ -207,7 +207,7 @@ pre {
 }
 
 .button:active {
-  background-color: #d73f09;
+  background-color: #dc4405;
   box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
 }
 
