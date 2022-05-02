@@ -162,7 +162,7 @@ pre {
 /* CSS */
 .button {
   appearance: none;
-  background-color: #e5a70a;
+  background-color: #d73f09;
   border: 1px solid rgba(27, 31, 35, .15);
   border-radius: 6px;
   box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
@@ -191,7 +191,7 @@ pre {
 }
 
 .button:hover {
-  background-color: #bd8a0a;
+	box-shadow: 0 6px 8px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
 
 .button:focus {
@@ -200,14 +200,15 @@ pre {
 }
 
 .button:disabled {
-  background-color: #e4c064;
+  background-color: #d73f09;
   border-color: rgba(27, 31, 35, .1);
   color: rgba(255, 255, 255, .8);
   cursor: default;
+  opacity: 0.5;
 }
 
 .button:active {
-  background-color: #e5a70a;
+  background-color: #d73f09;
   box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
 }
 
@@ -323,25 +324,6 @@ pre {
     background-color: #ddd;
 }
 
-h2 {
-	margin: 0;
-	padding: 0;
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-	font-size: 100px;
-	text-transform: uppercase;
-	font-weight: 900;
-	letter-spacing: 20px;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	margin: 0;
-	background: url(science_bg.jpg) 50% 50%;
-	background-size: cover;
-	-webkit-text-fill-color: transparent;
-	-webkit-background-clip: text;
-}
-
 .tooltip {
 	position: relative;
 	display: inline-block;
@@ -378,36 +360,8 @@ h2 {
 	visibility: visible;
 }
 
-.hbutton {
-	appearance: none;
-	background-color: #e5a70a;
-	border: 1px solid rgba(27, 31, 35, .15);
-	border-radius: 6px;
-	box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
-	box-sizing: border-box;
-	color: #fff;
-	cursor: pointer;
-	display: inline-block;
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-	font-size: 14px;
-	font-weight: 600;
-	line-height: 20px;
-	padding: 6px 16px;
-	position: absolute;
-	bottom: 10%;
-	left: 45%;
-	text-align: center;
-	text-decoration: none;
-	user-select: none;
-	-webkit-user-select: none;
-	touch-action: manipulation;
-	vertical-align: middle;
-	white-space: nowrap;
-  }
-
 .hp {
 	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-	position: absolute;
 	bottom: 35%;
 	left: 38%;
 	margin-left: auto;
@@ -459,7 +413,9 @@ h2 {
 	border: none;
 	border-collapse: collapse;
     border-spacing: 0;
-	width: 100%;
+	margin-top: 15px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .bottom-buttons {
@@ -468,8 +424,35 @@ h2 {
 	text-align: center;
 }
 
+.topnav {
+	overflow: hidden;
+	background-color: #d73f09;
+	height: 85px;
+	padding-left: 265px;
+	text-align: center;
+}
+  
+.topnav a {
+	display:inline-block;
+	color: #f2f2f2;
+	padding: 28px 16px;
+	text-align: center;
+	text-decoration: none;
+	font-size: 20px;
+	font-weight: bold;
+}
+  
+.topnav a:hover {
+	background-color: #ddd;
+	color: black;
+}
+  
+.topnav a.active {
+	background-color: #d73f09;
+	color: black;
+}
+
 .Fogg {
-	margin: 0;
 	padding: 0;
 	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
 	font-size: 50px;
@@ -477,11 +460,25 @@ h2 {
 	text-transform: capitalize;
 	font-weight: 900;
 	letter-spacing: 5px;
-	position: absolute;
-	top: 0;
-	right: 0;
 	background: url(science_bg.jpg) 50% 50%;
 	background-size: cover;
 	-webkit-text-fill-color: transparent;
 	-webkit-background-clip: text;
+	background-clip: text;
 }
+
+span.Fogg {
+	float: right;
+	margin-right: 18px;
+	pointer-events: none;
+}
+
+h2.Fogg {
+	font-size: 100px;
+	font-variant: normal;
+	text-transform: uppercase;
+	letter-spacing: 20px;
+	margin: 0;
+	width: 100%;
+}
+

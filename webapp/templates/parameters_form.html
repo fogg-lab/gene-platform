@@ -7,17 +7,12 @@
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
 	</head>
   <body>
-    <table class="linkbar">
-			<tr>
-				<td>
-          <a href="{{ url_for('index') }}" class="button">Home</a>
-        </td>
-        <td>
-          <p class="Fogg">Fogg Lab</p>
-        </td>
-			</tr>
-		</table>
-    <br>
+		<div class="topnav">
+			<a href="{{ url_for('index') }}">Home</a>
+			<a class="active" href="#">Analysis</a>
+			<a href="#">Batch Correction</a>
+			<span class="Fogg">Fogg Lab</p>
+		</div>
     <form id="submit" action="javascript:submit()">
       <table class="centerinfo">
         <tr>

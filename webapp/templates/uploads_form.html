@@ -4,27 +4,21 @@
 		<link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
 		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
-	</head>	
+	</head>
 	<body>
-		<table class="linkbar">
-			<tr>
-				<td><div id="messages">
-				</div>
+		<div class="topnav">
+			<a href="{{ url_for('index') }}">Home</a>
+			<a class="active" href="#">Analysis</a>
+			<a href="#">Batch Correction</a>
+			<span class="Fogg">Fogg Lab</p>
+		</div>
 
-				<a href="{{ url_for('index') }}" class="button">Home</a>
-				<button onclick="goto('/parameters')" class="button" id="next_button" disabled>Next: Parameters</button></td>
-				<td><p class="Fogg">Fogg Lab</p></td>
-			</tr>
-		</table>
+		<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
+		
 		<table class="centerinfo">
 			<tr>
 				<td><h1>DGE Analysis - Upload Files</h1></td>
 			</tr>
-
-			<tr>
-				<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
-			</tr>
-
 			<tr>
 				<td><table style="border: 1px solid black;">
 					<tr>
@@ -103,7 +97,13 @@
 			</tr></td>
 		</table>
 
-
+		<div id="messages">
+		</div>
+		
+		<div class="bottom-buttons">
+			<button onclick="goto('/parameters')" class="button" id="next_button" disabled>Next: Parameters</button>
+		</div>
+		
 		<script>
 
 			// hide progress bar divs and cancel buttonsfor files which have not been uploaded
