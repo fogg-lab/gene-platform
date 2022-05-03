@@ -47,7 +47,7 @@ function analysisReqListener() {
 function analysisLogReqListener() {
   console.log(this.responseText);
   analysis_log = document.getElementById("analysis_log");
-  analysis_log.innerHTML = this.responseText;
+  analysis_log.innerHTML = "<pre>" + this.responseText + "</pre>";
 }
 
 
