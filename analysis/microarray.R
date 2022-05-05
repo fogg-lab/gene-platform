@@ -4,10 +4,10 @@
 # Output: gene expression analysis for unfilter +/- filtered genes (.tsv)
 # and 2 plots (mean microarray_mean_variance_trend(.png) and volcano_plot(.png)
 
-MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "microarray_mean_variance_trend.png"
-MICRO_ARRAY_VOLCANO_IMAGE_FILE = "micrrarray_volcano.png"
+MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "mean_variance_trend_plot_UNFILTERED_microarray.png"
+MICRO_ARRAY_VOLCANO_IMAGE_FILE = "volcano_plot_UNFILTERED_microarray.png"
 #FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "filtered_microarray_mean_variance_trend.png"
-FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "filtered_microarray_volcano.png"
+FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "volcano_plot_FILTERED_microarray.png"
 
 suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(limma)))
