@@ -2,10 +2,10 @@
 # Ai: Added visualization plot. Please notice that the rna_seq data needs to preprocess before
 # generating the plot. Preprocess data haven't done yet.
 
-RNA_SEQ_MEAN_DIFF_IMAGE_FILE = "rna_mean_difference.png"
-RNA_SEQ_VOLCANO_IMAGE_FILE = "rna_seq_volcano.png"
-FILTERED_RNA_SEQ_MEAN_DIFF_IMAGE_FILE = "filtered_rna_mean_difference.png"
-FILTERED_RNA_SEQ_VOLCANO_IMAGE_FILE = "filtered_rna_seq_volcano.png"
+RNA_SEQ_MEAN_DIFF_IMAGE_FILE = "mean_difference_plot_UNFILTERED_rna_sequence.png"
+RNA_SEQ_VOLCANO_IMAGE_FILE = "volcano_plot_UNFILTERED_rna_sequence.png"
+FILTERED_RNA_SEQ_MEAN_DIFF_IMAGE_FILE = "mean_difference_plot_FILTERED_rna_sequence.png"
+FILTERED_RNA_SEQ_VOLCANO_IMAGE_FILE = "volcano_plot_FILTERED_rna_sequence.png"
 
 # write("Loading libraries: tidyverse, DESeq2, BiocParallel, parallel, yaml", stderr())
 # Loading libraries required for RNA Sequence Analysis.
