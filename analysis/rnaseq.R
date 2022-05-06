@@ -54,11 +54,11 @@ mean_difference = function(fit, name){
 volcano_plot = function(fit, name){
   rna_volcano_path <- paste(user_directory, name)
   de <- fit
-  de$differential_expression <- "NO"
+  de$differential_expression <- "Not significance"
   de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
   de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
   de$delabel <- NA
-  de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "NO"]
+  de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "Not significance"]
   plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=differential_expression, label=delabel)) +
     geom_point() +
     theme_minimal() +
