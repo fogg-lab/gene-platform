@@ -13,7 +13,7 @@ function show_hide_parameters() {
   }
 
   else {
-    document.getElementById("form_parameters").style.display = "block";
+    document.getElementById("form_parameters").style.display = "table";
     document.getElementById("form_parameters").style.visibility = "visible";
     
     if (document.getElementById("data_type").value == "RNA-Seq") {
@@ -47,7 +47,7 @@ function analysisReqListener() {
 function analysisLogReqListener() {
   console.log(this.responseText);
   analysis_log = document.getElementById("analysis_log");
-  analysis_log.innerHTML = this.responseText;
+  analysis_log.innerHTML = "<pre>" + this.responseText + "</pre>";
 }
 
 

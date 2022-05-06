@@ -33,11 +33,13 @@ mean_variance_trend = function(fit, filename){
 volcano_plot = function(fit, filename){
   micro_array_volcano_path <- paste(user_directory, filename)
   de <- fit
+
   de$differential_expression <- "Not significance"
   de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
   de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
   de$delabel <- NA
   de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "Not significance"]
+
   plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=differential_expression, label=delabel)) +
     geom_point() +
     theme_minimal() +
