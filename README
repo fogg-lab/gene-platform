@@ -22,4 +22,6 @@ Rscript requirements.R
 
 3. Run the web app (replace xxxx with a port number)
 cd webapp
-gunicorn --workers=5 --bind 0.0.0.0:xxxx wsgi:app
+gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app
+or run the server persistently in the background like this:
+nohup gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app &
