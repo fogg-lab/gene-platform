@@ -2,37 +2,32 @@ import os
 import subprocess
 import shutil
 import csv
-from datetime import timedelta
 import tempfile
 import yaml
-from webapp import helpers
+import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
 
+#imports for debugging (allow printing to stderr)
+#from __future__ import print_function
+#import sys
+
+
 app = Flask(__name__)
-
-app.config["SESSION_PERMANENT"] = True
-app.config["SESSION_TYPE"] = "filesystem"
-app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
-
-Session(app)
-
-'''
-backlog:
-TODO: Descriptions for the columns included in the output\
-TODO: Validate string parameters
-'''
+app.config.from_pyfile("config.py")
+sess = Session()
+sess.init_app(app)
 
 # Ensure that the current working directory is the webapp directory
 # Get the path to the webapp dir from the path of this script
 SCRIPT_PATH = os.path.realpath(__file__)
 SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
-os.chdir(SCRIPT_DIR)
-
 RNA_SEQ_SCRIPT = "Rscript ../analysis/rnaseq.R"
 MICROARRAY_SCRIPT = "Rscript ../analysis/microarray.R"
 USER_FILES_LOCATION = "user_files"
+
+os.chdir(SCRIPT_DIR)
 
 
 @app.route("/")
@@ -416,6 +411,7 @@ def ensure_session_dir():
         not os.path.exists(session["user_session_dir"])):
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
         os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
+
         session["user_session_dir"] = f"{temp_dir}/"
         session["session_id"] = temp_dir.split("/")[-1:]
 
@@ -451,6 +447,7 @@ def check_config():
 
     return err_msg
 
+
 def get_tsv_rows(filename):
     '''
     returns the rows of the user input file as a 2d array
@@ -463,5 +460,8 @@ def get_tsv_rows(filename):
 
     return rows
 
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")
 
 cleanup_old_sessions()
