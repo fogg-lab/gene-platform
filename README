@@ -20,9 +20,6 @@ pip3 install --upgrade pip
 pip3 -r webapp/requirements.txt
 Rscript requirements.R
 
-3. Set FLASK_APP environmental variable
+3. Run the web app (replace xxxx with a port number)
 cd webapp
-export FLASK_APP=app
-
-4. Run the web app (replace xxxx with a port number)
-flask run -h 0.0.0.0 -p xxxx
+gunicorn --workers=5 --bind 0.0.0.0:xxxx wsgi:app
