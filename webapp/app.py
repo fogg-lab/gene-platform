@@ -5,9 +5,8 @@ import csv
 import tempfile
 import yaml
 import helpers
-from collections import defaultdict
 from flask import Flask, render_template, request, redirect, url_for, \
-    session, Response, jsonify, send_from_directory, stream_with_context
+    session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
 
 # imports for debugging (allow printing to stderr)
