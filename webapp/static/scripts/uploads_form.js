@@ -86,7 +86,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			var progress = progress_div.appendChild(document.createElement("div"));
 			progress.appendChild(document.createTextNode("upload " + file.name));
 			progress.id = "progress_of_" + filename_base;
-			
+
 			// hide button and text
 			upload_div = $id(filename_base + "_upload_div");
 			upload_div.style.display = "none";
@@ -137,14 +137,12 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			user_filename_req_query = "?user_filename=" + file.name;
 
 			// start upload
-			upload_url = window.location.origin + "/upload" + user_filename_req_query
+			upload_url = window.location.origin + UPLOAD_ENDPOINT + user_filename_req_query
 			xhr.open("POST", upload_url, true);
 			
 			xhr.setRequestHeader("X_FILENAME", filename);
 			xhr.send(file);
-
 		}
-
 	}
 
 

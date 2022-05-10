@@ -12,7 +12,6 @@ from flask_session.__init__ import Session
 # imports for debugging (allow printing to stderr)
 #from __future__ import print_function
 
-
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
 sess = Session()
@@ -47,6 +46,18 @@ def uploadsetup():
         cur_uploads=cur_uploads, all_uploads=all_uploads, title="Uploads")
 
 
+@app.route("/batchsetup")
+def batchsetup():
+    '''batch correction input form'''
+
+    ensure_session_dir()
+
+    cur_uploads, all_uploads = list_user_files()
+
+    return render_template("batchcorrection.html", \
+        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Batch Correction")
+
+
 @app.route("/upload", methods=["POST"])
 def upload():
     '''
@@ -61,9 +72,31 @@ def upload():
     standard_filename = request.headers.get('X_FILENAME')
 
     save_temp_file(request.data, standard_filename, user_filename)
-    
+
     if standard_filename == "config.yml":
         result["error_status"] = check_config()
+
+    return jsonify(result)
+
+
+@app.route("/batchupload", methods=["POST"])
+def batchupload():
+    '''
+    handles uploading counts and coldata files for batch correction
+    one file per request
+    file contents are in request.data (a bytes object)
+    '''
+
+    result = {}
+    if "bc_suffix" in session:
+        session["bc_suffix"] += 1
+    else:
+        session["bc_suffix"] = 1
+    
+    fname = request.headers.get('X_FILENAME')
+    fname += f"_bc-{session['bc_suffix']}"
+
+    save_temp_file(request.data, fname, fname)
 
     return jsonify(result)
 
@@ -80,13 +113,36 @@ def cancelupload():
     return f"{filename} upload cancelled"
 
 
-@app.route("/useoldinput", methods=["POST"])
-def useoldinput():
+@app.route("/submitbc", methods=["POST"])
+def submit_batch_correction():
+    reference_level = request.form.get("reference_level")
+    contrast_level = request.form.get("contrast_level")
+    # call bc
+
+
+@app.route("/getbccounts", methods=["POST"])
+def get_batch_correction_counts():
+    pass
+
+
+@app.route("/getbccoldata", methods=["POST"])
+def get_batch_correction_coldata():
+    pass
+
+
+@app.route("/useoldconfig", methods=["POST"])
+def use_old_config():
     old_filename = request.form.get("filename")
-    new_filename = old_filename.split('-')[0]
     old_filepath = f"{session['user_session_dir']}{old_filename}"
-    new_filepath = f"{session['user_session_dir']}{new_filename}"
-    session[new_filename] = session[old_filename]
+    new_filepath = f"{session['user_session_dir']}config.yml"
+    
+    # store user-specified config filename at updated session key
+    session["config.yml"] = session[old_filename]
+    
+    #replace current config.yml file if it exists
+    delete_user_file("config.yml")
+
+    #rename old file to config.yml
     os.rename(old_filepath, new_filepath)
 
 
@@ -294,32 +350,10 @@ def save_temp_file(file_contents, standard_filename, user_filename):
     else:
         session[f"{standard_filename}_count"] = 1
 
-    if os.path.exists(user_file_path):
-        stash_old_file(standard_filename)
-
-    if "." in user_filename:
-        user_fname_base = user_filename.split(".")[0]
-        user_fname_ext = user_filename.split(".")[1]
-
-    # update user-specified filenames (add count suffix if duplicate)
-    suffix_count = 0
-    numfiles = session[f"{standard_filename}_count"]
-    for i in range(1, numfiles + 1):
-        cmp_fname = user_filename
-        # Add suffix count to user-supplied filename if suffix_count > 0
-        if suffix_count > 0 and user_fname_ext != "":
-            cmp_fname = f"{user_fname_base} ({suffix_count}).{user_fname_ext}"
-        elif suffix_count > 0:
-            cmp_fname = f"{user_filename} ({suffix_count})"
-        # Check if the filename is already in use
-        if f"{standard_filename}_{i}" in session and \
-            session[f"{standard_filename}_{i}"] == cmp_fname:
-            suffix_count += 1
-    
-    if suffix_count > 0 and user_fname_ext != "":
-        user_filename = f"{user_fname_base} ({suffix_count}).{user_fname_ext}"
-    elif suffix_count > 0:
-        user_filename = f" ({suffix_count})"
+    if os.path.exists(user_file_path) and standard_filename == "config":
+        user_filename = stash_old_file(standard_filename, user_filename)
+    elif os.path.exists(user_file_path):
+        os.remove(user_file_path)
 
     # save the user-specified filename
     session[standard_filename] = user_filename
@@ -490,9 +524,7 @@ def check_config():
 
 
 def get_tsv_rows(filename):
-    '''
-    returns the rows of the user input file as a 2d array
-    '''
+    '''returns the rows of the user input file as a 2d array'''
 
     tsv_file = read_user_file(filename)
     data_reader = csv.reader(tsv_file, delimiter="\t")
@@ -502,19 +534,45 @@ def get_tsv_rows(filename):
     return rows
 
 
-def stash_old_file(filename):
+def stash_old_file(standard_filename, user_filename):
     '''
-    append session[f"{filename}_count"] to the end of the filename
-    filename is actual filename on the server, not the user-specified filename
+    append session[f"{standard_filename}_count"] to the end of the filename
+    standard_filename is actual filename on the server, not the user-specified filename
     also update key for user-specified filename
     '''
-    old_file_path = f"{session['user_session_dir']}{filename}"
-    file_count = session[f"{filename}_count"]
-    new_filename = f"{filename}_{file_count - 1}"
+    old_file_path = f"{session['user_session_dir']}{standard_filename}"
+    file_count = session[f"{standard_filename}_count"]
+    new_filename = f"{standard_filename}_{file_count - 1}"
     os.rename(old_file_path, f"{session['user_session_dir']}{new_filename}")
 
     # update user-specified filename
-    session[new_filename] = session[filename]
+    session[new_filename] = session[standard_filename]
+
+    if "." in user_filename:
+        user_fname_base = user_filename.split(".")[0]
+        user_fname_ext = user_filename.split(".")[1]
+
+    # update user-specified filenames (add count suffix if duplicate)
+    suffix_count = 0
+    numfiles = session[f"{standard_filename}_count"]
+    for i in range(1, numfiles + 1):
+        cmp_fname = user_filename
+        # Add suffix count to user-supplied filename if suffix_count > 0
+        if suffix_count > 0 and user_fname_ext != "":
+            cmp_fname = f"{user_fname_base} ({suffix_count}).{user_fname_ext}"
+        elif suffix_count > 0:
+            cmp_fname = f"{user_filename} ({suffix_count})"
+        # Check if the filename is already in use
+        if f"{standard_filename}_{i}" in session and \
+            session[f"{standard_filename}_{i}"] == cmp_fname:
+            suffix_count += 1
+
+    if suffix_count > 0 and user_fname_ext != "":
+        user_filename = f"{user_fname_base} ({suffix_count}).{user_fname_ext}"
+    elif suffix_count > 0:
+        user_filename = f" ({suffix_count})"
+
+    return user_filename
 
 
 def list_user_files():
