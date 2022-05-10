@@ -1,11 +1,11 @@
-geo_accession	series	title	condition	endometriosis_stage	phase	tissue
-GSM109814	GSE4888	endometrium 598	leiomyomata	none	proliferative	uterus
-GSM109815	GSE4888	endometrium M165	normal	none	proliferative	uterus
-GSM109816	GSE4888	endometrium M169	normal	none	proliferative	uterus
-GSM109817	GSE4888	endometrium M182	normal	none	proliferative	uterus
-GSM109818	GSE4888	endometrium 421	adenomyosis	none	ambiguous_unknown	uterus
-GSM109819	GSE4888	endometrium 642	leiomyomata	none	ambiguous_unknown	uterus
-GSM109820	GSE4888	endometrium 629	leiomyomata	none	secretory_early	uterus
+geo_accession	series	title	condition	endometriosis_stage	phase	tissue  
+GSM109814	GSE4888	endometrium 598	leiomyomata	none	proliferative	uterus 
+GSM109815	GSE4888	endometrium M165	normal	none	proliferative	uterus 
+GSM109816	GSE4888	endometrium M169	normal	none	proliferative	uterus  
+GSM109817	GSE4888	endometrium M182	normal	none	proliferative	uterus 
+GSM109818	GSE4888	endometrium 421	adenomyosis	none	ambiguous_unknown	uterus  
+GSM109819	GSE4888	endometrium 642	leiomyomata	none	ambiguous_unknown	uterus  
+GSM109820	GSE4888	endometrium 629	leiomyomata	none	secretory_early	uterus 
 GSM109821	GSE4888	endometrium 650	leiomyomata	none	secretory_early	uterus
 GSM109822	GSE4888	endometrium 664	prolapse	none	secretory_early	uterus
 GSM109823	GSE4888	endometrium 389	leiomyomata	none	ambiguous_unknown	uterus

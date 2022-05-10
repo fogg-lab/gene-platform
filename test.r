@@ -25,7 +25,9 @@ for (ds in dsets)
     clinical_dfs[[ds]] <- read_tsv(paste0("./batch_correction_example_data/preprocessed_GEO_clinical_data/", ds, ".tsv"))
 }
 
-metadata <- readr::read_tsv("./batch_correction_example_data/preprocessed_GEO_clinical_data/GSE4888.tsv")
+metadata <- readr::read_tsv("./mastercols.tsv")
+counts <- readr::read_tsv("./mastercounts.tsv")
+
 
 # Handle making data uniform
 # this is specific to Carson's anaylsis 
@@ -56,6 +58,10 @@ all_clinical_df <- bind_rows(clinical_dfs$GSE4888, clinical_dfs$GSE6364, clinica
         condition = factor(condition, levels = c("normal", "endometriosis")),
         phase = factor(phase, levels = c("proliferative", "secretory_early", "secretory_mid", "secretory_late"))
     )
+
+#psuedo code:
+#import csv of files and bind them
+#
 
 all_rma_df <- bind_cols(rma_dfs$GSE4888, rma_dfs$GSE6364[-1], rma_dfs$GSE51981[-1])
 
@@ -96,6 +102,5 @@ pca <- prcomp(pca_matrix)
 pca_summary <- summary(pca)					
 print(pca_summary)
 
-print("meta data")
-print(metadata)
+
 
