@@ -81,12 +81,12 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			}
 
 			// create progress bar and set id for tracking
-			var progress_div_id = "progress_of_" + filename_base + "_div"
+			var progress_div_id = "progress_of_" + filename_base + "_div";
 			var progress_div = $id(progress_div_id);
 			var progress = progress_div.appendChild(document.createElement("div"));
 			progress.appendChild(document.createTextNode("upload " + file.name));
 			progress.id = "progress_of_" + filename_base;
-			
+
 			// hide button and text
 			upload_div = $id(filename_base + "_upload_div");
 			upload_div.style.display = "none";
@@ -96,7 +96,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			$id("cancel_" + filename_base + "_button").style.display = "block";
 			
 			// initially set progress bar to grey
-			progress_div.style.backgroundPosition = "100% 0"
+			progress_div.style.backgroundPosition = "100% 0";
 
 			// progress bar
 			xhr.upload.addEventListener('progress', function(e) {
@@ -111,10 +111,10 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 						var response = JSON.parse(xhr.responseText);
 						
 						// remove prior status messages
-						var file_status_classname = "status_of" + filename_base
+						var file_status_classname = "status_of" + filename_base;
 						var old_file_status = document.getElementsByClassName(file_status_classname);
 						for (status_message of old_file_status) {
-							status_message.remove()
+							status_message.remove();
 						}
 
 						if (response.error_status) {
@@ -126,30 +126,23 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 							);
 						} else {
 							progress.className = "success";
-							progress.innerHTML = file.name
+							progress.innerHTML = file.name;
 						}
 						update_next_button();
 					}
 				}
 			};
 
+			// set form data, including user-supplied filename
+			user_filename_req_query = "?user_filename=" + file.name;
+
 			// start upload
-			upload_url = window.location.origin + "/upload"
-			if (filename=="counts.tsv"){
-				xhr.open("POST", upload_url, true);
-			} else if (filename=="coldata.tsv"){
-				xhr.open("POST", upload_url, true);
-			} else if (filename=="filter.txt"){
-				xhr.open("POST", upload_url, true);
-			} else if (filename=="config.yml"){
-				xhr.open("POST", upload_url, true);
-			}
+			upload_url = window.location.origin + UPLOAD_ENDPOINT + user_filename_req_query
+			xhr.open("POST", upload_url, true);
 			
 			xhr.setRequestHeader("X_FILENAME", filename);
 			xhr.send(file);
-
 		}
-
 	}
 
 

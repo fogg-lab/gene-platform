@@ -7,7 +7,7 @@ R Packages (in requirements.R) - yaml, tidyverse, BiocManager, ggpubr
 BiocManager packages (in requirements.R) - BiocParallel, affycoretools, affyPLM, hgu133plus2.db, qvalue, sva
 
 Python3 packages (all in webapp/requirements.txt):
-Required - Flask, Flask-Session, PyYAML, scandir, backports.shutil-get-terminal-size, browsepy, gunicorn
+Required - Flask, Flask-Session, PyYAML, gunicorn
 Optional/for development (uncomment lines in requirements.txt) - virtualenv, jupyterlab, pandas, numpy
 
 Instructions to set up and start the web app (on a linux machine with R and Python3 installed):

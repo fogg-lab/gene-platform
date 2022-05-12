@@ -2,9 +2,6 @@ Flask==2.1.2
 Flask-Session==0.4.0
 PyYAML==5.4.1
 virtualenv==20.14.1
-scandir==1.10.0
-backports.shutil-get-terminal-size==1.0.0
-browsepy==0.5.6
 gunicorn==20.1.0
 #pandas==1.4.2
 #numpy==1.22.3
