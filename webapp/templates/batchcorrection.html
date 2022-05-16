@@ -8,8 +8,8 @@
 	<body>
 		<div class="topnav">
 			<a href="{{ url_for('index') }}">Home</a>
-			<a class="active" href="#">Analysis</a>
-			<a href="{{ url_for('batchsetup') }}">Batch Correction</a>
+			<a href="{{ url_for('uploadsetup') }}">Analysis</a>
+			<a class="active" href="#">Batch Correction</a>
 			<span class="Fogg">Fogg Lab</span>
 		</div>
 
@@ -17,19 +17,17 @@
 		
 		<table class="centerinfo">
 			<tr>
-				<td><h1>DGE Analysis - Upload Files</h1></td>
+				<td colspan="2"><h1>Batch Correction - Upload Files</h1></td>
 			</tr>
 			<tr>
-				<td><table style="border: 1px solid black;">
+				<td><table style="border: 1px solid black; margin-left: auto; margin-right: auto;">
 					<tr>
 						<th>Counts</th>
 						<th>Coldata</th>
-						<th>Filter (optional)</th>
-						<th>Config (optional)</th>
 					</tr>
 					<tr>
 						<td>
-							<form class="filedrag" id="upload_counts" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+							<form class="filedrag" id="upload_counts" action="{{ url_for('batchupload') }}" method="POST" enctype="multipart/form-data">
 								<div class="upload_div" id="counts_upload_div">
 									<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
 									<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
@@ -45,7 +43,7 @@
 							</form>
 						</td>
 						<td>
-							<form class="filedrag" id="upload_coldata" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+							<form class="filedrag" id="upload_coldata" action="{{ url_for('batchupload') }}" method="POST" enctype="multipart/form-data">
 								<div class="upload_div" id="coldata_upload_div">
 									<input type="file" class="fileselect" id="fileselect_coldata" name="fileselect[]" style="display:none">
 									<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
@@ -60,56 +58,35 @@
 								<button type="button" onclick="cancel_coldata()" class="upload_action_button" id="cancel_coldata_button">Cancel</button>
 							</form>
 						</td>
-						<td>
-							<form class="filedrag" id="upload_filter" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-								<div class="upload_div" id="filter_upload_div">
-									<input type="file" class="fileselect" id="fileselect_filter" name="fileselect[]" style="display:none">
-									<p>Drop .txt file<br>here or<label for="fileselect_filter" class="upload_action_button">Browse</label></p>
-								</div>
-								<div class="progress_div" id="progress_of_filter_div">
-								{% if cur_uploads["filter.txt"] -%}
-									<div class="success" id="progress_of_filter">
-										Uploaded filter
-									</div>
-								{%- endif %}
-								</div>
-								<button type="button" onclick="cancel_filter()" class="upload_action_button" id="cancel_filter_button">Cancel</button>
-							</form>
-						</td>
-						<td>
-							<form class="filedrag" id="upload_config" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-								<div class="upload_div" id="config_upload_div">
-									<input type="file" class="fileselect" id="fileselect_config" name="fileselect[]" style="display:none">
-									<p>Drop .yml file<br>here or<label for="fileselect_config" class="upload_action_button">Browse</label></p>
-								</div>
-								<div class="progress_div" id="progress_of_config_div">
-								{% if cur_uploads["config.yml"] -%}
-									<div class="success" id="progress_of_config">
-										Uploaded config
-									</div>
-								{%- endif %}
-								</div>
-								<button type="button" onclick="cancel_config()" class="upload_action_button" id="cancel_config_button">Cancel</button>
-							</form>
-						</td>
 					</tr>
 				</table>
-			</tr>
-			<tr>
-				<td colspan="4">&nbsp;</td>
 			</tr>
 		</td>
 		</table>
 
 		<div id="messages">
 		</div>
-		
-		<div class="bottom-buttons">
-			<button onclick="goto('/parameters')" class="button" id="next_button" disabled>Next: Parameters</button>
-		</div>
+
+		<br>
+		<form style="text-align:center;" id="batch_correction_form" action="javascript:submit_batch_correction()" method="POST">
+			<span class="tooltip">Reference level:
+				<span class="tooltiptext">
+					The level (value) of condition against which effect size is being compared (e.g., “healthy”).
+				</span>
+			</span>
+			<input id="reference_level" type="text" name="reference_level">
+            <br>
+			<span class="tooltip">Contrast level:
+				<span class="tooltiptext">
+				  The level (value) of condition for which effect size is being studied (e.g., “tumor”).
+				</span>
+			  </span>
+			<input id="contrast_level" type="text" name="contrast_level">
+			<button onclick="submit_batch_correction()" class="button" id="next_button" disabled>Submit</button>
+		</form>
 		
 		<script>
-			var UPLOAD_ENDPOINT = "\\upload";
+            var UPLOAD_ENDPOINT = "\\batchupload";
 			// hide progress bar divs and cancel buttonsfor files which have not been uploaded
 			if (document.getElementById("progress_of_counts") == null) {
 				document.getElementById("progress_of_counts_div").style.display = 'none';
@@ -126,20 +103,6 @@
 				document.getElementById("progress_of_coldata_div").style.backgroundPosition = "0% 0";
 				document.getElementById("coldata_upload_div").style.display = 'none';
 			}
-
-			if (document.getElementById("progress_of_filter") == null) {
-				document.getElementById("progress_of_filter_div").style.display = 'none';
-				document.getElementById("cancel_filter_button").style.display = 'none';
-			} else {document.getElementById("progress_of_filter_div").style.backgroundPosition = "0% 0";
-				document.getElementById("filter_upload_div").style.display = 'none';
-			}
-
-			if (document.getElementById("progress_of_config") == null) {
-				document.getElementById("progress_of_config_div").style.display = 'none';
-				document.getElementById("cancel_config_button").style.display = 'none';
-			} else {document.getElementById("progress_of_config_div").style.backgroundPosition = "0% 0";
-				document.getElementById("config_upload_div").style.display = 'none';
-			}
 	
 			// disable next button if progress counts or coldata not uploaded
 			update_next_button()
@@ -153,6 +116,10 @@
 				console.log(this.responseText);
 			}
 
+			function bcReqListener() {
+				// batch correction completed
+			}
+
 			function cancel_counts() {
 				cancel("counts.tsv");
 				update_next_button();
@@ -161,14 +128,6 @@
 			function cancel_coldata() {
 				cancel("coldata.tsv");
 				update_next_button();
-			}
-	
-			function cancel_filter() {
-				cancel("filter.txt");
-			}
-
-			function cancel_config() {
-				cancel("config.yml");
 			}
 
 			function cancel(filename) {
@@ -213,6 +172,16 @@
 					}
 			}
 
+			function submit_batch_correction() {
+				var reference_level = document.getElementById("reference_level").value;
+				var contrast_level = document.getElementById("contrast_level").value;
+				var submitbcReq = new XMLHttpRequest();
+				let submit_bc_query = "reference_level=" + reference_level + "&contrast_level=" + contrast_level;
+				submitbcReq.addEventListener("load", bcReqListener);
+				submitbcReq.open("POST", "/submitbc");
+				submitbcReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				submitbcReq.send(submit_bc_query);
+			}
 		</script>
 
 		<script src="{{ url_for('static',filename='scripts/uploads_form.js') }}"></script>

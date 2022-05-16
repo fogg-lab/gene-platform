@@ -1,7 +1,4 @@
-'''utility functions for app.py'''
-
-from weakref import ref
-
+'''utility functions for app.py.  '''
 
 def check_parameter_names(config_parameters):
     '''
@@ -14,27 +11,34 @@ def check_parameter_names(config_parameters):
     if invalid, returns error message
     '''
 
-    all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method", \
+    all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method",
         "condition", "contrast_level", "reference_level", "use_qual_weights"}
+
     config_error_status = ""
+    unknown_params = []
+    params_missing_value = []
+    missing_params = []
 
     for parameter_name, parameter_value in config_parameters.items():
-        if (parameter_value in {"", None})\
-          and (parameter_name in all_parameters):
-            config_error_status += \
-                f"Missing value for parameter: {parameter_name}\n"
-        elif parameter_name not in all_parameters:
-            config_error_status += f"Unknown parameter: {parameter_name}\n"
-        else:
-            all_parameters.remove(parameter_name)
+        if parameter_name in all_parameters and parameter_value in [None, ""]:
+            params_missing_value.append(parameter_name)
 
-    # use_qual_weights is not required
-    if "use_qual_weights" in all_parameters:
-        all_parameters.remove("use_qual_weights")
+        if parameter_name not in all_parameters:
+            unknown_params.append(parameter_name)
+        all_parameters.remove(parameter_name)
 
     # if any parameters are missing, list them
-    for missing_parameter in all_parameters:
-        config_error_status += f"Missing parameter: {missing_parameter}\n"
+    if all_parameters is not None:
+        for missing_parameter in all_parameters:
+            if missing_parameter != "use_qual_weights":
+                missing_params.append(missing_parameter)
+
+    for param in params_missing_value:
+        config_error_status += f"Missing value for parameter: {param}\n"
+    for param in unknown_params:
+        config_error_status += f"Unknown parameter: {param}\n"
+    for param in missing_params:
+        config_error_status += f"Missing parameter: {param}\n"
 
     return config_error_status
 
@@ -47,58 +51,53 @@ def validate_parameters(config_parameters):
 
     error_msg = ""
     param_names_invalid = check_parameter_names(config_parameters)
+
     if param_names_invalid:
         error_msg = param_names_invalid
-    elif type(config_parameters["min_expr"]) not in [int, float]:
-        error_msg = "min_expr must be a number"
-    elif config_parameters["min_expr"] < 0:
-        error_msg = "min_expr must be a non-negative"
-    elif type(config_parameters["min_prop"]) not in [int, float]:
-        error_msg = "min_prop must be a number"
-    elif config_parameters["min_prop"] < 0:
-        error_msg = "min_prop must be a non-negative"
-    elif type(config_parameters["padj_thresh"]) not in [int, float]:
-        error_msg = "padj_thresh must be a number"
-    elif not isinstance(config_parameters["adj_method"], str):
-        error_msg = "adj_method must be a string"
-    elif not isinstance(config_parameters["condition"], str):
-        error_msg = "condition must be a string"
-    elif not isinstance(config_parameters["contrast_level"], str):
-        error_msg = "contrast_level must be a string"
-    elif not isinstance(config_parameters["reference_level"], str):
-        error_msg = "reference_level must be a string"
-    elif "use_qual_weights" in config_parameters and \
-       not isinstance(config_parameters["use_qual_weights"], bool):
-        error_msg = "use_qual_weights must be a bool"
+    else:
+        if type(config_parameters["min_expr"]) not in [int, float]:
+            error_msg += '"min_expr" must be a number\n'
+        elif config_parameters["min_expr"] < 0:
+            error_msg += '"min_expr" must be a non-negative\n'
+
+        if type(config_parameters["min_prop"]) not in [int, float]:
+            error_msg += '"min_prop" must be a number\n'
+        elif not (0 <= config_parameters["min_prop"] <= 1):
+            error_msg += '"min_prop" must be between 0 and 1\n'
+
+        if type(config_parameters["padj_thresh"]) not in [int, float]:
+            error_msg += '"padj_thresh" must be a number\n'
+        elif not (0 <= config_parameters["padj_thresh"] <= 1):
+            error_msg += '"padj_thresh" must be between 0 and 1\n'
+
+        adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY",\
+                        "fdr", "none"]
+        if not isinstance(config_parameters["adj_method"], str):
+            error_msg += '"adj_method" must be a string"\n'
+        elif config_parameters["adj_method"] not in adj_methods:
+            error_msg += "Unknown adjustment method: "\
+                            f"{config_parameters['adj_method']}"
+            error_msg += f"Valid adj_methods: {adj_methods}"
+
+        if not isinstance(config_parameters["condition"], str):
+            error_msg += '"condition" must be a string"\n'
+
+        if not isinstance(config_parameters["contrast_level"], str):
+            error_msg += "contrast_level must be a string\n"
+
+        if not isinstance(config_parameters["reference_level"], str):
+            error_msg += "reference_level must be a string"
+
+        if config_parameters["reference_level"] == \
+           config_parameters["contrast_level"]:
+            error_msg += \
+                'reference_level and contrast_level cannot be the same.\n'
+
+        if "use_qual_weights" in config_parameters:
+            if not isinstance(config_parameters["use_qual_weights"], bool):
+                error_msg += "use_qual_weights must be either True or False.\n"
 
     return error_msg
-
-
-def standardize_filename(filename):
-    '''
-    standardize filename to one of the following:
-    counts.tsv, coldata.tsv, filter.txt or config.yml
-    then return the standardized filename
-    if the file name isn't recognized, return empty string
-
-    FILE NAMING REQUIREMENTS FOR THE USER: The server recognizes filenames
-        based on whether they contain one of the following unique substrings:
-        "config" or ".yml": File is identified as the config.yml file
-        "count": File is identified as the counts.tsv file
-        "col": File is identified as the coldata.tsv file
-        "filt": File is identified as the filter.txt file
-    '''
-
-    if "config" in filename or ".yml" in filename:
-        filename = "config.yml"
-    elif "count" in filename:
-        filename = "counts.tsv"
-    elif "col" in filename:
-        filename = "coldata.tsv"
-    elif "filt" in filename:
-        filename = "filter.txt"
-
-    return filename
 
 
 def get_request_parameters(form, data_type):
@@ -140,7 +139,7 @@ def check_factor_levels(config_params, coldata):
     if condition in coldata[0]:
         condition_col_index = coldata[0].index(condition)
     else:
-        return f"Condition '{condition}' not present in coldata file (line 1)"
+        return f"Condition '{condition}' not present in coldata (line 1)"
 
     contrast_level_found = False
     reference_level_found = False
@@ -161,16 +160,14 @@ def check_factor_levels(config_params, coldata):
     err_msg = ""
 
     if not contrast_level_found:
-        err_msg = \
-            f"Contrast level '{contrast_level}' not found in coldata file"
-    elif not reference_level_found:
-        err_msg = \
-            f"Reference level '{reference_level}' not found in coldata file"
+        err_msg += f"Contrast level '{contrast_level}' not found in coldata"
+    if not reference_level_found:
+        err_msg += f"Reference level '{reference_level}' not found in coldata"
 
     return err_msg
 
 
-def check_coldata_rows_match_counts_cols(counts_colnames, coldata_rows):
+def check_coldata_matches_counts(counts_colnames, coldata_rows):
     '''
     ensure rows in coldata match with the column names for samples in counts
     Assumes that sample names are listed on first row (header) of counts file
@@ -224,8 +221,11 @@ def get_confirmation_message(config_params):
     contrast_level = config_params["contrast_level"]
     reference_level = config_params["reference_level"]
 
-    analysis_formula = "<p><b>You are performing the following analysis:</b></p>\n"
-    analysis_formula += f"<p><i>{condition} ~ (intercept) + {contrast_level}</i></p>\n\n"
-    analysis_formula += f"<p>where the reference group is <i>{reference_level}</i>.\n</p>"
+    analysis_formula =  "<p><b>You are performing the following analysis:"\
+                        "</b></p>\n"
+    analysis_formula += f"<p><i>{condition} ~ (intercept) + "\
+                        f"{contrast_level}</i></p>\n\n"
+    analysis_formula += f"<p>where the reference group is <i>"\
+                        f"{reference_level}</i>.\n</p>"
 
     return analysis_formula

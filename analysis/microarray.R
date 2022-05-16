@@ -4,10 +4,10 @@
 # Output: gene expression analysis for unfilter +/- filtered genes (.tsv)
 # and 2 plots (mean microarray_mean_variance_trend(.png) and volcano_plot(.png)
 
-MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "microarray_mean_variance_trend.png"
-MICRO_ARRAY_VOLCANO_IMAGE_FILE = "micrrarray_volcano.png"
+MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "mean_variance_trend_plot_UNFILTERED_microarray.png"
+MICRO_ARRAY_VOLCANO_IMAGE_FILE = "volcano_plot_UNFILTERED_microarray.png"
 #FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "filtered_microarray_mean_variance_trend.png"
-FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "filtered_microarray_volcano.png"
+FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "volcano_plot_FILTERED_microarray.png"
 
 suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(limma)))
@@ -25,7 +25,7 @@ filter_filepath <- paste(user_directory, "filter.txt", sep="")
 
 mean_variance_trend = function(fit, filename){
   micro_array_mean_variance_trend_path <- paste(user_directory, filename)
-  png(micro_array_mean_variance_trend_path)
+  png(filename = "micro_array_mean_variance_trend_path", width = 756, height = 756)
   plot<- plotSA(fit, xlab="Average log-expression", ylab="log2(sigma)", zero.weights=FALSE, pch=16, cex=0.2)
   dev.off()
 }
@@ -33,12 +33,14 @@ mean_variance_trend = function(fit, filename){
 volcano_plot = function(fit, filename){
   micro_array_volcano_path <- paste(user_directory, filename)
   de <- fit
-  de$diffexpressed <- "NO"
-  de$diffexpressed[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
-  de$diffexpressed[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
+
+  de$differential_expression <- "Not significance"
+  de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
+  de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
   de$delabel <- NA
-  de$delabel[de$diffexpressed != "NO"] <- de$symbol[de$diffexpressed != "NO"]
-  plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=diffexpressed, label=delabel)) +
+  de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "Not significance"]
+
+  plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=differential_expression, label=delabel)) +
     geom_point() +
     theme_minimal() +
     scale_color_manual(values=c("blue", "black", "red")) +

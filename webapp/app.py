@@ -2,79 +2,101 @@ import os
 import subprocess
 import shutil
 import csv
-from datetime import timedelta
 import tempfile
-import copy
 import yaml
 import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
 
+# imports for debugging (allow printing to stderr)
+#from __future__ import print_function
 
 app = Flask(__name__)
-
-app.config["SESSION_PERMANENT"] = True
-app.config["SESSION_TYPE"] = "filesystem"
-app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
-
-Session(app)
-
-'''
-backlog:
-TODO: Descriptions for the columns included in the output
-'''
+app.config.from_pyfile("config.py")
+sess = Session()
+sess.init_app(app)
 
 # Ensure that the current working directory is the webapp directory
 # Get the path to the webapp dir from the path of this script
 SCRIPT_PATH = os.path.realpath(__file__)
 SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
-os.chdir(SCRIPT_DIR)
-
 RNA_SEQ_SCRIPT = "Rscript ../analysis/rnaseq.R"
 MICROARRAY_SCRIPT = "Rscript ../analysis/microarray.R"
 USER_FILES_LOCATION = "user_files"
 
+os.chdir(SCRIPT_DIR)
+
 
 @app.route("/")
 def index():
-    '''main page, first input page (file uploads)'''
+    '''main page'''
+    return render_template("home.html", title="Welcome!")
+
+
+@app.route("/uploadsetup")
+def uploadsetup():
+    '''first input page (file uploads)'''
 
     ensure_session_dir()
 
-    user_files = os.listdir(session["user_session_dir"])
-    uploads = {}
-    for filename in ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]:
-        uploads[filename] = False
-    for filename in user_files:
-        if filename in uploads:
-            uploads[filename] = True
+    cur_uploads, all_uploads = list_user_files()
 
-    return render_template("uploads_form.html", uploads=uploads, title="Uploads")
+    return render_template("uploads_form.html", \
+        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Uploads")
+
+
+@app.route("/batchsetup")
+def batchsetup():
+    '''batch correction input form'''
+
+    ensure_session_dir()
+
+    cur_uploads, all_uploads = list_user_files()
+
+    return render_template("batchcorrection.html", \
+        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Batch Correction")
 
 
 @app.route("/upload", methods=["POST"])
 def upload():
     '''
-    handles uploading files coldata, filter, filter and config
+    handles uploading counts, coldata, filter, and config file
     one file per request
     file contents are in request.data (a bytes object)
     '''
 
     result = {}
 
-    filename = request.headers.get('X_FILENAME')
-    standardized_filename = helpers.standardize_filename(filename)
+    user_filename = request.args.get("user_filename")
+    standard_filename = request.headers.get('X_FILENAME')
 
-    if standardized_filename:
-        save_temp_file(request.data, standardized_filename)
-    else:
-        result["error_status"] = f"Invalid filename: {filename}. \
-            Filename must end with either counts.tsv, coldata.tsv, filter.txt,\
-            config.yml or config.txt\n"
+    save_temp_file(request.data, standard_filename, user_filename)
 
-    if standardized_filename == "config.yml":
+    if standard_filename == "config.yml":
         result["error_status"] = check_config()
+
+    return jsonify(result)
+
+
+@app.route("/batchupload", methods=["POST"])
+def batchupload():
+    '''
+    handles uploading counts and coldata files for batch correction
+    one file per request
+    file contents are in request.data (a bytes object)
+    '''
+
+    result = {}
+    if "bc_suffix" in session:
+        session["bc_suffix"] += 1
+    else:
+        session["bc_suffix"] = 1
+    
+    fname = request.headers.get('X_FILENAME')
+    fname += f"_bc-{session['bc_suffix']}"
+
+    save_temp_file(request.data, fname, fname)
 
     return jsonify(result)
 
@@ -91,20 +113,52 @@ def cancelupload():
     return f"{filename} upload cancelled"
 
 
+@app.route("/submitbc", methods=["POST"])
+def submit_batch_correction():
+    reference_level = request.form.get("reference_level")
+    contrast_level = request.form.get("contrast_level")
+    # call bc
+
+
+@app.route("/getbccounts", methods=["POST"])
+def get_batch_correction_counts():
+    pass
+
+
+@app.route("/getbccoldata", methods=["POST"])
+def get_batch_correction_coldata():
+    pass
+
+
+@app.route("/useoldconfig", methods=["POST"])
+def use_old_config():
+    old_filename = request.form.get("filename")
+    old_filepath = f"{session['user_session_dir']}{old_filename}"
+    new_filepath = f"{session['user_session_dir']}config.yml"
+    
+    # store user-specified config filename at updated session key
+    session["config.yml"] = session[old_filename]
+    
+    #replace current config.yml file if it exists
+    delete_user_file("config.yml")
+
+    #rename old file to config.yml
+    os.rename(old_filepath, new_filepath)
+
+
+@app.route("/downloadoutput", methods=["GET"])
+def download_output():
+    filename = request.args.get("filename")
+    return send_from_directory(session["user_session_dir"], filename)
+
+
 @app.route("/parameters", methods=["GET"])
 def parameters():
     '''loads the parameter form'''
-    desc = []
-    with open('static/files/description.txt') as infile:
-        line = infile.readline()
-        desc.append(line)
-        while line:
-            line = infile.readline()
-            desc.append(line)
 
-    return render_template("parameters_form.html", params=parse_config(), title="Parameters", 
-        padj_thresh = desc[0], min_prop = desc[1], min_expr = desc[2], adj_method = desc[3], condition = desc[4],
-        contrast_level = desc[5], reference_level = desc[6])
+    params = parse_config()
+    return render_template("parameters_form.html", params=params,\
+         title="Parameters")
 
 
 @app.route("/submit", methods=["POST"])
@@ -140,30 +194,46 @@ def confirm_submission():
     # generate config file from the form parameters
     generate_config(params)
 
-    # get the analysis formula to display for the user
-    confirmation_message = helpers.get_confirmation_message(params)
+    # validate the config, counts and coldata
+    config_file_error = check_config()
 
-    counts_file = read_user_file("counts.tsv")
-    counts_reader = csv.reader(counts_file, delimiter="\t")
-    counts_list = list(counts_reader)
-    counts_file.close()
+    counts_colnames = get_tsv_rows("counts.tsv")[0]
 
-    coldata_file = read_user_file("coldata.tsv")
-    coldata_reader = csv.reader(coldata_file, delimiter="\t")
-    coldata_list = list(coldata_reader)
-    coldata_file.close()
-
-    coldata_counts_match_error = helpers.check_coldata_rows_match_counts_cols(
-        copy.deepcopy(counts_list[0]), copy.deepcopy(coldata_list))
+    coldata_counts_match_error = helpers.check_coldata_matches_counts(
+        counts_colnames, get_tsv_rows("coldata.tsv"))
+    
     factor_levels_error = helpers.check_factor_levels(
-        params, copy.deepcopy(coldata_list))
+        params, get_tsv_rows("coldata.tsv"))
+
+    # get the analysis formula to display for the user
+    confirmation_message = ""
 
     if coldata_counts_match_error:
-        confirmation_message = f"Error: {coldata_counts_match_error}"
-    elif factor_levels_error:
-        confirmation_message = f"Error: {factor_levels_error}"
+        confirmation_message += f"<p>Error: {coldata_counts_match_error}</p>"
+    if factor_levels_error:
+        confirmation_message += f"<p>Error: {factor_levels_error}</p>"
+    if config_file_error:
+        confirmation_message += f"<p>Error: {config_file_error}</p>"
+
+    if not confirmation_message:
+        confirmation_message = helpers.get_confirmation_message(params)
 
     return confirmation_message
+
+
+@app.route("/getconsoleoutput")
+def get_console_output():
+    '''
+    returns the contents of the log file in user session directory
+    the log file contains terminal output from the analysis script
+    '''
+
+    log = read_user_file("log")
+
+    if not log:
+        return ("", 204)
+
+    return Response(log, mimetype='text/plain')
 
 
 @app.route("/display")
@@ -257,7 +327,7 @@ def get_filtered_tsv():
                 "attachment; filename=filter_output.tsv"})
 
 
-def save_temp_file(file_contents, filename):
+def save_temp_file(file_contents, standard_filename, user_filename):
     '''
     Saves uploaded file to user session directory
 
@@ -269,10 +339,24 @@ def save_temp_file(file_contents, filename):
     # create session directory if none exists
     ensure_session_dir()
 
-    user_file_path = f"{session['user_session_dir']}{filename}"
+    user_file_path = f"{session['user_session_dir']}{standard_filename}"
 
-    if os.path.exists(user_file_path):
+    # session[f"{standard_filename}_count"] stores the number of times
+    # a certain type of input file (counts, coldata, filter or config)
+    # is added for a user's session. count does not decrement when
+    # a file is deleted.
+    if f"{standard_filename}_count" in session:
+        session[f"{standard_filename}_count"] += 1
+    else:
+        session[f"{standard_filename}_count"] = 1
+
+    if os.path.exists(user_file_path) and standard_filename == "config":
+        user_filename = stash_old_file(standard_filename, user_filename)
+    elif os.path.exists(user_file_path):
         os.remove(user_file_path)
+
+    # save the user-specified filename
+    session[standard_filename] = user_filename
 
     user_file = open(user_file_path, "w", encoding="UTF-8")
     lines = file_contents.split(b'\n')
@@ -290,18 +374,20 @@ def call_analysis(data_type):
     sends the session_id as an argument
     '''
 
+    log = get_session_dir() + "log"
+
     if data_type == 'microarray':
-        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']}"], \
-            shell=True)
+        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']} "\
+                            f"1> {log} 2>& 1"], shell=True)
     elif data_type == 'RNA-Seq':
-        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']}"], \
-                shell=True)
+        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']} "\
+                            f"1> {log} 2>& 1"], shell=True)
 
 
 def read_user_file(filename):
     '''
     opens a user file for reading
-    just supply the filename like "counts.tsv" for example
+    pass in the filename i.e "counts.tsv"
     returns lines from a file in the users session directory
     '''
     user_file = None
@@ -318,7 +404,7 @@ def read_user_file(filename):
 def delete_user_file(filename):
     '''
     deletes a user input file if it exists
-    just supply the filename like "counts.tsv" for example
+    pass in the filename i.e "counts.tsv"
     '''
 
     session_dir = get_session_dir()
@@ -400,6 +486,7 @@ def ensure_session_dir():
         not os.path.exists(session["user_session_dir"])):
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
         os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
+
         session["user_session_dir"] = f"{temp_dir}/"
         session["session_id"] = temp_dir.split("/")[-1:]
 
@@ -413,16 +500,8 @@ def parse_config():
 
     if session_dir and os.path.exists(config_file_path):
         config_file = open(config_file_path, encoding="UTF-8")
-        config_params = yaml.safe_load(config_file)
+        config_params = yaml.load(config_file, Loader=yaml.FullLoader)
         config_file.close()
-
-    # yaml.safe_load loads numerical zero values as "None". below is a fix
-    if "min_expr" in config_params and config_params["min_expr"] is None:
-        config_params["min_expr"] = 0.0
-    if "min_prop" in config_params and config_params["min_prop"] is None:
-        config_params["min_prop"] = 0.0
-    if "padj_thresh" in config_params and config_params["padj_thresh"] is None:
-        config_params["padj_thresh"] = 0.0
 
     return config_params
 
@@ -443,5 +522,86 @@ def check_config():
 
     return err_msg
 
+
+def get_tsv_rows(filename):
+    '''returns the rows of the user input file as a 2d array'''
+
+    tsv_file = read_user_file(filename)
+    data_reader = csv.reader(tsv_file, delimiter="\t")
+    rows = list(data_reader)
+    tsv_file.close()
+
+    return rows
+
+
+def stash_old_file(standard_filename, user_filename):
+    '''
+    append session[f"{standard_filename}_count"] to the end of the filename
+    standard_filename is actual filename on the server, not the user-specified filename
+    also update key for user-specified filename
+    '''
+    old_file_path = f"{session['user_session_dir']}{standard_filename}"
+    file_count = session[f"{standard_filename}_count"]
+    new_filename = f"{standard_filename}_{file_count - 1}"
+    os.rename(old_file_path, f"{session['user_session_dir']}{new_filename}")
+
+    # update user-specified filename
+    session[new_filename] = session[standard_filename]
+
+    if "." in user_filename:
+        user_fname_base = user_filename.split(".")[0]
+        user_fname_ext = user_filename.split(".")[1]
+
+    # update user-specified filenames (add count suffix if duplicate)
+    suffix_count = 0
+    numfiles = session[f"{standard_filename}_count"]
+    for i in range(1, numfiles + 1):
+        cmp_fname = user_filename
+        # Add suffix count to user-supplied filename if suffix_count > 0
+        if suffix_count > 0 and user_fname_ext != "":
+            cmp_fname = f"{user_fname_base} ({suffix_count}).{user_fname_ext}"
+        elif suffix_count > 0:
+            cmp_fname = f"{user_filename} ({suffix_count})"
+        # Check if the filename is already in use
+        if f"{standard_filename}_{i}" in session and \
+            session[f"{standard_filename}_{i}"] == cmp_fname:
+            suffix_count += 1
+
+    if suffix_count > 0 and user_fname_ext != "":
+        user_filename = f"{user_fname_base} ({suffix_count}).{user_fname_ext}"
+    elif suffix_count > 0:
+        user_filename = f" ({suffix_count})"
+
+    return user_filename
+
+
+def list_user_files():
+    all_files = os.listdir(session["user_session_dir"])
+    current_uploads = {}
+    all_uploads = {}
+    standard_input_files = ["counts", "coldata", "filter", "config"]
+
+    for filename in ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]:
+        current_uploads[filename] = False
+    for filename in all_files:
+        if filename in current_uploads:
+            current_uploads[filename] = True
+
+    for filename in all_files:
+        fname_base = ""
+        if '-' in filename:
+            fname_base = filename.split("-")[0]
+        elif '.' in filename:
+            fname_base = filename.split(".")[0]
+        else:
+            continue
+        if fname_base in standard_input_files and filename in session:
+            all_uploads[filename] = session[filename]
+    
+    return current_uploads, all_uploads
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")
 
 cleanup_old_sessions()
