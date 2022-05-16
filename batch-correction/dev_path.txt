@@ -1,3 +1,0 @@
-../batch_correction_example_data
-analysis
-figures
