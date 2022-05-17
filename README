@@ -14,11 +14,15 @@ Instructions to set up and start the web app (on a linux machine with R and Pyth
 1. Clone this repo
 git clone git@github.com:McGuiJames/DGEAP.git
 
-2. Install Python3/R packages
-cd DGEAP
-pip3 install --upgrade pip
-pip3 -r webapp/requirements.txt
-Rscript requirements.R
+2. Set up
+FOR SETTING UP IN A NEW ENVIRONMENT (Install Python3/R packages):
+  cd DGEAP
+  pip3 install --upgrade pip
+  pip3 -r webapp/requirements.txt
+  Rscript requirements.R
+FOR RUNNING IN A SINGULARITY CONTAINER (with pre-installed Python3/R packages):
+  cd DGEAP
+  singularity run [path_to_singularity_image]
 
 3. Run the web app (replace xxxx with a port number)
 FOR PRODUCTION (run with gunicorn):
