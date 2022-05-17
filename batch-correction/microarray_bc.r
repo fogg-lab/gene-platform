@@ -6,6 +6,9 @@ library(dplyr)
 library(ggplot2)
 library(magrittr)
 
+require(compiler)
+enableJIT(3)
+
 #command line arguments
 args = commandArgs(trailingOnly = TRUE)
 
@@ -36,5 +39,5 @@ final <- data.frame(bc_rma_expr)
 final2 <- bind_cols(label,final)
 
 #writing out
-write_tsv(final2,paste0(user_directory,"bc_counts.tsv"))
+write_tsv(final2,paste0(user_directory,"counts_bc.tsv"))
 

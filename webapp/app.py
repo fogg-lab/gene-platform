@@ -4,10 +4,14 @@ import shutil
 import csv
 import tempfile
 import yaml
-import helpers
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
+
+try:
+    import helpers
+except ModuleNotFoundError:
+    from webapp import helpers
 
 # imports for debugging (allow printing to stderr)
 #from __future__ import print_function

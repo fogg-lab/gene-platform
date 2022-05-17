@@ -44,11 +44,10 @@ coldata = pd.read_csv(f"{user_dir}{coldata_files[0]}", \
 
 counts.to_csv(f"{user_dir}counts_bc-in.tsv", sep='\t', index=False)
 coldata.to_csv(f"{user_dir}coldata_bc-in.tsv", sep='\t', index=False)
-'''
+
 if data_type == 'microarray':
     subprocess.Popen([f"{MICROARRAY_BC_SCRIPT} {user_dir}counts_bc-in.tsv "\
                         f"{user_dir}coldata_bc-in.tsv {user_dir}"], shell=True)
-elif data_type.lower() in ["rna-seq", "rnaseq"]:
+elif data_type == "rnaseq":
     subprocess.Popen([f"{RNA_SEQ_BC_SCRIPT} {user_dir}counts_bc-in.tsv "\
                         f"{user_dir}coldata_bc-in.tsv {user_dir}"], shell=True)
-'''
