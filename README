@@ -21,7 +21,12 @@ pip3 -r webapp/requirements.txt
 Rscript requirements.R
 
 3. Run the web app (replace xxxx with a port number)
-cd webapp
-gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app
-or run the server persistently in the background like this:
-nohup gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app &
+FOR PRODUCTION (run with gunicorn):
+  cd webapp
+  gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app
+  ...or run the server persistently in the background like this:
+  nohup gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app &
+FOR DEVELOPMENT (run with flask development server):
+  export FLASK_APP=app
+  cd webapp
+  flask run -h 0.0.0.0 -p xxxx
