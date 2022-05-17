@@ -2,7 +2,7 @@
 
 import unittest
 import yaml
-from webapp import helpers
+import helpers
 import os
 import csv
 import copy
@@ -33,7 +33,7 @@ def test_input_files(col_file, count_file):
 
     confirmation_message = ""
     if col_counts_match_error:
-        confirmation_message = f"Error: {coldata_counts_match_error}\n"
+        confirmation_message = f"Error: {col_counts_match_error}\n"
     return confirmation_message
 
 
@@ -62,7 +62,7 @@ class TestParam(unittest.TestCase):
             print(fnf)
 
     def test1(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.25,
@@ -79,7 +79,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test2(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_prop=0.25,
             adj_method="BH",
@@ -95,7 +95,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test3(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             # min_prop=0.25,
@@ -112,7 +112,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test4(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.25,
@@ -129,7 +129,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test5(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.25,
@@ -146,7 +146,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test6(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.25,
@@ -163,7 +163,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test7(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.25,
@@ -180,7 +180,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)  # empty. logic?
 
     def test8(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.25,
@@ -197,7 +197,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test9(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.25,
@@ -214,7 +214,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test10(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.25,
@@ -232,7 +232,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test11(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=1.01,
@@ -249,7 +249,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test12(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.78,
@@ -268,7 +268,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test13(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.78,
@@ -286,7 +286,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test14(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.78,
@@ -305,7 +305,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test15(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.78,
@@ -325,7 +325,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test16(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.78,
@@ -342,7 +342,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test18(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         param = dict(
             min_expr=5.6438,
             min_prop=0.78,
@@ -361,10 +361,10 @@ class TestParam(unittest.TestCase):
             self.assertEqual(read_yaml(self.file), expected)
 
     def test18(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         try:
             param = dict(
-                min_expr,
+                min_expr="",
                 min_prop=0.78,
                 adj_method="BH",
                 condition="condition",
@@ -383,7 +383,7 @@ class TestParam(unittest.TestCase):
             self.assertEqual(str(e), expected)
 
     def test19(self):
-        self.file = 'config.yaml'
+        self.file = 'config.yml'
         try:
             param = dict(
                 0.7,
