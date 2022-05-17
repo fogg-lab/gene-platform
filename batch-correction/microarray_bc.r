@@ -6,9 +6,6 @@ library(dplyr)
 library(ggplot2)
 library(magrittr)
 
-require(compiler)
-enableJIT(3)
-
 #command line arguments
 args = commandArgs(trailingOnly = TRUE)
 

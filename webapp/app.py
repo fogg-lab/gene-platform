@@ -4,13 +4,16 @@ import shutil
 import csv
 import tempfile
 import yaml
+import time
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
 
 try:
     import helpers
+    import bc
 except ModuleNotFoundError:
+    from webapp import bc
     from webapp import helpers
 
 # imports for debugging (allow printing to stderr)
@@ -92,15 +95,14 @@ def batchupload():
     '''
 
     result = {}
-    if "bc_suffix" in session:
-        session["bc_suffix"] += 1
-    else:
-        session["bc_suffix"] = 1
-    
-    fname = request.headers.get('X_FILENAME')
-    fname += f"_bc-{session['bc_suffix']}"
 
-    save_temp_file(request.data, fname, fname)
+    user_filename = request.args.get("user_filename")
+    standard_filename = request.headers.get('X_FILENAME')
+
+    save_temp_file(request.data, standard_filename, user_filename)
+
+    if standard_filename == "coldata.tsv":
+        result["error_status"] = check_bc_coldata()
 
     return jsonify(result)
 
@@ -119,19 +121,34 @@ def cancelupload():
 
 @app.route("/submitbc", methods=["POST"])
 def submit_batch_correction():
+
+    datatype = request.form.get("data_type")
     reference_level = request.form.get("reference_level")
     contrast_level = request.form.get("contrast_level")
-    # call bc
+    userdir = session["user_session_dir"]
+
+    expected_bc_counts_path = f"{session['user_session_dir']}counts_bc.tsv"
+
+    # Delete any previous batch correction results
+    if os.path.isfile(expected_bc_counts_path):
+        os.remove(expected_bc_counts_path)
+
+    status_msg = bc.call_bc(userdir, datatype, reference_level, contrast_level)
+    if not status_msg:
+        status_msg = "Batch correction complete."
+
+    is_output = False
+    while not is_output:
+        is_output = os.path.exists(expected_bc_counts_path)
+        if not is_output:
+            time.sleep(0.25)
+
+    return status_msg
 
 
-@app.route("/getbccounts", methods=["POST"])
+@app.route("/getbccounts")
 def get_batch_correction_counts():
-    pass
-
-
-@app.route("/getbccoldata", methods=["POST"])
-def get_batch_correction_coldata():
-    pass
+    return send_from_directory(session["user_session_dir"], "counts_bc.tsv")
 
 
 @app.route("/useoldconfig", methods=["POST"])
@@ -421,17 +438,18 @@ def delete_user_file(filename):
 def wait_for_output():
     '''busy-waits until output shows up in users session directory'''
 
-    analysis_done = False
-    while not analysis_done:
-        unfilt_output_path =  f"{session['user_session_dir']}output.tsv"
-        filt_output_path =  f"{session['user_session_dir']}filter_output.tsv"
-        filter_path = f"{session['user_session_dir']}filter.txt"
+    unfilt_output_path =  f"{session['user_session_dir']}output.tsv"
+    filt_output_path =  f"{session['user_session_dir']}filter_output.tsv"
+    filter_path = f"{session['user_session_dir']}filter.txt"
+
+    is_output = False
+    while not is_output:
         is_output = os.path.exists(unfilt_output_path)
         if is_output and os.path.exists(filter_path):
             is_output = os.path.exists(filt_output_path)
 
-        # results of the ls are returned in bytes, ends with newline character
-        analysis_done = is_output
+        if not is_output:
+            time.sleep(0.5)
 
 
 def cleanup_old_sessions():
@@ -523,6 +541,18 @@ def check_config():
 
     if err_msg:
         delete_user_file("config.yml")
+
+    return err_msg
+
+
+def check_bc_coldata():
+    '''ensures coldata has batches'''
+
+    coldata = get_tsv_rows("coldata.tsv")
+    err_msg = helpers.ensure_batches(coldata)
+
+    if err_msg:
+        delete_user_file("coldata.tsv")
 
     return err_msg
 

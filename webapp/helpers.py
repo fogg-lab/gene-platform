@@ -231,6 +231,7 @@ def get_confirmation_message(config_params):
 
     return analysis_formula
 
+
 def ensure_batches(coldata_rows):
     '''
     ensure that all samples have a batch number
