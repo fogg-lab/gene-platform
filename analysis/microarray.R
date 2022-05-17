@@ -14,7 +14,6 @@ suppressMessages(suppressWarnings(library(limma)))
 suppressMessages(suppressWarnings(library(yaml)))
 suppressMessages(suppressWarnings(library(ggrepel)))
 
-
 args = commandArgs(trailingOnly = TRUE)
 
 user_directory <- paste("user_files/", gsub("[][]","",args[1]), "/", sep="")

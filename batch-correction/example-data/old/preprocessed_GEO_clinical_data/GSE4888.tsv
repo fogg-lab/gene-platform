@@ -1,0 +1,28 @@
+geo_accession	series	title	condition	endometriosis_stage	phase	tissue  
+GSM109814	GSE4888	endometrium 598	leiomyomata	none	proliferative	uterus 
+GSM109815	GSE4888	endometrium M165	normal	none	proliferative	uterus 
+GSM109816	GSE4888	endometrium M169	normal	none	proliferative	uterus  
+GSM109817	GSE4888	endometrium M182	normal	none	proliferative	uterus 
+GSM109818	GSE4888	endometrium 421	adenomyosis	none	ambiguous_unknown	uterus  
+GSM109819	GSE4888	endometrium 642	leiomyomata	none	ambiguous_unknown	uterus  
+GSM109820	GSE4888	endometrium 629	leiomyomata	none	secretory_early	uterus 
+GSM109821	GSE4888	endometrium 650	leiomyomata	none	secretory_early	uterus
+GSM109822	GSE4888	endometrium 664	prolapse	none	secretory_early	uterus
+GSM109823	GSE4888	endometrium 389	leiomyomata	none	ambiguous_unknown	uterus
+GSM109824	GSE4888	endometrium 610	leiomyomata	none	secretory_mid	uterus
+GSM109825	GSE4888	endometrium 617	pain	none	secretory_mid	uterus
+GSM109826	GSE4888	endometrium 626	prolapse	none	secretory_mid	uterus
+GSM109827	GSE4888	endometrium 659	prolapse	none	secretory_mid	uterus
+GSM109828	GSE4888	endometrium G98A	normal	none	secretory_mid	uterus
+GSM109829	GSE4888	endometrium M153	normal	none	secretory_mid	uterus
+GSM109830	GSE4888	endometrium M158	normal	none	secretory_mid	uterus
+GSM109831	GSE4888	endometrium M163	normal	none	secretory_mid	uterus
+GSM109832	GSE4888	endometrium 494	leiomyomata	none	ambiguous_unknown	uterus
+GSM109833	GSE4888	endometrium 648	leiomyomata	none	ambiguous_unknown	uterus
+GSM109834	GSE4888	endometrium 442	leiomyomata	none	secretory_late	uterus
+GSM109835	GSE4888	endometrium 449	leiomyomata	none	secretory_late	uterus
+GSM109836	GSE4888	endometrium 462	leiomyomata	none	secretory_late	uterus
+GSM109837	GSE4888	endometrium 576	ovarian cyst	none	secretory_late	uterus
+GSM109838	GSE4888	endometrium 614	prolapse	none	secretory_late	uterus
+GSM109839	GSE4888	endometrium 619	leiomyomata	none	secretory_late	uterus
+GSM109840	GSE4888	endometrium 407	leiomyomata	none	ambiguous_unknown	uterus

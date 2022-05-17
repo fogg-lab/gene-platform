@@ -25,7 +25,8 @@ def check_parameter_names(config_parameters):
 
         if parameter_name not in all_parameters:
             unknown_params.append(parameter_name)
-        all_parameters.remove(parameter_name)
+        else:
+            all_parameters.remove(parameter_name)
 
     # if any parameters are missing, list them
     if all_parameters is not None:
@@ -229,3 +230,25 @@ def get_confirmation_message(config_params):
                         f"{reference_level}</i>.\n</p>"
 
     return analysis_formula
+
+
+def ensure_batches(coldata_rows):
+    '''
+    ensure that all samples have a batch number
+    if all samples have a batch number, returns empty string
+    '''
+
+    # check header row to make sure there is a batch column
+    header = coldata_rows.pop(0)
+    if "batch" not in header:
+        return "Batch column not found in coldata file"
+    batch_col_index = header.index("batch")
+
+    # check if all samples have a batch number
+    for coldata_row in coldata_rows:
+        if coldata_row:
+            if not coldata_row[batch_col_index].isnumeric():
+                sample_name = coldata_row[0]
+                return f"Sample {sample_name} has no batch number in coldata."
+
+    return ""

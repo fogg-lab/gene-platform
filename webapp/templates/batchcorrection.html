@@ -64,11 +64,15 @@
 		</td>
 		</table>
 
-		<div id="messages">
-		</div>
-
 		<br>
 		<form style="text-align:center;" id="batch_correction_form" action="javascript:submit_batch_correction()" method="POST">
+			<span>Data type:</span>
+			<select class="data_type" id="data_type" name="data_type">
+				<option value=""></option>
+				<option value="microarray">microarray</option>
+				<option value="RNA-Seq">RNA-Seq</option>
+			</select>
+			<br>
 			<span class="tooltip">Reference level:
 				<span class="tooltiptext">
 					The level (value) of condition against which effect size is being compared (e.g., “healthy”).
@@ -82,9 +86,20 @@
 				</span>
 			  </span>
 			<input id="contrast_level" type="text" name="contrast_level">
-			<button onclick="submit_batch_correction()" class="button" id="next_button" disabled>Submit</button>
 		</form>
 		
+		<div class="bottom-buttons">
+			<button onclick="submit_batch_correction()" class="button" id="next_button" disabled>Submit</button>
+		</div>
+		<br>
+		<div id="messages" class="bottom-buttons">
+		</div>
+		<br>
+		<div class="bottom-buttons">
+			<button onclick="window.location.href='/getbccounts'" class="button" id="download-bc-btn" disabled>
+				Download batch corrected counts
+			</button>
+		</div>
 		<script>
             var UPLOAD_ENDPOINT = "\\batchupload";
 			// hide progress bar divs and cancel buttonsfor files which have not been uploaded
@@ -118,6 +133,12 @@
 
 			function bcReqListener() {
 				// batch correction completed
+				// display download button
+				let messages = document.getElementById("messages");
+				messages.innerHTML = this.responseText;
+				if (this.responseText.includes("Batch correction complete.")) {
+					document.getElementById("download-bc-btn").disabled = false;
+				}
 			}
 
 			function cancel_counts() {
@@ -173,14 +194,19 @@
 			}
 
 			function submit_batch_correction() {
-				var reference_level = document.getElementById("reference_level").value;
-				var contrast_level = document.getElementById("contrast_level").value;
-				var submitbcReq = new XMLHttpRequest();
-				let submit_bc_query = "reference_level=" + reference_level + "&contrast_level=" + contrast_level;
+				datatype_select = document.getElementById("data_type")
+				let data_type = datatype_select.options[datatype_select.selectedIndex].text
+				let reference_level = document.getElementById("reference_level").value;
+				let contrast_level = document.getElementById("contrast_level").value;
+				let submitbcReq = new XMLHttpRequest();
+				let submit_bc_query = "data_type=" + data_type + "&reference_level=" + reference_level + "&contrast_level=" + contrast_level;
 				submitbcReq.addEventListener("load", bcReqListener);
 				submitbcReq.open("POST", "/submitbc");
 				submitbcReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 				submitbcReq.send(submit_bc_query);
+				let messages = document.getElementById("messages");
+				document.getElementById("download-bc-btn").disabled = true;
+				messages.innerHTML = "Performing batch correction...";
 			}
 		</script>
 
