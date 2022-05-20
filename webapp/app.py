@@ -157,8 +157,7 @@ def parameters():
     '''loads the parameter form'''
 
     params = parse_config()
-    return render_template("parameters_form.html", params=params, \
-                           title="Parameters")
+    return render_template("parameters_form.html", params=params, title="Parameters")
 
 
 @app.route("/submit", methods=["POST"])
