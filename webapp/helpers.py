@@ -75,9 +75,8 @@ def validate_parameters(config_parameters):
         if not isinstance(config_parameters["adj_method"], str):
             error_msg += '"adj_method" must be a string"\n'
         elif config_parameters["adj_method"] not in adj_methods:
-            error_msg += "Unknown adjustment method: "\
-                            f"{config_parameters['adj_method']}"
-            error_msg += f"Valid adj_methods: {adj_methods}"
+            error_msg += f"Unknown adjustment method: '{config_parameters['adj_method']}'\n"
+            error_msg += f"Valid adj_methods: {adj_methods}\n"
 
         if not isinstance(config_parameters["condition"], str):
             error_msg += '"condition" must be a string"\n'
@@ -91,7 +90,7 @@ def validate_parameters(config_parameters):
         if config_parameters["reference_level"] == \
            config_parameters["contrast_level"]:
             error_msg += \
-                'reference_level and contrast_level cannot be the same.\n'
+                'Reference_level and contrast_level cannot be the same.\n'
 
         if "use_qual_weights" in config_parameters:
             if not isinstance(config_parameters["use_qual_weights"], bool):
