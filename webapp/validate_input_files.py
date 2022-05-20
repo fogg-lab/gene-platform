@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import os
 
-UPLOAD_FOLDER = r"C:\Users\trungn\PycharmProjects\DGEAP"
+# UPLOAD_FOLDER = r"C:\Users\trungn\PycharmProjects\DGEAP"
 
 
 class FileSystem:
@@ -100,12 +100,10 @@ class FileValidation:
             dict_1[gene] = expected_datatype
         return dict_1
 
-    def validate_file(self, col_tsv, count_tsv):
-        """validate the following files: col, count, and filter gene. Returns true
-         if file is valid; otherwise, returns false"""
+    def validate_file(self, col_path, count_path):
+        """validate the following files: col, count, and filter gene.
+        Take file paths of col and count files, returns a tuple (true/false, error message"""
 
-        col_path = os.path.join(UPLOAD_FOLDER, col_tsv)
-        count_path = os.path.join(UPLOAD_FOLDER, count_tsv)
         data_check_col_df = pd.DataFrame()
         data_check_count_df = pd.DataFrame()
         name = ''
@@ -131,7 +129,7 @@ class FileValidation:
                 keys = list(self.file_obj.get_file_format_micro_array_col()['format'].keys())
                 name = 'microarray_col'
                 data_check_col_df = pd.read_csv(col_path,
-                                                dtype=self.file_obj.get_file_format_micro_array_col()['format'])
+                                                dtype=self.file_obj.get_file_format_micro_array_col()['format'],sep='\t')
                 if len(data_check_col_df) == 0:
                     msg += f'Microarray col data file has 0 row of data\n'
                     self.set_validation(False)
@@ -142,7 +140,7 @@ class FileValidation:
                 if count_df.columns.values.tolist()[0] == "symbol":
                     name = 'microarray_count'
                     data_check_count_df = pd.read_csv(count_path,
-                                                      dtype=self.file_obj.get_file_format_micro_array_count()['format'])
+                                                      dtype=self.file_obj.get_file_format_micro_array_count()['format'], sep='\t')
                     if len(data_check_count_df) == 0:
                         msg += f'Microarray count data file has 0 row of data\n'
                         self.set_validation(False)
@@ -175,15 +173,15 @@ class FileValidation:
                     else:
                         for field in data_check_count_df.columns.values.tolist():
                             if field not in keys_list:
-                                msg += f"{field} presents in rna-seq col data file but not in " \
-                                       f"rna-seq count data file\n"
+                                msg += f"{field} presents in rna-seq count data file but not in " \
+                                       f"rna-seq col data file\n"
                                 self.set_validation(False)
 
             else:
-                msg += f'column names of your submitted cold data file:\n{col_df.columns.tolist()}\n'
-                msg += f"column names of expected cold file for " \
+                msg += f'column names of your submitted col file:\n{col_df.columns.tolist()}\n'
+                msg += f"column names of expected col file for " \
                        f"microarray:\n{list(self.file_obj.get_file_format_micro_array_col()['format'].keys())}\n"
-                msg += f"column names of expected cold file for " \
+                msg += f"column names of expected col file for " \
                        f"rna_sequence:\n{list(self.file_obj.get_file_format_rna_seq_col()['format'].keys())}\n"
 
                 self.set_validation(False)
