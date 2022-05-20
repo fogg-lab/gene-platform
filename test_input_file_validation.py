@@ -1,5 +1,10 @@
 # Name: Ai Vu
 # Description: Write test for validating input files (tsv) for microarray and rna-seq count and col data
+# To run test in the osu server:
+# step1: cd /nfs/guille/eecs_projects/capstone/old/DGEAP
+# step2: singularity run --bind $PWD image.sif
+# step3: cd DGEAP
+# step4: python3 test_input_file_validation.py
 
 import unittest
 from webapp import validate_input_files as valid
@@ -18,9 +23,9 @@ def append_list_as_row(file_name, header, data):
 class TestInput(unittest.TestCase):
     """test check_coldata_matches_counts function which is located in the helpers.py"""
 
-    def setUp(self):
-        self.col = 'rna_seq_ucec_coldata.tsv'
-        self.count = 'rna_seq_ucec_counts.tsv'
+    # def setUp(self):
+    #     self.col = 'rna_seq_ucec_coldata.tsv'
+    #     self.count = 'rna_seq_ucec_counts.tsv'
 
     def tearDown(self):
         try:
@@ -59,7 +64,7 @@ class TestInput(unittest.TestCase):
 
         validate = valid.FileValidation()
 
-        expected = "GTEX-11P81-1626-SM-5BC52 presents in rna-seq col data file but not in rna-seq count data file\n"
+        expected = "GTEX-11P81-1626-SM-5BC52 presents in rna-seq count data file but not in rna-seq col data file\n"
         self.assertEqual(validate.validate_file(self.col, self.count)[1], expected)
 
     def test3(self):
@@ -113,7 +118,6 @@ class TestInput(unittest.TestCase):
         expect = "The column GTEX-T6MO-1526-SM-4DM57 in rna_seq_count file has " \
                  "data type of object, which should have been float64\n"
         self.assertEqual(validate.validate_file(self.col, self.count)[1], expect)
-
 
     def test6(self):
         self.col = 'rna_col.tsv'
@@ -219,11 +223,11 @@ class TestInput(unittest.TestCase):
 
         append_list_as_row(self.col, header_col, field_list_col)
         append_list_as_row(self.count, header_count, field_list_count)
-        expect = "column names of your submitted cold data file:\n" \
+        expect = "column names of your submitted col file:\n" \
                  "['sample_name', 'series', 'title', 'endometriosis_stage', 'phase', 'tissue', 'batch']\n" \
-                 "column names of expected cold file for microarray:\n" \
+                 "column names of expected col file for microarray:\n" \
                  "['sample_name', 'series', 'title', 'condition', 'endometriosis_stage', 'phase', 'tissue', 'batch']\n" \
-                 "column names of expected cold file for rna_sequence:\n" \
+                 "column names of expected col file for rna_sequence:\n" \
                  "['sample_name', 'condition', 'data_source']\n"
         self.assertEqual(validate.validate_file(self.col, self.count)[1], expect)
 
