@@ -1,5 +1,6 @@
 '''utility functions for app.py.  '''
 
+
 def check_parameter_names(config_parameters):
     '''
     ensures config parameters contain the required parameters,
@@ -71,14 +72,12 @@ def validate_parameters(config_parameters):
         elif not (0 <= config_parameters["padj_thresh"] <= 1):
             error_msg += '"padj_thresh" must be between 0 and 1\n'
 
-        adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY",\
-                        "fdr", "none"]
+        adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"]
         if not isinstance(config_parameters["adj_method"], str):
             error_msg += '"adj_method" must be a string"\n'
         elif config_parameters["adj_method"] not in adj_methods:
-            error_msg += "Unknown adjustment method: "\
-                            f"{config_parameters['adj_method']}"
-            error_msg += f"Valid adj_methods: {adj_methods}"
+            error_msg += f"Unknown adjustment method: '{config_parameters['adj_method']}'\n"
+            error_msg += f"Valid adj_methods: {adj_methods}\n"
 
         if not isinstance(config_parameters["condition"], str):
             error_msg += '"condition" must be a string"\n'
@@ -92,7 +91,7 @@ def validate_parameters(config_parameters):
         if config_parameters["reference_level"] == \
            config_parameters["contrast_level"]:
             error_msg += \
-                'reference_level and contrast_level cannot be the same.\n'
+                'Reference_level and contrast_level cannot be the same.\n'
 
         if "use_qual_weights" in config_parameters:
             if not isinstance(config_parameters["use_qual_weights"], bool):
@@ -140,30 +139,28 @@ def check_factor_levels(config_params, coldata):
     if condition in coldata[0]:
         condition_col_index = coldata[0].index(condition)
     else:
-        return f"Condition '{condition}' not present in coldata (line 1)"
+        return f"Condition '{condition}' not present in coldata's column name\n"
 
     contrast_level_found = False
     reference_level_found = False
 
     # remove header row from coldata
     coldata.pop(0)
-
+    err_msg = ""
     for coldata_row in coldata:
         if coldata_row:
             factor_level = coldata_row[condition_col_index]
             if factor_level == contrast_level:
                 contrast_level_found = True
+
             elif factor_level == reference_level:
                 reference_level_found = True
-            else:
-                return f"Unknown factor level '{factor_level}'"
-
-    err_msg = ""
-
-    if not contrast_level_found:
-        err_msg += f"Contrast level '{contrast_level}' not found in coldata"
-    if not reference_level_found:
-        err_msg += f"Reference level '{reference_level}' not found in coldata"
+            # else:
+                # return f"Unknown factor level '{factor_level}'"
+    if contrast_level_found is False:
+        err_msg += f"Unknown contrast level '{contrast_level}'\n"
+    if reference_level_found is False:
+        err_msg += f"Unknown reference level '{reference_level}'\n"
 
     return err_msg
 
