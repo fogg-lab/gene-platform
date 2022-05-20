@@ -9,7 +9,7 @@
 			<a href="{{ url_for('index') }}">Home</a>
 			<a class="active" href="#">Analysis</a>
 			<a href="#">Batch Correction</a>
-			<span class="Fogg">Fogg Lab</p>
+			<p class="Fogg">Fogg Lab</p>
 		</div>
         <a href="{{ url_for('display_output') }}" class="button">Previous: Display Results</a></td>
         <h3 style="text-align:center; font-family:verdana; color:purple;"> Data Visualization</h3>
@@ -21,8 +21,8 @@
                 <dd>l2fc > 0.6 and p-value < 0.0e</dd>
             <dt>DOWN</dt>
                 <dd>l2fc < -0.6 and p-value < 0.05</dd>
-            <dt>NS, Not significance</dt>
-                <dd>neither meet UP nor DOWN criteria</dd>
+            <dt>NO</dt>
+                <dd>neither meet UP nor DOWN criteria (not significant) </dd>
         </dl>
         <br>
         <h2>Images</h2>
