@@ -6,7 +6,7 @@
 
 MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "mean_variance_trend_plot_UNFILTERED_microarray.png"
 MICRO_ARRAY_VOLCANO_IMAGE_FILE = "volcano_plot_UNFILTERED_microarray.png"
-#FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "filtered_microarray_mean_variance_trend.png"
+FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "mean_variance_trend_FILTERED_microarray.png"
 FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "volcano_plot_FILTERED_microarray.png"
 
 suppressMessages(suppressWarnings(library(tidyverse)))
@@ -25,7 +25,7 @@ filter_filepath <- paste(user_directory, "filter.txt", sep="")
 
 mean_variance_trend = function(fit, filename){
   micro_array_mean_variance_trend_path <- paste(user_directory, filename)
-  png(filename = "micro_array_mean_variance_trend_path", width = 756, height = 756)
+  png(micro_array_mean_variance_trend_path)
   plot<- plotSA(fit, xlab="Average log-expression", ylab="log2(sigma)", zero.weights=FALSE, pch=16, cex=0.2)
   dev.off()
 }
@@ -34,11 +34,11 @@ volcano_plot = function(fit, filename){
   micro_array_volcano_path <- paste(user_directory, filename)
   de <- fit
 
-  de$differential_expression <- "Not significance"
+  de$differential_expression <- "NO"
   de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
   de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
   de$delabel <- NA
-  de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "Not significance"]
+  de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "NO"]
 
   plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=differential_expression, label=delabel)) +
     geom_point() +
@@ -69,6 +69,7 @@ coldata_df <- coldata_df %>%
 
 filt_counts_df <- counts_df %>%
     filter(rowSums(.[-1] > min_expr) / (ncol(.) - 1) >= min_prop)
+
 filt_expr <- filt_counts_df %>%
     column_to_rownames("symbol") %>%
     as.matrix()
@@ -87,6 +88,7 @@ if (use_qual_weights) {
 lm_fit <- lmFit(filt_expr, design = design, weights = qual_weights)
 bayes_fit <- eBayes(lm_fit)
 mean_variance_trend(bayes_fit, MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE)
+
 bayes_fit$coefficients %>% colnames()
 
 fit_de_res_df <- topTable(bayes_fit, coef = paste(condition_col, contrast_level, sep=""), number = nrow(filt_counts_df), adjust.method = adj_method, p.value = padj_thresh) %>%
@@ -99,8 +101,31 @@ write_tsv(fit_de_res_df, paste(user_directory,"output.tsv", sep=""))
 volcano_plot(fit_de_res_df, MICRO_ARRAY_VOLCANO_IMAGE_FILE)
 
 if (file.info(filter_filepath)$size != 0) {
+
     filter_list <- scan(filter_filepath, what="character")
     filtered_df <- fit_de_res_df[fit_de_res_df$symbol %in% filter_list,]
     write_tsv(filtered_df, paste(user_directory, "filter_output.tsv", sep=""))
     volcano_plot(filtered_df, FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE)
+
+    #rerun a part of the analysis to make the mean_variance_trend for the filtered gene list
+    filtered_count_df <- counts_df[counts_df$symbol %in% filter_list,]
+    filtered_counts_df <- filtered_count_df %>%
+    filter(rowSums(.[-1] > min_expr) / (ncol(.) - 1) >= min_prop)
+
+    filtered_expr <- filtered_counts_df %>%
+    column_to_rownames("symbol") %>%
+    as.matrix()
+
+    design <- model.matrix(~ condition, data = coldata_df)
+    rownames(design) <- coldata_df$sample_name
+    all(colnames(filtered_expr) == rownames(design))
+
+    if (use_qual_weights) {
+        qual_weights <- arrayWeights(filtered_expr, design = design)
+    } else {
+        qual_weights <- NULL
+    }
+    filtered_lm_fit <- lmFit(filtered_expr, design = design, weights = qual_weights)
+    filtered_bayes_fit <- eBayes(filtered_lm_fit)
+    mean_variance_trend(filtered_bayes_fit, FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE)
 }
