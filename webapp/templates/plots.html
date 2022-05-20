@@ -8,8 +8,9 @@
 		<div class="topnav">
 			<a href="{{ url_for('index') }}">Home</a>
 			<a class="active" href="#">Analysis</a>
-			<a href="#">Batch Correction</a>
-			<p class="Fogg">Fogg Lab</p>
+
+			<a href="{{ url_for('batchsetup') }}">Batch Correction</a>
+			<span class="Fogg">Fogg Lab</span>
 		</div>
         <a href="{{ url_for('display_output') }}" class="button">Previous: Display Results</a></td>
         <h3 style="text-align:center; font-family:verdana; color:purple;"> Data Visualization</h3>

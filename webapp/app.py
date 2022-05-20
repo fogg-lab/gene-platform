@@ -4,14 +4,21 @@ import shutil
 import csv
 import tempfile
 import yaml
-from webapp import helpers
 from webapp import validate_input_files as valid
+import time
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
 
+try:
+    import helpers
+    import bc
+except ModuleNotFoundError:
+    from webapp import bc
+    from webapp import helpers
+
 # imports for debugging (allow printing to stderr)
-# from __future__ import print_function
+#from __future__ import print_function
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
@@ -38,9 +45,7 @@ def index():
 @app.route("/uploadsetup")
 def uploadsetup():
     '''first input page (file uploads)'''
-
     ensure_session_dir()
-
     cur_uploads, all_uploads = list_user_files()
 
     return render_template("uploads_form.html", cur_uploads=cur_uploads, all_uploads=all_uploads, title="Uploads")
@@ -88,6 +93,7 @@ def batchupload():
     '''
 
     result = {}
+
     if "bc_suffix" in session:
         session["bc_suffix"] += 1
     else:
@@ -97,6 +103,16 @@ def batchupload():
     fname += f"_bc-{session['bc_suffix']}"
 
     save_temp_file(request.data, fname, fname)
+
+
+    user_filename = request.args.get("user_filename")
+    standard_filename = request.headers.get('X_FILENAME')
+
+    save_temp_file(request.data, standard_filename, user_filename)
+
+    if standard_filename == "coldata.tsv":
+        result["error_status"] = check_bc_coldata()
+
 
     return jsonify(result)
 
@@ -115,6 +131,7 @@ def cancelupload():
 
 @app.route("/submitbc", methods=["POST"])
 def submit_batch_correction():
+
     reference_level = request.form.get("reference_level")
     contrast_level = request.form.get("contrast_level")
     # call bc
@@ -130,11 +147,42 @@ def get_batch_correction_coldata():
     pass
 
 
+    datatype = request.form.get("data_type")
+    reference_level = request.form.get("reference_level")
+    contrast_level = request.form.get("contrast_level")
+    userdir = session["user_session_dir"]
+
+    expected_bc_counts_path = f"{session['user_session_dir']}counts_bc.tsv"
+
+    # Delete any previous batch correction results
+    if os.path.isfile(expected_bc_counts_path):
+        os.remove(expected_bc_counts_path)
+
+    status_msg = bc.call_bc(userdir, datatype, reference_level, contrast_level)
+    if not status_msg:
+        status_msg = "Batch correction complete."
+
+    is_output = False
+    while not is_output:
+        is_output = os.path.exists(expected_bc_counts_path)
+        if not is_output:
+            time.sleep(0.25)
+
+    return status_msg
+
+
+@app.route("/getbccounts")
+def get_batch_correction_counts():
+    return send_from_directory(session["user_session_dir"], "counts_bc.tsv")
+
+
+
 @app.route("/useoldconfig", methods=["POST"])
 def use_old_config():
     old_filename = request.form.get("filename")
     old_filepath = f"{session['user_session_dir']}{old_filename}"
     new_filepath = f"{session['user_session_dir']}config.yml"
+
 
     # store user-specified config filename at updated session key
     session["config.yml"] = session[old_filename]
@@ -143,6 +191,15 @@ def use_old_config():
     delete_user_file("config.yml")
 
     # rename old file to config.yml
+
+    
+    # store user-specified config filename at updated session key
+    session["config.yml"] = session[old_filename]
+    
+    #replace current config.yml file if it exists
+    delete_user_file("config.yml")
+
+    #rename old file to config.yml
     os.rename(old_filepath, new_filepath)
 
 
@@ -436,12 +493,19 @@ def wait_for_output():
         unfilt_output_path = f"{session['user_session_dir']}output.tsv"
         filt_output_path = f"{session['user_session_dir']}filter_output.tsv"
         filter_path = f"{session['user_session_dir']}filter.txt"
+
+    unfilt_output_path =  f"{session['user_session_dir']}output.tsv"
+    filt_output_path =  f"{session['user_session_dir']}filter_output.tsv"
+    filter_path = f"{session['user_session_dir']}filter.txt"
+
+    is_output = False
+    while not is_output:
         is_output = os.path.exists(unfilt_output_path)
         if is_output and os.path.exists(filter_path):
             is_output = os.path.exists(filt_output_path)
 
-        # results of the ls are returned in bytes, ends with newline character
-        analysis_done = is_output
+        if not is_output:
+            time.sleep(0.5)
 
 
 def cleanup_old_sessions():
@@ -537,6 +601,18 @@ def check_config():
     return err_msg
 
 
+def check_bc_coldata():
+    '''ensures coldata has batches'''
+
+    coldata = get_tsv_rows("coldata.tsv")
+    err_msg = helpers.ensure_batches(coldata)
+
+    if err_msg:
+        delete_user_file("coldata.tsv")
+
+    return err_msg
+
+
 def get_tsv_rows(filename):
     '''returns the rows of the user input file as a 2d array'''
 
@@ -577,8 +653,9 @@ def stash_old_file(standard_filename, user_filename):
         elif suffix_count > 0:
             cmp_fname = f"{user_filename} ({suffix_count})"
         # Check if the filename is already in use
-        if f"{standard_filename}_{i}" in session and \
-                session[f"{standard_filename}_{i}"] == cmp_fname:
+        if f"{standard_filename}_{i}" in session and session[f"{standard_filename}_{i}"] == cmp_fname:
+
+            # session[f"{standard_filename}_{i}"] == cmp_fname:
             suffix_count += 1
 
     if suffix_count > 0 and user_fname_ext != "":

@@ -7,21 +7,30 @@ R Packages (in requirements.R) - yaml, tidyverse, BiocManager, ggpubr
 BiocManager packages (in requirements.R) - BiocParallel, affycoretools, affyPLM, hgu133plus2.db, qvalue, sva
 
 Python3 packages (all in webapp/requirements.txt):
-Required - Flask, Flask-Session, PyYAML, scandir, backports.shutil-get-terminal-size, browsepy, gunicorn
+Required - Flask, Flask-Session, PyYAML, gunicorn
 Optional/for development (uncomment lines in requirements.txt) - virtualenv, jupyterlab, pandas, numpy
 
 Instructions to set up and start the web app (on a linux machine with R and Python3 installed):
 1. Clone this repo
 git clone git@github.com:McGuiJames/DGEAP.git
 
-2. Install Python3/R packages
-cd DGEAP
-pip3 install --upgrade pip
-pip3 -r webapp/requirements.txt
-Rscript requirements.R
+2. Set up
+FOR SETTING UP IN A NEW ENVIRONMENT (Install Python3/R packages):
+  cd DGEAP
+  pip3 install --upgrade pip
+  pip3 -r webapp/requirements.txt
+  Rscript requirements.R
+FOR RUNNING IN A SINGULARITY CONTAINER (with pre-installed Python3/R packages):
+  cd DGEAP
+  singularity run [path_to_singularity_image]
 
 3. Run the web app (replace xxxx with a port number)
-cd webapp
-gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app
-or run the server persistently in the background like this:
-nohup gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app &
+FOR PRODUCTION (run with gunicorn):
+  cd webapp
+  gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app
+  ...or run the server persistently in the background like this:
+  nohup gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app &
+FOR DEVELOPMENT (run with flask development server):
+  export FLASK_APP=app
+  cd webapp
+  flask run -h 0.0.0.0 -p xxxx

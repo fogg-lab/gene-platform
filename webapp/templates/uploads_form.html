@@ -9,8 +9,8 @@
 		<div class="topnav">
 			<a href="{{ url_for('index') }}">Home</a>
 			<a class="active" href="#">Analysis</a>
-			<a href="#">Batch Correction</a>
-			<span class="Fogg">Fogg Lab</p>
+			<a href="{{ url_for('batchsetup') }}">Batch Correction</a>
+			<span class="Fogg">Fogg Lab</span>
 		</div>
 
 		<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
@@ -35,7 +35,7 @@
 									<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
 								</div>
 								<div class="progress_div" id="progress_of_counts_div">
-								{% if uploads["counts.tsv"] -%}
+								{% if cur_uploads["counts.tsv"] -%}
 									<div class="success" id="progress_of_counts">
 										Uploaded counts
 									</div>
@@ -51,7 +51,7 @@
 									<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
 								</div>
 								<div class="progress_div" id="progress_of_coldata_div">
-								{% if uploads["coldata.tsv"] -%}
+								{% if cur_uploads["coldata.tsv"] -%}
 									<div class="success" id="progress_of_coldata">
 										Uploaded coldata
 									</div>
@@ -67,7 +67,7 @@
 									<p>Drop .txt file<br>here or<label for="fileselect_filter" class="upload_action_button">Browse</label></p>
 								</div>
 								<div class="progress_div" id="progress_of_filter_div">
-								{% if uploads["filter.txt"] -%}
+								{% if cur_uploads["filter.txt"] -%}
 									<div class="success" id="progress_of_filter">
 										Uploaded filter
 									</div>
@@ -83,7 +83,7 @@
 									<p>Drop .yml file<br>here or<label for="fileselect_config" class="upload_action_button">Browse</label></p>
 								</div>
 								<div class="progress_div" id="progress_of_config_div">
-								{% if uploads["config.yml"] -%}
+								{% if cur_uploads["config.yml"] -%}
 									<div class="success" id="progress_of_config">
 										Uploaded config
 									</div>
@@ -94,7 +94,11 @@
 						</td>
 					</tr>
 				</table>
-			</tr></td>
+			</tr>
+			<tr>
+				<td colspan="4">&nbsp;</td>
+			</tr>
+		</td>
 		</table>
 
 		<div id="messages">
@@ -105,7 +109,7 @@
 		</div>
 		
 		<script>
-
+			var UPLOAD_ENDPOINT = "\\upload";
 			// hide progress bar divs and cancel buttonsfor files which have not been uploaded
 			if (document.getElementById("progress_of_counts") == null) {
 				document.getElementById("progress_of_counts_div").style.display = 'none';
