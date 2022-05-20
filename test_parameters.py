@@ -1,11 +1,20 @@
 # Name: Ai Vu
-# Description: Write test to validate parameters (yaml file) for microarray and rna-seq
-# and the check_coldata_matches_counts helper function.
+# Description: run the test suits for validate_parameters function and check_factor_levels functions;
+# those functions is located in helpers.py file
+
+# To run test in the osu server:
+# step1: cd /nfs/guille/eecs_projects/capstone/old/DGEAP
+# step2: singularity run --bind $PWD image.sif
+# step3: cd DGEAP
+# step4: python3 test_parameters.py
 
 import unittest
 import yaml
 from webapp import helpers
+from webapp import validate_input_files as valid
+import os
 import csv
+import copy
 
 
 def read_yaml(filename):
@@ -28,9 +37,10 @@ def test_input_files(col_file, count_file):
     col_data_list = get_inputs_files(col_file)
     counts_list = get_inputs_files(count_file)
 
-    confirmation_message = helpers.check_coldata_matches_counts(
+    confirmation_message = helpers.check_coldata_rows_match_counts_cols(
         copy.deepcopy(counts_list[0]), copy.deepcopy(col_data_list))
     return confirmation_message
+
 
 
 class TestParam(unittest.TestCase):
@@ -212,7 +222,6 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            print('result', read_yaml(self.file))
             expected = '"padj_thresh" must be between 0 and 1\n'
             self.assertEqual(read_yaml(self.file), expected)
 
@@ -246,7 +255,6 @@ class TestParam(unittest.TestCase):
             contrast_level='disease',
             reference_level="normal"
         )
-        print('result', helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")))
         self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")),
                          "Unknown contrast level 'disease'\n")
 
@@ -328,10 +336,10 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'reference_level and contrast_level cannot be the same.\n'
+            expected = 'Reference_level and contrast_level cannot be the same.\n'
             self.assertEqual(read_yaml(self.file), expected)
 
-    def test18(self):
+    def test17(self):
         self.file = 'config.yaml'
         param = dict(
             min_expr=5.6438,
@@ -345,9 +353,9 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            print('result', read_yaml(self.file))
-            expected = 'Currently, program only support adj_method named "BH". You entered "I don\'t know".\n' \
-                       '"reference_level" and "contrast_level" cannot refer to the same value.\n'
+            expected = "Unknown adjustment method: 'I don\'t know'\n" \
+                       "Valid adj_methods: ['holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none']\n" \
+                       "Reference_level and contrast_level cannot be the same.\n"
             self.assertEqual(read_yaml(self.file), expected)
 
     def test18(self):
