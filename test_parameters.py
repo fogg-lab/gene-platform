@@ -1,11 +1,11 @@
 # Name: Ai Vu
+# Description: Write test to validate parameters (yaml file) for microarray and rna-seq
+# and the check_coldata_matches_counts helper function.
 
 import unittest
 import yaml
 from webapp import helpers
-import os
 import csv
-import copy
 
 
 def read_yaml(filename):
@@ -28,33 +28,14 @@ def test_input_files(col_file, count_file):
     col_data_list = get_inputs_files(col_file)
     counts_list = get_inputs_files(count_file)
 
-    col_counts_match_error = helpers.check_coldata_rows_match_counts_cols(
+    confirmation_message = helpers.check_coldata_matches_counts(
         copy.deepcopy(counts_list[0]), copy.deepcopy(col_data_list))
-
-    confirmation_message = ""
-    if col_counts_match_error:
-        confirmation_message = f"Error: {coldata_counts_match_error}\n"
     return confirmation_message
 
 
-class TestInput(unittest.TestCase):
-
-    # def tearDown(self):
-    #     try:
-    #         os.remove(self.col)
-    #         os.remove(self.count)
-    #     except FileNotFoundError as fnf:
-    #         print(fnf)
-
-    def test1(self):
-        self.col = "rna_seq_ucec_coldata.tsv"
-        self.count = "rna_seq_ucec_counts.tsv"
-        result = test_input_files(self.col, self.count)
-        expected = ''
-        self.assertEqual(result, expected)
-
-
 class TestParam(unittest.TestCase):
+    """test the check_factor_level functions and validate_parameters function
+    which are located in helpers.py"""
     def tearDown(self):
         try:
             os.remove(self.file)
@@ -73,6 +54,7 @@ class TestParam(unittest.TestCase):
             contrast_level="endometriosis",
             reference_level="normal"
         )
+        self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")), "")
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
             expected = ''
@@ -89,9 +71,10 @@ class TestParam(unittest.TestCase):
             contrast_level="endometriosis",
             reference_level="normal"
         )
+        self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")), "")
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'Missing parameter(s): min_expr \n'
+            expected = 'Missing parameter: min_expr\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test3(self):
@@ -106,9 +89,10 @@ class TestParam(unittest.TestCase):
             contrast_level="endometriosis",
             reference_level="normal"
         )
+        self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")), "")
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'Missing parameter(s): min_prop \n'
+            expected = 'Missing parameter: min_prop\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test4(self):
@@ -123,9 +107,10 @@ class TestParam(unittest.TestCase):
             contrast_level="endometriosis",
             reference_level="normal"
         )
+        self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")), "")
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'Missing parameter(s): adj_method \n'
+            expected = 'Missing parameter: adj_method\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test5(self):
@@ -142,7 +127,7 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'Missing parameter(s): condition \n'
+            expected = 'Missing parameter: condition\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test6(self):
@@ -159,7 +144,7 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'Missing parameter(s): padj_thresh \n'
+            expected = 'Missing parameter: padj_thresh\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test7(self):
@@ -176,7 +161,7 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'use_qual_weights must be a bool.\n'
+            expected = 'use_qual_weights must be either True or False.\n'
             self.assertEqual(read_yaml(self.file), expected)  # empty. logic?
 
     def test8(self):
@@ -193,7 +178,7 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'Missing parameter(s): contrast_level \n'
+            expected = 'Missing parameter: contrast_level\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test9(self):
@@ -210,7 +195,7 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'Missing parameter(s): reference_level \n'
+            expected = 'Missing parameter: reference_level\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test10(self):
@@ -228,7 +213,7 @@ class TestParam(unittest.TestCase):
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
             print('result', read_yaml(self.file))
-            expected = '"padj_thresh" must be a number in range [0,1]\n'
+            expected = '"padj_thresh" must be between 0 and 1\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test11(self):
@@ -245,7 +230,7 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = '"min_prop" must be a number in range [0,1]\n'
+            expected = '"min_prop" must be between 0 and 1\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test12(self):
@@ -261,10 +246,13 @@ class TestParam(unittest.TestCase):
             contrast_level='disease',
             reference_level="normal"
         )
+        print('result', helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")))
+        self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")),
+                         "Unknown contrast level 'disease'\n")
+
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = '"contrast_level" supported by Microarray analysis is either "normal" or "endometriosis". ' \
-                       'You entered "disease"\n'
+            expected = ''
             self.assertEqual(read_yaml(self.file), expected)
 
     def test13(self):
@@ -279,10 +267,11 @@ class TestParam(unittest.TestCase):
             contrast_level="endometriosis",
             reference_level="normal"
         )
+        self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")),
+                         "Condition 'I'm healthy enough' not present in coldata's column name\n")
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = 'Currently, program only support condition named "condition". ' \
-                       'You entered "I\'m healthy enough"\n'
+            expected = ''
             self.assertEqual(read_yaml(self.file), expected)
 
     def test14(self):
@@ -297,11 +286,12 @@ class TestParam(unittest.TestCase):
             contrast_level="endometriosis",
             reference_level="cancer"
         )
+        self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")),
+                         "Unknown reference level 'cancer'\n")
+
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            # print('result', read_yaml(self.file))
-            expected = '"reference_level" supported by Microarray analysis is either "normal" or "endometriosis".' \
-                       ' You entered "cancer"\n'
+            expected = ''
             self.assertEqual(read_yaml(self.file), expected)
 
     def test15(self):
@@ -316,12 +306,12 @@ class TestParam(unittest.TestCase):
             contrast_level="endometriosis",
             reference_level="cancer"
         )
+        self.assertEqual(helpers.check_factor_levels(param, get_inputs_files("microarray_endometriosis_coldata.tsv")),
+                         "Unknown reference level 'cancer'\n")
+
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = '"contrast_level" supported by RNA-sequence analysis is ' \
-                       'either "tumor" or "healthy". You entered "endometriosis"\n' \
-                       '"reference_level" supported by RNA-sequence analysis is ' \
-                       'either "tumor" or "healthy". You entered "cancer"\n'
+            expected = ''
             self.assertEqual(read_yaml(self.file), expected)
 
     def test16(self):
@@ -338,7 +328,7 @@ class TestParam(unittest.TestCase):
         )
         with open(self.file, 'w') as outfile:
             yaml.dump(param, outfile, default_flow_style=False)
-            expected = '"reference_level" and "contrast_level" cannot refer to the same value.\n'
+            expected = 'reference_level and contrast_level cannot be the same.\n'
             self.assertEqual(read_yaml(self.file), expected)
 
     def test18(self):
