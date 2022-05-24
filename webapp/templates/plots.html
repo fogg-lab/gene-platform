@@ -18,7 +18,7 @@
             </tr>
         </table>
         <h3 style="text-align:center; font-family:verdana; color:purple;"> Data Visualization</h3>
-        <h2 align="center">Images</h2>
+        <h2 align="center">Plots</h2>
         <div align="center">
             <select class="data_type">
                 <option>Select</option>
@@ -33,7 +33,6 @@
                     <img src="{{ url_for('getplot', filename=plot_filenames[0]) }}" alt="Filtered Microarray Volcano"
                         style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
                 </a>
-                <h3 style="text-align:center">Image file name: {{plot_filenames[0]}}</h3>
             </div>
             <div class="v_trend IMG">
                 <a href="{{ url_for('getplot', filename=plot_filenames[1]) }}" download="filename">
@@ -52,12 +51,9 @@
         </div>
         <h2 align="center">Description</h2>
         <div class="desc">
-            <p>UP</p>
-            <p>&ensp; l2fc > 0.6 and p-value < 0.0e</p>
-            <p>DOWN</p>
-            <p>&ensp; l2fc < -0.6 and p-value < 0.05</p>
-            <p>&ensp; NS, Not significance</p>
-            <p>&emsp; neither meet UP nor DOWN criteria</p>
+            <p>Up: l2fc > 0.6 and p-value < 0.0e</p>
+            <p>Down: l2fc < -0.6 and p-value < 0.05</p>
+            <p>Not sig: Does not meet criteria for Up or Down</p>
         </div>
         <script type="text/javascript">
             $(document).ready(function()
