@@ -211,9 +211,23 @@ class TestInput(unittest.TestCase):
         self.assertEqual(validate.validate_file(self.col, self.count), expect)
 
     def test10(self):
+        self.col = 'micro_col.tsv'
+        self.count = 'micro_count.tsv'
+        header_col = ['sample_name', 'series', 'title', 'condition', 'endometriosis_stage', 'phase', 'tissue',
+                      'batch']
+        field_list_col = [
+            ['GSM109815', 'GSE4888', 'endometrium M165', 'normal', 'none', 'proliferative', 'uterus', 1],
+            ['GSM150190', 'GSE6364', 'PE_D_26A', 'endometriosis', 'moderate_severe', 'proliferative', 'uterus', 1]]
+        header_count = ['symbol', 'GSM109815', 'GSM150190']
+        field_list_count = [
+            [1, 6, 7.02545678991068], ['A2ML1', 10.70514655195897, 11.434625316952236]]
         validate = valid.FileValidation()
+
+        append_list_as_row(self.col, header_col, field_list_col)
+        append_list_as_row(self.count, header_count, field_list_count)
+
         expected = ""
-        actual = validate.validate_file('micro_col.tsv', 'micro_count.tsv')
+        actual = validate.validate_file(self.col, self.count)
         self.assertEqual(actual, expected)
 
     def test11(self):
