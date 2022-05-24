@@ -23,6 +23,11 @@ class FileSystem:
 
         self._rna_seq_count_file = {'type': '.tsv', 'column_count': len(self.rna_seq_count_data_dict),
                                     'format': self.rna_seq_count_data_dict}
+    
+    @staticmethod
+    def merge_dicts(dict_1, final_dict):
+        """combine two dicts into one by appending"""
+        final_dict.update(dict_1)
 
 
 class FileValidation:
