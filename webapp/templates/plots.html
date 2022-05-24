@@ -3,42 +3,82 @@
         <title>Data Visualization</title>
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
+        <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     </head>
     <body>
 		<div class="topnav">
 			<a href="{{ url_for('index') }}">Home</a>
 			<a class="active" href="#">Analysis</a>
-
 			<a href="{{ url_for('batchsetup') }}">Batch Correction</a>
 			<span class="Fogg">Fogg Lab</span>
 		</div>
-        <a href="{{ url_for('display_output') }}" class="button">Previous: Display Results</a></td>
+        <table>
+            <tr>
+                <td><a href="{{ url_for('display_output') }}" class="button">Previous: Display Results</a></td>
+            </tr>
+        </table>
         <h3 style="text-align:center; font-family:verdana; color:purple;"> Data Visualization</h3>
-        <h3><mark style="background-color:powderblue;"> Please click the image you want to download</mark></h3>
-        <br>
-        <h2>Description</h2>
-        <dl>
-            <dt>UP</dt>
-                <dd>l2fc > 0.6 and p-value < 0.0e</dd>
-            <dt>DOWN</dt>
-                <dd>l2fc < -0.6 and p-value < 0.05</dd>
-            <dt>NO</dt>
-                <dd>neither meet UP nor DOWN criteria (not significant) </dd>
-        </dl>
-        <br>
-        <h2>Images</h2>
-        <br>
-        {% for plot in plot_filenames %}
-            <div style="text-align: center;">
-                <a href="{{ url_for('getplot', filename=plot) }}" download="filename">
-                    <img src="{{ url_for('getplot', filename=plot) }}" alt="Plots of current analysis"
+        <h2 align="center">Images</h2>
+        <div align="center">
+            <select class="data_type">
+                <option>Select</option>
+                <option value="volcano">Unfiltered Volcano</option>
+                <option value="f_volcano">Filtered Volcano</option>
+                <option value="v_trend">Variance Trend</option>
+            </select>
+        </div>
+        <div align="center">
+            <div class="f_volcano IMG">
+                <a href="{{ url_for('getplot', filename=plot_filenames[0]) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames[0]) }}" alt="Filtered Microarray Volcano"
                         style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
                 </a>
+                <h3 style="text-align:center">Image file name: {{plot_filenames[0]}}</h3>
             </div>
-            <h3 style="text-align:center">Image file name: {{plot}}</h3>
-            <br>
-            <br>
-        {% endfor %}
-        </h3>
+            <div class="v_trend IMG">
+                <a href="{{ url_for('getplot', filename=plot_filenames[1]) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames[1]) }}" alt="Mean Variance Trend"
+                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+                </a>
+                <h3 style="text-align:center">Image file name: {{plot_filenames[1]}}</h3>
+            </div>
+            <div class="volcano IMG">
+                <a href="{{ url_for('getplot', filename=plot_filenames[2]) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames[2]) }}" alt="Microarray Volcano"
+                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+                </a>
+                <h3 style="text-align:center">Image file name: {{plot_filenames[2]}}</h3>
+            </div>
+        </div>
+        <h2 align="center">Description</h2>
+        <div class="desc">
+            <p>UP</p>
+            <p>&ensp; l2fc > 0.6 and p-value < 0.0e</p>
+            <p>DOWN</p>
+            <p>&ensp; l2fc < -0.6 and p-value < 0.05</p>
+            <p>&ensp; NS, Not significance</p>
+            <p>&emsp; neither meet UP nor DOWN criteria</p>
+        </div>
+        <script type="text/javascript">
+            $(document).ready(function()
+            {
+                $("select").on('change', function()
+                {
+                    $(this).find("option:selected").each(function()
+                    {
+                        var pic = $(this).attr("value");
+                        if (pic)
+                        {
+                            $(".IMG").not("." + pic).hide();
+                            $("." + pic).show();
+                        }
+                        else
+                        {
+                            $(".IMG").hide();
+                        }
+                    });
+                }).change();
+            });
+        </script>
     </body>
 </html>

@@ -494,3 +494,9 @@ h2.Fogg {
 	width: 100%;
 }
 
+.desc {
+	background-color: lightcoral;
+	max-width: 25%;
+	margin: auto;
+	text-align: left;
+}
