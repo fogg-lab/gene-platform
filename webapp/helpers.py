@@ -139,7 +139,7 @@ def check_factor_levels(config_params, coldata):
     if condition in coldata[0]:
         condition_col_index = coldata[0].index(condition)
     else:
-        return f"Condition '{condition}' not present in coldata's column name\n"
+        return f"Condition '{condition}' not present in coldata (line 1)\n"
 
     contrast_level_found = False
     reference_level_found = False
@@ -152,11 +152,10 @@ def check_factor_levels(config_params, coldata):
             factor_level = coldata_row[condition_col_index]
             if factor_level == contrast_level:
                 contrast_level_found = True
-
             elif factor_level == reference_level:
                 reference_level_found = True
-            # else:
-                # return f"Unknown factor level '{factor_level}'"
+            else:
+                return f"Unknown factor level '{factor_level}'"
     if contrast_level_found is False:
         err_msg += f"Unknown contrast level '{contrast_level}'\n"
     if reference_level_found is False:

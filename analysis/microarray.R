@@ -1,13 +1,8 @@
 # Ai: this program analyse the microarray part of the gene expression analysis.
 # Input: microarray files (coldata (.tsv), countdata(.tsv), config parameters(.yml)).
 # Optional Input: filter_gene.txt
-# Output: gene expression analysis for unfilter +/- filtered genes (.tsv)
-# and 2 plots (mean microarray_mean_variance_trend(.png) and volcano_plot(.png)
-
-MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "mean_variance_trend_plot_UNFILTERED_microarray.png"
-MICRO_ARRAY_VOLCANO_IMAGE_FILE = "volcano_plot_UNFILTERED_microarray.png"
-FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE = "mean_variance_trend_FILTERED_microarray.png"
-FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE = "volcano_plot_FILTERED_microarray.png"
+# Output: gene expression analysis for unfiltered +/- filtered genes (.tsv)
+# and 2 plots - mean variance trend and volcano plot (.png)
 
 suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(limma)))
@@ -33,11 +28,11 @@ volcano_plot = function(fit, filename){
   micro_array_volcano_path <- paste(user_directory, filename)
   de <- fit
 
-  de$differential_expression <- "NO"
-  de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
-  de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
+  de$differential_expression <- "Not sig."
+  de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "Up"
+  de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "Down"
   de$delabel <- NA
-  de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "NO"]
+  de$delabel[de$differential_expression != "Not sig."] <- de$symbol[de$differential_expression != "Not sig."]
 
   plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=differential_expression, label=delabel)) +
     geom_point() +
@@ -54,14 +49,14 @@ coldata_df <- read_tsv(coldata_filepath, col_types=cols())
 
 config_yml <- read_yaml(config_filepath)
 
-min_expr <- config_yml$min_expr #log2(50) = 5.6438
-min_prop <- config_yml$min_prop #0.25
-padj_thresh <- config_yml$padj_thresh #0.05
-adj_method <- config_yml$adj_method #"BH"
-condition_col <- config_yml$condition #"condition"
-contrast_level <- config_yml$contrast_level #"endometriosis"
-reference_level <- config_yml$reference_level #"normal"
-use_qual_weights <- config_yml$use_qual_weights #TRUE
+min_expr <- config_yml$min_expr
+min_prop <- config_yml$min_prop
+padj_thresh <- config_yml$padj_thresh
+adj_method <- config_yml$adj_method
+condition_col <- config_yml$condition
+contrast_level <- config_yml$contrast_level
+reference_level <- config_yml$reference_level
+use_qual_weights <- config_yml$use_qual_weights
 
 coldata_df <- coldata_df %>%
     mutate(condition = factor(condition, levels = c(reference_level, contrast_level)))
@@ -86,7 +81,7 @@ if (use_qual_weights) {
 
 lm_fit <- lmFit(filt_expr, design = design, weights = qual_weights)
 bayes_fit <- eBayes(lm_fit)
-mean_variance_trend(bayes_fit, MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE)
+mean_variance_trend(bayes_fit, "plot_mean_variance_microarray_unfiltered.png")
 
 bayes_fit$coefficients %>% colnames()
 
@@ -97,14 +92,14 @@ fit_de_res_df <- topTable(bayes_fit, coef = paste(condition_col, contrast_level,
 colnames(fit_de_res_df) <- c("symbol", "l2fc", "base_avg", "test_stat", "pval", "padj", "B")
 
 write_tsv(fit_de_res_df, paste(user_directory,"output.tsv", sep=""))
-volcano_plot(fit_de_res_df, MICRO_ARRAY_VOLCANO_IMAGE_FILE)
+volcano_plot(fit_de_res_df, "plot_volcano_microarray_unfiltered.png")
 
 if (file.info(filter_filepath)$size != 0) {
 
     filter_list <- scan(filter_filepath, what="character")
     filtered_df <- fit_de_res_df[fit_de_res_df$symbol %in% filter_list,]
     write_tsv(filtered_df, paste(user_directory, "filter_output.tsv", sep=""))
-    volcano_plot(filtered_df, FILTERED_MICRO_ARRAY_VOLCANO_IMAGE_FILE)
+    volcano_plot(filtered_df, "plot_volcano_microarray_filtered.png")
 
     #rerun a part of the analysis to make the mean_variance_trend for the filtered gene list
     filtered_count_df <- counts_df[counts_df$symbol %in% filter_list,]
@@ -126,5 +121,5 @@ if (file.info(filter_filepath)$size != 0) {
     }
     filtered_lm_fit <- lmFit(filtered_expr, design = design, weights = qual_weights)
     filtered_bayes_fit <- eBayes(filtered_lm_fit)
-    mean_variance_trend(filtered_bayes_fit, FILTERED_MICRO_ARRAY_MEAN_VARIANCE_TREND_IMAGE_FILE)
+    mean_variance_trend(filtered_bayes_fit, "plot_mean_variance_microarray_filtered.png")
 }

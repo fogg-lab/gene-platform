@@ -4,7 +4,6 @@ import shutil
 import csv
 import tempfile
 import yaml
-from webapp import validate_input_files as valid
 import time
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
@@ -13,9 +12,11 @@ from flask_session.__init__ import Session
 try:
     import helpers
     import bc
+    import validate_input_files as valid
 except ModuleNotFoundError:
-    from webapp import bc
     from webapp import helpers
+    from webapp import bc
+    from webapp import validate_input_files as valid
 
 # imports for debugging (allow printing to stderr)
 #from __future__ import print_function
@@ -45,10 +46,13 @@ def index():
 @app.route("/uploadsetup")
 def uploadsetup():
     '''first input page (file uploads)'''
+
     ensure_session_dir()
+
     cur_uploads, all_uploads = list_user_files()
 
-    return render_template("uploads_form.html", cur_uploads=cur_uploads, all_uploads=all_uploads, title="Uploads")
+    return render_template("uploads_form.html", \
+        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Uploads")
 
 
 @app.route("/batchsetup")
@@ -59,8 +63,8 @@ def batchsetup():
 
     cur_uploads, all_uploads = list_user_files()
 
-    return render_template("batchcorrection.html",
-                           cur_uploads=cur_uploads, all_uploads=all_uploads, title="Batch Correction")
+    return render_template("batchcorrection.html", \
+        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Batch Correction")
 
 
 @app.route("/upload", methods=["POST"])
@@ -94,17 +98,6 @@ def batchupload():
 
     result = {}
 
-    if "bc_suffix" in session:
-        session["bc_suffix"] += 1
-    else:
-        session["bc_suffix"] = 1
-
-    fname = request.headers.get('X_FILENAME')
-    fname += f"_bc-{session['bc_suffix']}"
-
-    save_temp_file(request.data, fname, fname)
-
-
     user_filename = request.args.get("user_filename")
     standard_filename = request.headers.get('X_FILENAME')
 
@@ -112,7 +105,6 @@ def batchupload():
 
     if standard_filename == "coldata.tsv":
         result["error_status"] = check_bc_coldata()
-
 
     return jsonify(result)
 
@@ -131,21 +123,6 @@ def cancelupload():
 
 @app.route("/submitbc", methods=["POST"])
 def submit_batch_correction():
-
-    reference_level = request.form.get("reference_level")
-    contrast_level = request.form.get("contrast_level")
-    # call bc
-
-
-@app.route("/getbccounts", methods=["POST"])
-def get_batch_correction_counts():
-    pass
-
-
-@app.route("/getbccoldata", methods=["POST"])
-def get_batch_correction_coldata():
-    pass
-
 
     datatype = request.form.get("data_type")
     reference_level = request.form.get("reference_level")
@@ -176,22 +153,11 @@ def get_batch_correction_counts():
     return send_from_directory(session["user_session_dir"], "counts_bc.tsv")
 
 
-
 @app.route("/useoldconfig", methods=["POST"])
 def use_old_config():
     old_filename = request.form.get("filename")
     old_filepath = f"{session['user_session_dir']}{old_filename}"
     new_filepath = f"{session['user_session_dir']}config.yml"
-
-
-    # store user-specified config filename at updated session key
-    session["config.yml"] = session[old_filename]
-
-    # replace current config.yml file if it exists
-    delete_user_file("config.yml")
-
-    # rename old file to config.yml
-
     
     # store user-specified config filename at updated session key
     session["config.yml"] = session[old_filename]
@@ -214,7 +180,8 @@ def parameters():
     '''loads the parameter form'''
 
     params = parse_config()
-    return render_template("parameters_form.html", params=params, title="Parameters")
+    return render_template("parameters_form.html", params=params,\
+         title="Parameters")
 
 
 @app.route("/submit", methods=["POST"])
@@ -249,21 +216,20 @@ def confirm_submission():
 
     # generate config file from the form parameters
     generate_config(params)
-
+    
     # validate the config, counts and coldata
     config_file_error = check_config()
 
-    # counts_colnames = get_tsv_rows("counts.tsv")[0]
+    counts_colnames = get_tsv_rows("counts.tsv")[0]
 
-    # coldata_counts_match_error = helpers.check_coldata_matches_counts(
-    #     counts_colnames, get_tsv_rows("coldata.tsv"))
+    coldata_counts_match_error = helpers.check_coldata_matches_counts(
+        counts_colnames, get_tsv_rows("coldata.tsv"))
 
-    #
-    count_file = get_file_path("counts.tsv")
-    col_file = get_file_path("coldata.tsv")
+    counts_path = f"{get_session_dir()}counts.tsv"
+    coldata_path = f"{get_session_dir()}coldata.tsv"
     validate = valid.FileValidation()
-    coldata_counts_match_error = validate.validate_file(col_file, count_file)[1]
-
+    other_error = validate.validate_file(coldata_path, counts_path)
+    
     factor_levels_error = helpers.check_factor_levels(
         params, get_tsv_rows("coldata.tsv"))
 
@@ -272,6 +238,8 @@ def confirm_submission():
 
     if coldata_counts_match_error:
         confirmation_message += f"<p>Error: {coldata_counts_match_error}</p>"
+    if other_error:
+        confirmation_message += f"<p>Error: {other_error}</p>"
     if factor_levels_error:
         confirmation_message += f"<p>Error: {factor_levels_error}</p>"
     if config_file_error:
@@ -321,8 +289,8 @@ def display_output():
         filter_output_file.close()
         filtered_data = filtered_output[1:]
 
-    return render_template("results.html", cols=unfiltered_output[:1][0], \
-                           data=unfiltered_output[1:], filtered_data=filtered_data)
+    return render_template("results.html", cols = unfiltered_output[:1][0],\
+         data=unfiltered_output[1:], filtered_data=filtered_data)
 
 
 @app.route("/plots")
@@ -338,7 +306,7 @@ def plots():
         for filename in os.listdir(session_dir):
             if ".png" in filename:
                 plot_filenames.append(filename)
-
+    
     return render_template("plots.html", plot_filenames=plot_filenames)
 
 
@@ -366,27 +334,27 @@ def get_unfiltered_tsv():
     '''download unfiltered output'''
 
     unfiltered_output = open(f"{session['user_session_dir']}output.tsv", \
-                             encoding="UTF-8")
+        encoding="UTF-8")
 
     return Response(
         unfiltered_output,
         mimetype='text/csv',
         headers={'Content-disposition':
-                     'attachment; filename=output.tsv'})
+                'attachment; filename=output.tsv'})
 
 
 @app.route("/getfilteredtsv")
 def get_filtered_tsv():
     '''download filtered output'''
 
-    filtered_output = open(f"{session['user_session_dir']}filter_output.tsv", \
-                           encoding="UTF-8")
+    filtered_output = open(f"{session['user_session_dir']}filter_output.tsv",\
+         encoding="UTF-8")
 
     return Response(
         filtered_output,
         mimetype="text/csv",
         headers={"Content-disposition":
-                     "attachment; filename=filter_output.tsv"})
+                "attachment; filename=filter_output.tsv"})
 
 
 def save_temp_file(file_contents, standard_filename, user_filename):
@@ -439,20 +407,11 @@ def call_analysis(data_type):
     log = get_session_dir() + "log"
 
     if data_type == 'microarray':
-        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']} " \
-                          f"1> {log} 2>& 1"], shell=True)
+        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']} "\
+                            f"1> {log} 2>& 1"], shell=True)
     elif data_type == 'RNA-Seq':
-        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']} " \
-                          f"1> {log} 2>& 1"], shell=True)
-
-
-def get_file_path(filename):
-    """get the filepath from the filename"""
-    session_dir = get_session_dir()
-    if session_dir:
-        filepath = f"{session_dir}{filename}"
-        if os.path.isfile(filepath):
-            return filepath
+        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']} "\
+                            f"1> {log} 2>& 1"], shell=True)
 
 
 def read_user_file(filename):
@@ -488,14 +447,8 @@ def delete_user_file(filename):
 def wait_for_output():
     '''busy-waits until output shows up in users session directory'''
 
-    analysis_done = False
-    while not analysis_done:
-        unfilt_output_path = f"{session['user_session_dir']}output.tsv"
-        filt_output_path = f"{session['user_session_dir']}filter_output.tsv"
-        filter_path = f"{session['user_session_dir']}filter.txt"
-
-    unfilt_output_path =  f"{session['user_session_dir']}output.tsv"
-    filt_output_path =  f"{session['user_session_dir']}filter_output.tsv"
+    unfilt_output_path = f"{session['user_session_dir']}output.tsv"
+    filt_output_path = f"{session['user_session_dir']}filter_output.tsv"
     filter_path = f"{session['user_session_dir']}filter.txt"
 
     is_output = False
@@ -519,7 +472,7 @@ def cleanup_old_sessions():
 
             # Run bash command and return the stdout output
             age_seconds = subprocess.Popen([f"echo {get_age}"], \
-                                           stdout=subprocess.PIPE, shell=True).communicate()[0]
+                stdout=subprocess.PIPE, shell=True).communicate()[0]
 
             try:
                 age_seconds = int(age_seconds)
@@ -545,8 +498,8 @@ def generate_config(config_parameters):
     config_file = open(config_file_path, "w", encoding="UTF-8")
 
     for param in config_parameters.keys():
-        if param in ["adj_method", "condition", "contrast_level", \
-                     "reference_level"]:
+        if param in ["adj_method", "condition", "contrast_level",\
+             "reference_level"]:
             config_file.write(f"{param}: \'{config_parameters[param]}\'\n")
         else:
             config_file.write(f"{param}: {config_parameters[param]}\n")
@@ -561,9 +514,9 @@ def ensure_session_dir():
     '''
 
     if ("user_session_dir" not in session or
-            not os.path.exists(session["user_session_dir"])):
+        not os.path.exists(session["user_session_dir"])):
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
-        os.chmod(temp_dir, 0o777)  # give everyone rwx permission for the dir
+        os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
 
         session["user_session_dir"] = f"{temp_dir}/"
         session["session_id"] = temp_dir.split("/")[-1:]
@@ -653,9 +606,8 @@ def stash_old_file(standard_filename, user_filename):
         elif suffix_count > 0:
             cmp_fname = f"{user_filename} ({suffix_count})"
         # Check if the filename is already in use
-        if f"{standard_filename}_{i}" in session and session[f"{standard_filename}_{i}"] == cmp_fname:
-
-            # session[f"{standard_filename}_{i}"] == cmp_fname:
+        if f"{standard_filename}_{i}" in session and \
+            session[f"{standard_filename}_{i}"] == cmp_fname:
             suffix_count += 1
 
     if suffix_count > 0 and user_fname_ext != "":
@@ -688,7 +640,7 @@ def list_user_files():
             continue
         if fname_base in standard_input_files and filename in session:
             all_uploads[filename] = session[filename]
-
+    
     return current_uploads, all_uploads
 
 

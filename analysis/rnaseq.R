@@ -1,13 +1,6 @@
 # James McGuire
-# Ai: Added visualization plot. Please notice that the rna_seq data needs to preprocess before
-# generating the plot. Preprocess data haven't done yet.
+# Ai: Added visualization plot.
 
-RNA_SEQ_MEAN_DIFF_IMAGE_FILE = "mean_difference_plot_UNFILTERED_rna_sequence.png"
-RNA_SEQ_VOLCANO_IMAGE_FILE = "volcano_plot_UNFILTERED_rna_sequence.png"
-FILTERED_RNA_SEQ_MEAN_DIFF_IMAGE_FILE = "mean_difference_plot_FILTERED_rna_sequence.png"
-FILTERED_RNA_SEQ_VOLCANO_IMAGE_FILE = "volcano_plot_FILTERED_rna_sequence.png"
-
-# write("Loading libraries: tidyverse, DESeq2, BiocParallel, parallel, yaml", stderr())
 # Loading libraries required for RNA Sequence Analysis.
 # Suppress Messages/Warnings are used to hide long output from Bioconductor packages
 suppressMessages(suppressWarnings(library(tidyverse)))
@@ -17,8 +10,6 @@ suppressMessages(suppressWarnings(library(parallel)))
 suppressMessages(suppressWarnings(library(yaml)))
 suppressMessages(suppressWarnings(library(ggpubr)))
 suppressMessages(suppressWarnings(library(ggrepel)))
-
-# write("Libraries loaded, preforming analysis...", stderr())
 
 # Command arguments stored in args variable, used to get Session ID from Flask app
 args = commandArgs(trailingOnly = TRUE)
@@ -55,11 +46,11 @@ volcano_plot = function(fit, name){
   rna_volcano_path <- paste(user_directory, name)
   de <- fit
 
-  de$differential_expression <- "NO"
-  de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "UP"
-  de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "DOWN"
+  de$differential_expression <- "Not sig."
+  de$differential_expression[de$l2fc > 0.6 & de$pval < 0.05] <- "Up"
+  de$differential_expression[de$l2fc < -0.6 & de$pval < 0.05] <- "Down"
   de$delabel <- NA
-  de$delabel[de$differential_expression != "NO"] <- de$symbol[de$differential_expression != "NO"]
+  de$delabel[de$differential_expression != "Not sig."] <- de$symbol[de$differential_expression != "Not sig."]
 
   plot <- ggplot(data=de, aes(x=l2fc, y=-log10(pval), col=differential_expression, label=delabel)) +
     geom_point() +
@@ -78,14 +69,13 @@ coldata_df <- read_tsv(coldata_filepath, col_types=cols())
 
 config_yml <- read_yaml(config_filepath)
 
-# Parameters gathered from config file: WORK IN PROGRESS
-min_expr <- config_yml$min_expr #0.0
-min_prop <- config_yml$min_prop #0.33
-padj_thresh <- config_yml$padj_thresh #0.05
-adj_method <- config_yml$adj_method #"BH"
-condition_col <- config_yml$condition #"condition"
-contrast_level <- config_yml$contrast_level #"tumor"
-reference_level <- config_yml$reference_level #"healthy"
+min_expr <- config_yml$min_expr
+min_prop <- config_yml$min_prop
+padj_thresh <- config_yml$padj_thresh
+adj_method <- config_yml$adj_method
+condition_col <- config_yml$condition
+contrast_level <- config_yml$contrast_level
+reference_level <- config_yml$reference_level
 
 counts_df <- counts_df %>%
     select(-Entrez_Gene_Id) %>%
@@ -129,13 +119,13 @@ colnames(dge_res_df) <- c("symbol", "base_avg", "l2fc", "l2fc_se", "test_stat", 
 write("Analysis complete, writing output files", stderr())
 
 write_tsv(dge_res_df, paste(user_directory,"output.tsv", sep=""))
-volcano_plot(dge_res_df, RNA_SEQ_VOLCANO_IMAGE_FILE)
-mean_difference(dge_res_df, RNA_SEQ_MEAN_DIFF_IMAGE_FILE)
+volcano_plot(dge_res_df, "volcano_rnaseq_unfiltered.png")
+mean_difference(dge_res_df, "mean_difference_rnaseq_unfiltered.png")
 
 if (file.info(filter_filepath)$size != 0) {
     filter_list <- scan(filter_filepath, what="character")
     filtered_df <- dge_res_df[dge_res_df$symbol %in% filter_list,]
     write_tsv(filtered_df, paste(user_directory, "filter_output.tsv", sep=""))
-    volcano_plot(filtered_df, FILTERED_RNA_SEQ_VOLCANO_IMAGE_FILE)
-    mean_difference(dge_res_df, FILTERED_RNA_SEQ_MEAN_DIFF_IMAGE_FILE)
+    volcano_plot(filtered_df, "volcano_rnaseq_filtered.png")
+    mean_difference(dge_res_df, "mean_difference_rnaseq_filtered.png")
 }
