@@ -29,20 +29,20 @@
         </div>
         <div align="center">
             <div class="volcano IMG">
-                <a href="{{ url_for('getplot', filename=plot_filenames[2]) }}" download="filename">
-                    <img src="{{ url_for('getplot', filename=plot_filenames[2]) }}" alt="Microarray Volcano"
+                <a href="{{ url_for('getplot', filename=plot_filenames.unfiltered_volcano) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames.unfiltered_volcano) }}" alt="Volcano Plot"
                         style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
                 </a>
             </div>
             <div class="f_volcano IMG">
-                <a href="{{ url_for('getplot', filename=plot_filenames[0]) }}" download="filename">
-                    <img src="{{ url_for('getplot', filename=plot_filenames[0]) }}" alt="Filtered Microarray Volcano"
+                <a href="{{ url_for('getplot', filename=plot_filenames.filtered_volcano) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames.filtered_volcano) }}" alt="Filtered Volcano Plot"
                         style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
                 </a>
             </div>
             <div class="v_trend IMG">
-                <a href="{{ url_for('getplot', filename=plot_filenames[1]) }}" download="filename">
-                    <img src="{{ url_for('getplot', filename=plot_filenames[1]) }}" alt="Mean Variance Trend"
+                <a href="{{ url_for('getplot', filename=plot_filenames.mean_variance) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames.mean_variance) }}" alt="Mean Variance Trend"
                         style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
                 </a>
             </div>
@@ -64,7 +64,7 @@
                         if (pic)
                         {
                             $(".IMG").not("." + pic).hide();
-                            $("." + pic).show();
+                            $("div." + pic + ".IMG").show();
                         }
                         else
                         {

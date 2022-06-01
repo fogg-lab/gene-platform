@@ -300,12 +300,16 @@ def plots():
     '''
 
     session_dir = f"{session['user_session_dir']}"
-    plot_filenames = []
+    plot_filenames = {}
 
     if session_dir:
         for filename in os.listdir(session_dir):
-            if ".png" in filename:
-                plot_filenames.append(filename)
+            if "mean" in filename and ".png" in filename:
+                plot_filenames["mean_variance"] = filename
+            elif "unfilt" in filename and ".png" in filename:
+                plot_filenames["unfiltered_volcano"] = filename
+            elif "filt" in filename and ".png" in filename:
+                plot_filenames["filtered_volcano"] = filename
     
     return render_template("plots.html", plot_filenames=plot_filenames)
 
