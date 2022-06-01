@@ -198,6 +198,10 @@ def submit():
     # remove old output
     delete_user_file("filter_output.tsv")
     delete_user_file("output.tsv")
+    
+    for filename in os.listdir(session["user_session_dir"]):
+        if filename.endswith(".png"):
+            delete_user_file(filename)
 
     call_analysis(data_type)
 
@@ -304,8 +308,10 @@ def plots():
 
     if session_dir:
         for filename in os.listdir(session_dir):
-            if "mean" in filename and ".png" in filename:
-                plot_filenames["mean_variance"] = filename
+            if "mean" in filename and ".png" and "unfiltered" in filename:
+                plot_filenames["unfiltered_mean_variance"] = filename
+            elif "mean" in filename and ".png" and "filtered" in filename:
+                plot_filenames["filtered_mean_variance"] = filename
             elif "unfilt" in filename and ".png" in filename:
                 plot_filenames["unfiltered_volcano"] = filename
             elif "filt" in filename and ".png" in filename:

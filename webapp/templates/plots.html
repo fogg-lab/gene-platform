@@ -24,7 +24,8 @@
                 <option>Select</option>
                 <option value="volcano">Unfiltered Volcano</option>
                 <option value="f_volcano">Filtered Volcano</option>
-                <option value="v_trend">Variance Trend</option>
+                <option value="v_trend">Unfiltered Variance Trend</option>
+                <option value="f_v_trend">Filtered Variance Trend</option>
             </select>
         </div>
         <div align="center">
@@ -41,8 +42,14 @@
                 </a>
             </div>
             <div class="v_trend IMG">
-                <a href="{{ url_for('getplot', filename=plot_filenames.mean_variance) }}" download="filename">
-                    <img src="{{ url_for('getplot', filename=plot_filenames.mean_variance) }}" alt="Mean Variance Trend"
+                <a href="{{ url_for('getplot', filename=plot_filenames.unfiltered_mean_variance) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames.unfiltered_mean_variance) }}" alt="Mean Variance Trend"
+                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+                </a>
+            </div>
+            <div class="f_v_trend IMG">
+                <a href="{{ url_for('getplot', filename=plot_filenames.filtered_mean_variance) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames.filtered_mean_variance) }}" alt="Filtered Mean Variance Trend"
                         style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
                 </a>
             </div>
