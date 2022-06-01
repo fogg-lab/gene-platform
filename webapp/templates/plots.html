@@ -28,6 +28,12 @@
             </select>
         </div>
         <div align="center">
+            <div class="volcano IMG">
+                <a href="{{ url_for('getplot', filename=plot_filenames[2]) }}" download="filename">
+                    <img src="{{ url_for('getplot', filename=plot_filenames[2]) }}" alt="Microarray Volcano"
+                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+                </a>
+            </div>
             <div class="f_volcano IMG">
                 <a href="{{ url_for('getplot', filename=plot_filenames[0]) }}" download="filename">
                     <img src="{{ url_for('getplot', filename=plot_filenames[0]) }}" alt="Filtered Microarray Volcano"
@@ -39,14 +45,6 @@
                     <img src="{{ url_for('getplot', filename=plot_filenames[1]) }}" alt="Mean Variance Trend"
                         style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
                 </a>
-                <h3 style="text-align:center">Image file name: {{plot_filenames[1]}}</h3>
-            </div>
-            <div class="volcano IMG">
-                <a href="{{ url_for('getplot', filename=plot_filenames[2]) }}" download="filename">
-                    <img src="{{ url_for('getplot', filename=plot_filenames[2]) }}" alt="Microarray Volcano"
-                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
-                </a>
-                <h3 style="text-align:center">Image file name: {{plot_filenames[2]}}</h3>
             </div>
         </div>
         <h2 align="center">Description</h2>
