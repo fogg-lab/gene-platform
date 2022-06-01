@@ -127,5 +127,5 @@ if (file.info(filter_filepath)$size != 0) {
     filtered_df <- dge_res_df[dge_res_df$symbol %in% filter_list,]
     write_tsv(filtered_df, paste(user_directory, "filter_output.tsv", sep=""))
     volcano_plot(filtered_df, "volcano_rnaseq_filtered.png")
-    mean_difference(dge_res_df, "mean_difference_rnaseq_filtered.png")
+    mean_difference(filtered_df, "mean_difference_rnaseq_filtered.png")
 }

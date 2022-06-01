@@ -310,11 +310,11 @@ def plots():
         for filename in os.listdir(session_dir):
             if "mean" in filename and ".png" and "unfiltered" in filename:
                 plot_filenames["unfiltered_mean_variance"] = filename
-            elif "mean" in filename and ".png" and "_filtered" in filename:
+            elif "mean" in filename and ".png" in filename:
                 plot_filenames["filtered_mean_variance"] = filename
             elif "unfilt" in filename and ".png" in filename:
                 plot_filenames["unfiltered_volcano"] = filename
-            elif "_filt" in filename and ".png" in filename:
+            elif ".png" in filename:
                 plot_filenames["filtered_volcano"] = filename
     
     return render_template("plots.html", plot_filenames=plot_filenames)
