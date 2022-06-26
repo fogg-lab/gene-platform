@@ -137,14 +137,10 @@ def submit_rnaseq_sample_correlation():
     spearman_img_path = f"{session['user_session_dir']}spearman.png"
 
     # Delete any previous correlation results
-    if os.path.isfile(expected_pearson_path):
-        os.remove(expected_pearson_path)
-    if os.path.isfile(expected_spearman_path):
-        os.remove(expected_spearman_path)
-    if os.path.isfile(pearson_img_path):
-        os.remove(pearson_img_path)
-    if os.path.isfile(spearman_img_path):
-        os.remove(spearman_img_path)
+    delete_user_file("pearson.pdf")
+    delete_user_file("spearman.pdf")
+    delete_user_file("pearson.png")
+    delete_user_file("spearman.png")
 
     status_msg = corr.call_corr(userdir, corr_method)
     if not status_msg:
@@ -160,26 +156,26 @@ def submit_rnaseq_sample_correlation():
         elif expect_spearman:
             is_output = os.path.isfile(expected_spearman_path)
         if not is_output:
-            time.sleep(0.25)
-
-    time.sleep(1)
+            time.sleep(0.2)
 
     # Convert to png for easier display in browser
     save_path = session['user_session_dir']
-    if os.path.isfile(expected_pearson_path):
-        print(f"Converting {expected_pearson_path} to png\n")
-        doc = fitz.open(expected_pearson_path)
-        for page in doc:
-            pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
-            pix.save(f"{save_path}pearson.png")
-        delete_user_file("pearson.pdf")
-    if os.path.isfile(expected_spearman_path):
-        print(f"Converting {expected_spearman_path} to png\n")
-        doc = fitz.open(expected_spearman_path)
-        for page in doc:
-            pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
-            pix.save(f"{save_path}spearman.png")
-        delete_user_file("spearman.pdf")
+    for expected_path in [expected_pearson_path, expected_spearman_path]:
+        if os.path.isfile(expected_path):
+            print(f"Converting {expected_path} to png\n")
+            doc = ""
+            while not doc:
+                try:
+                    doc = fitz.open(expected_path)
+                except:
+                    time.sleep(0.2)
+            for page in doc:
+                pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
+                save_path = f"{expected_path.split('.')[0]}.png"
+                pix.save(save_path)
+
+    delete_user_file("pearson.pdf")
+    delete_user_file("spearman.pdf")
 
     return status_msg
 
