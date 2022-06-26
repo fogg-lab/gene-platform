@@ -1,3 +1,7 @@
+# imports for debugging (allow printing to stderr)
+#from __future__ import print_function
+#import sys
+
 import os
 import subprocess
 import shutil
@@ -5,6 +9,8 @@ import csv
 import tempfile
 import yaml
 import time
+import fitz
+import base64
 from flask import Flask, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 from flask_session.__init__ import Session
@@ -12,14 +18,13 @@ from flask_session.__init__ import Session
 try:
     import helpers
     import bc
+    import corr
     import validate_input_files as valid
 except ModuleNotFoundError:
     from webapp import helpers
     from webapp import bc
+    from webapp import corr
     from webapp import validate_input_files as valid
-
-# imports for debugging (allow printing to stderr)
-#from __future__ import print_function
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
@@ -86,6 +91,119 @@ def upload():
         result["error_status"] = check_config()
 
     return jsonify(result)
+
+
+@app.route("/rnaseq_sample_correlation")
+def rnaseq_sample_correlation():
+    '''RNAseq sample correlation page'''
+
+    ensure_session_dir()
+
+    cur_uploads, all_uploads = list_user_files()
+
+    return render_template("rnaseq_correlation.html", \
+        cur_uploads=cur_uploads, all_uploads=all_uploads, title="RNAseq Sample Correlation")
+
+
+@app.route("/upload_rnaseq_sample_correlation", methods=["POST"])
+def upload_rnaseq_sample_correlation():
+    '''handles uploading counts for rnaseq sample correlation'''
+
+    result = {}
+
+    user_filename = request.args.get("user_filename")
+
+    save_temp_file(request.data, "counts.tsv", user_filename)
+
+    return jsonify(result)
+
+
+@app.route("/submit_rnaseq_sample_correlation", methods=["POST"])
+def submit_rnaseq_sample_correlation():
+
+    userdir = session["user_session_dir"]
+
+    corr_method = request.form.get("corr_method")
+
+    print(corr_method)
+
+    expect_spearman = corr_method != "pearson"
+    expect_pearson = corr_method != "spearman"
+
+    expected_pearson_path = f"{session['user_session_dir']}pearson.pdf"
+    expected_spearman_path = f"{session['user_session_dir']}spearman.pdf"
+
+    pearson_img_path = f"{session['user_session_dir']}pearson.png"
+    spearman_img_path = f"{session['user_session_dir']}spearman.png"
+
+    # Delete any previous correlation results
+    if os.path.isfile(expected_pearson_path):
+        os.remove(expected_pearson_path)
+    if os.path.isfile(expected_spearman_path):
+        os.remove(expected_spearman_path)
+    if os.path.isfile(pearson_img_path):
+        os.remove(pearson_img_path)
+    if os.path.isfile(spearman_img_path):
+        os.remove(spearman_img_path)
+
+    status_msg = corr.call_corr(userdir, corr_method)
+    if not status_msg:
+        status_msg = "Done computing sample correlations."
+
+    is_output = False
+    while not is_output:
+        if expect_pearson and expect_spearman:
+            is_output = os.path.isfile(expected_pearson_path)\
+                    and os.path.isfile(expected_spearman_path)
+        elif expect_pearson:
+            is_output = os.path.isfile(expected_pearson_path)
+        elif expect_spearman:
+            is_output = os.path.isfile(expected_spearman_path)
+        if not is_output:
+            time.sleep(0.25)
+
+    time.sleep(1)
+
+    # Convert to png for easier display in browser
+    save_path = session['user_session_dir']
+    if os.path.isfile(expected_pearson_path):
+        print(f"Converting {expected_pearson_path} to png\n")
+        doc = fitz.open(expected_pearson_path)
+        for page in doc:
+            pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
+            pix.save(f"{save_path}pearson.png")
+        delete_user_file("pearson.pdf")
+    if os.path.isfile(expected_spearman_path):
+        print(f"Converting {expected_spearman_path} to png\n")
+        doc = fitz.open(expected_spearman_path)
+        for page in doc:
+            pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
+            pix.save(f"{save_path}spearman.png")
+        delete_user_file("spearman.pdf")
+
+    return status_msg
+
+
+@app.route("/get_pearson_plot", methods=["POST"])
+def get_pearson_plot():
+    img_path = f"{session['user_session_dir']}pearson.png"
+    if not os.path.isfile(img_path):
+        print(f"{img_path} not found")
+        return ('', 204)
+    with open(f'{img_path}', 'rb') as f:
+        img_data = base64.b64encode(f.read()).decode("utf-8")
+        return img_data
+
+
+@app.route("/get_spearman_plot", methods=["POST"])
+def get_spearman_plot():
+    img_path = f"{session['user_session_dir']}spearman.png"
+    if not os.path.isfile(img_path):
+        print(f"{img_path} not found")
+        return ('', 204)
+    with open(f'{img_path}', 'rb') as f:
+        img_data = base64.b64encode(f.read()).decode("utf-8")
+        return img_data
 
 
 @app.route("/batchupload", methods=["POST"])

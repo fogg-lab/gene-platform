@@ -11,6 +11,7 @@
 			<a href="{{ url_for('index') }}">Home</a>
 			<a class="active" href="#">Analysis</a>
 			<a href="{{ url_for('batchsetup') }}">Batch Correction</a>
+			<a href="{{ url_for('rnaseq_sample_correlation') }}">RNAseq Sample Correlation</a>
 			<span class="Fogg">Fogg Lab</span>
 		</div>
     <form id="submit" action="javascript:submit()">
@@ -145,12 +146,6 @@
         <div id="analysis_log"></div>
       </details>
     </div>
-
-    <script>
-      function goto(url) {
-        window.location.href = url;
-      }
-    </script>
 
     <script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>
   </body>

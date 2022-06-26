@@ -10,32 +10,23 @@ coldata_cols = ["sample_name", "condition", "batch"]
 
 def call_bc(user_dir, data_type, reference_level, contrast_level):
 
-    # gather all filenames for data to be batch corrected
-    all_files = os.listdir(user_dir)
-    counts_files = []
-    coldata_files = []
+    counts_path = f"{user_dir}counts.tsv"
+    coldata_path = f"{user_dir}coldata.tsv"
 
-    for file in all_files:
-        if file == "counts.tsv":
-            counts_files.append(file)
-        elif file == "coldata.tsv":
-            coldata_files.append(file)
+    counts_exists = os.path.isfile(counts_path)
+    coldata_exists = os.path.isfile(coldata_path)
 
-    if not counts_files and not coldata_files:
+    if not counts_exists and not coldata_exists:
         return "Error: Counts and coldata files not found"
-
-    if not counts_files:
+    if not counts_exists:
         return "Error: Counts file not found"
-
-    if not coldata_files:
+    if not coldata_exists:
         return "Error: Coldata file not found"
 
-    counts_path = f"{user_dir}{counts_files[0]}"
     counts_cols = list(pd.read_csv(counts_path, nrows =1, sep="\t"))
     counts = pd.read_csv(counts_path, \
         usecols = [i for i in counts_cols if i.lower() != "entrez_gene_id"], sep='\t')
-    coldata = pd.read_csv(f"{user_dir}{coldata_files[0]}", \
-        usecols = coldata_cols, sep='\t')
+    coldata = pd.read_csv(coldata_path, usecols = coldata_cols, sep='\t')
 
     # TODO: remove samples with levels other than the reference/contrast levels
     # ...

@@ -10,6 +10,7 @@
 			<a href="{{ url_for('index') }}">Home</a>
 			<a href="{{ url_for('uploadsetup') }}">Analysis</a>
 			<a class="active" href="#">Batch Correction</a>
+			<a href="{{ url_for('rnaseq_sample_correlation') }}">RNAseq Sample Correlation</a>
 			<span class="Fogg">Fogg Lab</span>
 		</div>
 
@@ -67,7 +68,7 @@
 		<br>
 		<form style="text-align:center;" id="batch_correction_form" action="javascript:submit_batch_correction()" method="POST">
 			<span>Data type:</span>
-			<select class="data_type" id="data_type" name="data_type">
+			<select id="data_type" name="data_type">
 				<option value=""></option>
 				<option value="microarray">microarray</option>
 				<option value="RNA-Seq">RNA-Seq</option>
@@ -121,10 +122,6 @@
 	
 			// disable next button if progress counts or coldata not uploaded
 			update_next_button()
-
-			function goto(url) {
-				window.location.href = url;
-			}
 
 			function cancelReqListener() {
 				// file upload successfully cancelled
@@ -189,7 +186,7 @@
 						document.getElementById("next_button").disabled = true;
 					}
 					else {
-					document.getElementById("next_button").disabled = false;
+						document.getElementById("next_button").disabled = false;
 					}
 			}
 
