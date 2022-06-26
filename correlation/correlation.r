@@ -22,7 +22,14 @@ output_file <- paste0(output_dir, "/", corr_method, ".pdf")
 cts <- read_tsv(data_path, col_types=cols())
 
 # filter out unnecessary columns
-data = cts[, -which(tolower(names(cts)) == "hugo_symbol" | tolower(names(cts)) == "entrez_gene_id" | tolower(names(cts)) == "symbol" | tolower(names(cts)) == "gene")]
+cols = colnames(cts)
+extraneous_cols = c("hugo_symbol", "entrez_gene_id", "symbol", "gene")
+for (x in 1:length(cols)) {
+    if(tolower(cols[x]) %in% extraneous_cols) {
+        new_cts = cts[, -which(names(cts) == cols[x])]
+        cts = new_cts
+    }
+}
 
 corrplot2 <- function(data,
                       method = "spearman",
@@ -72,7 +79,7 @@ corrplot2 <- function(data,
 pdf(file = output_file)
 
 corrplot2(
-  data = data,
+  data = cts,
   method = corr_method,
   sig.level = 0.5,
   order = "original",

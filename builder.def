@@ -26,10 +26,13 @@ From: ubuntu:20.04
     python3 -m pip install Flask Flask-Session pyyaml virtualenv
     python3 -m pip install gunicorn
     python3 -m pip install numpy pandas jupyterlab
+    python3 -m pip install PyMuPDF
 
     R -e    "install.packages('yaml', repos='https://cloud.r-project.org/')"
     R -e    "install.packages('ggpubr', repos = 'https://cloud.r-project.org/', dependencies = TRUE)"
     R -e    "install.packages('tidyverse', repos='https://cloud.r-project.org/')"
+    R -e    "install.packages('corrplot', repos='https://cloud.r-project.org/')"
+    R -e    "install.packages('corrr', repos='https://cloud.r-project.org/')"
     R -e    "install.packages('BiocManager', repos='https://cloud.r-project.org/')"
     R -e    "BiocManager::install(c('BiocParallel', 'TCGAbiolinks', 'HDF5Array', 'affycoretools', 'affyPLM', 'hgu133plus2.db', 'qvalue', 'sva'))"
     R -e    "install.packages('devtools', repos='https://cloud.r-project.org/')"
