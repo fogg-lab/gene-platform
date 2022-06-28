@@ -66,6 +66,13 @@ corrplot2 <- function(data,
     }
     p.mat <- cor.mtest(data, method = method)
     col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+    plot_title = ""
+    if (method == "pearson") {
+        plot_title = "Pearson's Correlation Matrix"
+    }
+    else if (method == "spearman") {
+        plot_title = "Spearman's Correlation Matrix"
+    }
     corrplot(mat,
         method = "color", col = col(200), number.font = number.font,
         mar = mar, number.cex = number.cex,
@@ -79,7 +86,7 @@ corrplot2 <- function(data,
         #shrink text labels
         tl.cex=0.65,
         col.lim=c(0,1),
-        title=method,
+        title=plot_title,
     )
 }
 
