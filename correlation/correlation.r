@@ -49,7 +49,7 @@ corrplot2 <- function(data,
                       tl.srt = 90,
                       number.font = 1.0,
                       number.cex = 0.65,
-                      mar = c(0, 0, 1, 0)) {
+                      mar = c(1, 1, 1, 1)) {
     data_incomplete <- data
     data <- data[complete.cases(data), ]
     mat <- cor(data, method = method)
