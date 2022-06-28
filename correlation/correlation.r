@@ -31,6 +31,12 @@ for (x in 1:length(cols)) {
     }
 }
 
+num_samples = ncol(cts)
+
+# decide how large the plot should be based on the number of samples
+num_samples = ncol(cts)
+plot_size = num_samples %/% 2
+
 corrplot2 <- function(data,
                       method = "spearman",
                       sig.level = 0.05,
@@ -77,7 +83,7 @@ corrplot2 <- function(data,
     )
 }
 
-pdf(file = output_file)
+pdf(file = output_file, width=plot_size, height=plot_size)
 
 corrplot2(
   data = cts,
