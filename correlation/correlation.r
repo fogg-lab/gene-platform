@@ -36,6 +36,9 @@ num_samples = ncol(cts)
 # decide how large the plot should be based on the number of samples
 num_samples = ncol(cts)
 plot_size = (num_samples %/% 2.5) + 1
+if (plot_size < 5) {
+    plot_size = 5
+}
 
 corrplot2 <- function(data,
                       method = "spearman",
