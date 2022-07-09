@@ -10,62 +10,70 @@ body {
 a {
 	color: #4183c4;
 	text-decoration: none;
-	}
+	font-family: alegreya, serif;
+	font-weight: 400;
+}
 
 a:hover {
 	text-decoration: underline;
-	}
+}
+
+span {
+	font-family: alegreya, serif;
+}
 
 p, blockquote, ul, ol, dl, table, pre {
 	margin: 15px 0;
-	}
+	font-family: alegreya, serif;
+}
 
 ul, ol {
 	padding-left: 30px;
-	}
-	h1 {
-		border-bottom: 1px solid #ddd;
-		color: #000;
-		font-size: 2.5em;
-		}
+}
+h1 {
+	border-bottom: 1px solid #ddd;
+	color: #000;
+	font-size: 2.5em;
+}
 	
-	h2 {
-		border-bottom: 1px solid #eee;
-		color: #000;
-		font-size: 2.0em;
-		}
+h2 {
+	border-bottom: 1px solid #eee;
+	color: #000;
+	font-size: 2.0em;
+}
+
+h3 {
+	font-size: 1.5em;
+}
 	
-	h3 {
-		font-size: 1.5em;
-		}
-	
-	h4 {
-		font-size: 1.2em;
-		}
-	
-	h5 {
-		font-size: 1.0em;
-		}
-	
-	h6 {
-		color: #777;
-		font-size: 1.0em;
-		}
-	
-	h1, h2, h3, h4, h5, h6 {
-		font-weight: bold;
-		line-height: 1.7;
-		margin: 1em 0 15px 0;
-		}
-	
-	h1 + p, h2 + p, h3 + p {
-		margin-top: 10px;
-		}
-		
-	img {
-		max-width: 100%;
-		}
-	
+h4 {
+	font-size: 1.2em;
+}
+
+h5 {
+	font-size: 1.0em;
+}
+
+h6 {
+	color: #777;
+	font-size: 1.0em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: alegreya, serif;
+	font-weight: bold;
+	line-height: 1.7;
+	margin: 1em 0 15px 0;
+}
+
+h1 + p, h2 + p, h3 + p {
+	margin-top: 10px;
+}
+
+img {
+	max-width: 100%;
+}
+
 legend {
 	font-weight: bold;
 	color: #333;
@@ -111,7 +119,6 @@ img {
 pre {
 	width: 95%;
 	height: 20em;
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
 	font-size: 0.95em;
 	padding: 1px 2px;
 	margin: 0 0 1em auto;
@@ -169,9 +176,8 @@ pre {
   color: #fff;
   cursor: pointer;
   display: inline-block;
-  font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-  font-size: 14px;
-  font-weight: 600;
+  font-family: alegreya, serif;
+  font-size: 16px;
   line-height: 20px;
   padding: 6px 16px;
   position: relative;
@@ -373,14 +379,12 @@ pre {
 }
 
 .hp {
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+	font-family: alegreya, serif;
 	bottom: 35%;
 	left: 38%;
 	margin-left: auto;
 	margin-right: auto;
-	color: darkblue;
-	font-variant: small-caps;
-	text-transform: capitalize;
+	font-size:40px;
 }
 
 .centerinfo {
@@ -439,7 +443,7 @@ pre {
 .topnav {
 	overflow: hidden;
 	background-color: #d73f09;
-	height: 85px;
+	height: 65px;
 	padding-right: 265px;
 	text-align: center;
 }
@@ -447,7 +451,7 @@ pre {
 .topnav a {
 	display:inline-block;
 	color: #f2f2f2;
-	padding: 28px 16px;
+	padding: 16px 10px;
 	text-align: center;
 	text-decoration: none;
 	font-size: 20px;
@@ -465,33 +469,14 @@ pre {
 }
 
 .Fogg {
-	padding: 0;
-	font-family: "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-	font-size: 50px;
-	font-variant: small-caps;
-	text-transform: capitalize;
-	font-weight: 900;
-	letter-spacing: 5px;
-	background: url(science_bg.jpg) 50% 50%;
-	background-size: cover;
-	-webkit-text-fill-color: transparent;
-	-webkit-background-clip: text;
-	background-clip: text;
+	font-family: alegreya, serif;
+	font-size: 40px;
 }
 
 span.Fogg {
 	float: left;
 	margin-left: 18px;
 	pointer-events: none;
-}
-
-h2.Fogg {
-	font-size: 100px;
-	font-variant: normal;
-	text-transform: uppercase;
-	letter-spacing: 20px;
-	margin: 0;
-	width: 100%;
 }
 
 .desc {
