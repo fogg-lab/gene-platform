@@ -1,0 +1,35 @@
+<html>
+	<head>
+		<title>{{title}}</title>
+		<link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+		<link rel="stylesheet" href="https://use.typekit.net/mco6ajw.css">
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
+	</head>
+	<body>
+		<div class="topnav">
+            {% if request.endpoint == 'common_bp.index'  %}
+                <a class="active" href="#">Home</a>
+            {% else %}
+                <a href="/">Home</a>
+            {% endif %}
+            {% if request.endpoint == 'analysis_bp.setup'  %}
+                <a class="active" href="#">Analysis</a>
+            {% else %}
+                <a href="/setup">Analysis</a>
+            {% endif %}
+            {% if request.endpoint == 'batch_correction_bp.batchsetup' %}
+                <a class="active" href="#">Batch Correction</a>
+            {% else %}
+                <a href="/batchsetup">Batch Correction</a>
+            {% endif %}
+            {% if request.endpoint == 'correlation_bp.rnaseq_sample_correlation'  %}
+                <a class="active" href="#">RNAseq Sample Correlation</a>
+            {% else %}
+                <a href="/rnaseq_sample_correlation">RNAseq Sample Correlation</a>
+            {% endif %}
+			<span class="Fogg">Fogg Lab</span>
+		</div>
+        {% block content %}{% endblock %}
+    </body>
+</html>

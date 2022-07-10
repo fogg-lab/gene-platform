@@ -485,3 +485,64 @@ span.Fogg {
 	margin: auto;
 	text-align: left;
 }
+
+html, body { width: 100%; height: 100%; margin: 0 auto; text-align: center; }
+
+.output_filter_div{
+    margin:auto;
+}
+
+.spicy-table{
+    border: none;
+    border-spacing: 0;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 0.85em;
+    font-family: "Alegreya", "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.spicy-table thead {
+    position:relative;
+}
+
+.spicy-table thead th {
+    background:white;
+    position:sticky;
+    top:0;
+    padding: 0;
+    border: none;
+}
+
+.spicy-header-div {
+    background-color: #dc4405;
+    color: #ffffff;
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.spicy-table td {
+    padding: 5px 7px;
+    border: none;
+}
+
+.spicy-table tbody tr:nth-of-type(even) {
+    background-color: #f1f1f1;
+}
+
+.spicy-table tbody tr.spicy {
+    color: #dc4405;
+}
+
+.header-table {
+    border: none;
+    margin-left: auto;
+    margin-right: auto;
+    min-width: 400px;
+}
+
+.header-table th {
+    padding: 5px 10px;
+    border: none
+}

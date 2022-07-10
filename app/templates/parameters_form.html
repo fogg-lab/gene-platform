@@ -1,153 +1,138 @@
+{% extends 'base.html' %}
 
-<html>
-	<head>
-		<title>{{title}}</title>
-		<link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
-		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-		<link rel="stylesheet" href="https://use.typekit.net/mco6ajw.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
-	</head>
-  <body>
-		<div class="topnav">
-			<a href="/">Home</a>
-			<a class="active" href="#">Analysis</a>
-			<a href="/batchsetup">Batch Correction</a>
-			<a href="/rnaseq_sample_correlation">RNAseq Sample Correlation</a>
-			<span class="Fogg">Fogg Lab</span>
-		</div>
-    <form id="submit" action="javascript:submit()">
-      <table class="centerinfo">
-        <tr>
-          <th align="right">
-            <span>Data type:</span>
-          </th>
-          <td align="left">
-            <select class="data_type" id="data_type" name="data_type">
-              <option value=""></option>
-              <option value="microarray">microarray</option>
-              <option value="RNA-Seq">RNA-Seq</option>
-            </select>
-          </td>
-        </tr>
-      </table>
-      <table id="form_parameters" style="visibility: hidden; display: none;" class="centerinfo">
+{% block content %}
+  <form id="submit" action="javascript:submit()">
+    <table class="centerinfo">
+      <tr>
+        <th align="right">
+          <span>Data type:</span>
+        </th>
+        <td align="left">
+          <select class="data_type" id="data_type" name="data_type">
+            <option value=""></option>
+            <option value="microarray">microarray</option>
+            <option value="RNA-Seq">RNA-Seq</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <table id="form_parameters" style="visibility: hidden; display: none;" class="centerinfo">
+      <tr>
+        <th>
+          <span class="tooltip">Significance threshold:
+            <span class="tooltiptext">
+              The significance of threshold for the adjusted p-value of a gene&#39;s expression — the expression change significance between conditions (e.g., disease vs. normal). Used in combination with log_fc to determine differential expression. In a config.yml file, this parameter is called "padj_thresh".
+            </span>
+          </span>
+        </th>
+        <td>
+          <input id="padj_thresh" type="text" name="padj_thresh" value="{{ params.get('padj_thresh', '') }}">
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <span class="tooltip">Minimum proportion:
+            <span class="tooltiptext">
+              The minimum proportion of samples (for a gene) in which the expression of that gene must exceed min_expr. For example, if min_prop=1/3, and min_expr=1, then the expression of a gene must exceed 1 in at least 1/3 of samples to be eligible for identification as differentially expressed. In a config.yml file, this parameter is called "min_prop".
+            </span>
+          </span>
+        </th>
+        <td>
+          <input id="min_prop" type="text" name="min_prop" value="{{ params.get('min_prop', '') }}">
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <span class="tooltip">Minimum expression:
+            <span class="tooltiptext">
+              Minimum expression threshold for a gene to be eligible for identification as differentially expressed. In a config.yml file, this parameter is called "min_expr".
+            </span>
+          </span>
+        </th>
+        <td>
+          <input id="min_expr" type="text" name="min_expr" value="{{ params.get('min_expr', '') }}">
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <span class="tooltip">Adjustment method:
+            <span class="tooltiptext">
+              Method for adjusting expression differential expression p-values. Available methods include "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", and "none". In a config.yml file, this parameter is called "adj_method".
+            </span>
+          </span>
+        </th>
+        <td>
+          <input id="adj_method" type="text" name="adj_method" value="{{ params.get('adj_method', '') }}">
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <span class="tooltip">Condition:
+            <span class="tooltiptext">
+              Name of the column name for the factor of interest (e.g., “disease status”). In a config.yml file, this parameter is called "condition".
+            </span>
+          </span>
+        </th>
+        <td>
+          <input id="condition" type="text" name="condition" value="{{ params.get('condition', '') }}">
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <span class="tooltip">Contrast level:
+            <span class="tooltiptext">
+              The level (value) of condition for which effect size is being studied (e.g., “tumor”). In a config.yml file, this parameter is called "contrast_level".
+            </span>
+          </span>
+        </th>
+        <td>
+          <input id="contrast_level" type="text" name="contrast_level" value="{{ params.get('contrast_level', '') }}">
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <span class="tooltip">Reference level:
+            <span class="tooltiptext">
+              The level (value) of condition against which effect size is being compared (e.g., “healthy”). In a config.yml file, this parameter is called "reference_level".
+            </span>
+          </span>
+        </th>
+        <td>
+          <input id="reference_level" type="text" name="reference_level" value="{{ params.get('reference_level', '') }}">
+        </td>
+      </tr>
+      {% if (params.get('use_qual_weights', None)) != None %}
         <tr>
           <th>
-            <span class="tooltip">Significance threshold:
+            <span class="tooltip" id="use_qual_weights_label">Use quality weights:
               <span class="tooltiptext">
-                The significance of threshold for the adjusted p-value of a gene&#39;s expression — the expression change significance between conditions (e.g., disease vs. normal). Used in combination with log_fc to determine differential expression. In a config.yml file, this parameter is called "padj_thresh".
+                Used for microarray analysis. Whether to use quality weights for estimating differential expression. This parameter is recommended. In a config.yml file, this parameter is called "use_qual_weights".
               </span>
             </span>
           </th>
           <td>
-            <input id="padj_thresh" type="text" name="padj_thresh" value="{{ params.get('padj_thresh', '') }}">
+            {% if params.get('use_qual_weights', False) %}
+              <input id="use_qual_weights" type="checkbox" name="use_qual_weights" checked>
+            {% else %}
+              <input id="use_qual_weights" type="checkbox" name="use_qual_weights">
+            {% endif %}
           </td>
         </tr>
-        <tr>
-          <th>
-            <span class="tooltip">Minimum proportion:
-              <span class="tooltiptext">
-                The minimum proportion of samples (for a gene) in which the expression of that gene must exceed min_expr. For example, if min_prop=1/3, and min_expr=1, then the expression of a gene must exceed 1 in at least 1/3 of samples to be eligible for identification as differentially expressed. In a config.yml file, this parameter is called "min_prop".
-              </span>
-            </span>
-          </th>
-          <td>
-            <input id="min_prop" type="text" name="min_prop" value="{{ params.get('min_prop', '') }}">
-          </td>
-        </tr>
-        <tr>
-          <th>
-            <span class="tooltip">Minimum expression:
-              <span class="tooltiptext">
-                Minimum expression threshold for a gene to be eligible for identification as differentially expressed. In a config.yml file, this parameter is called "min_expr".
-              </span>
-            </span>
-          </th>
-          <td>
-            <input id="min_expr" type="text" name="min_expr" value="{{ params.get('min_expr', '') }}">
-          </td>
-        </tr>
-        <tr>
-          <th>
-            <span class="tooltip">Adjustment method:
-              <span class="tooltiptext">
-                Method for adjusting expression differential expression p-values. Available methods include "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", and "none". In a config.yml file, this parameter is called "adj_method".
-              </span>
-            </span>
-          </th>
-          <td>
-            <input id="adj_method" type="text" name="adj_method" value="{{ params.get('adj_method', '') }}">
-          </td>
-        </tr>
-        <tr>
-          <th>
-            <span class="tooltip">Condition:
-              <span class="tooltiptext">
-                Name of the column name for the factor of interest (e.g., “disease status”). In a config.yml file, this parameter is called "condition".
-              </span>
-            </span>
-          </th>
-          <td>
-            <input id="condition" type="text" name="condition" value="{{ params.get('condition', '') }}">
-          </td>
-        </tr>
-        <tr>
-          <th>
-            <span class="tooltip">Contrast level:
-              <span class="tooltiptext">
-                The level (value) of condition for which effect size is being studied (e.g., “tumor”). In a config.yml file, this parameter is called "contrast_level".
-              </span>
-            </span>
-          </th>
-          <td>
-            <input id="contrast_level" type="text" name="contrast_level" value="{{ params.get('contrast_level', '') }}">
-          </td>
-        </tr>
-        <tr>
-          <th>
-            <span class="tooltip">Reference level:
-              <span class="tooltiptext">
-                The level (value) of condition against which effect size is being compared (e.g., “healthy”). In a config.yml file, this parameter is called "reference_level".
-              </span>
-            </span>
-          </th>
-          <td>
-            <input id="reference_level" type="text" name="reference_level" value="{{ params.get('reference_level', '') }}">
-          </td>
-        </tr>
-        {% if (params.get('use_qual_weights', None)) != None %}
-          <tr>
-            <th>
-              <span class="tooltip" id="use_qual_weights_label">Use quality weights:
-                <span class="tooltiptext">
-                  Used for microarray analysis. Whether to use quality weights for estimating differential expression. This parameter is recommended. In a config.yml file, this parameter is called "use_qual_weights".
-                </span>
-              </span>
-            </th>
-            <td>
-              {% if params.get('use_qual_weights', False) %}
-                <input id="use_qual_weights" type="checkbox" name="use_qual_weights" checked>
-              {% else %}
-                <input id="use_qual_weights" type="checkbox" name="use_qual_weights">
-              {% endif %}
-            </td>
-          </tr>
-        {% endif %}
-      </table>
-      <div class="bottom-buttons">
-        <a href="/setup" id="prev_uploads_btn" class="button">Previous: Upload Files</a>
-        <input type="submit" class="button" id="submit_button" value="Submit" disabled>
-      </div>
-    </form>
-
-    <div id="overlay">
-      <span id="time"></span>
-      <details id="console_log">
-        <summary style="font-size: 20px; font-weight:bold;">Show console output</summary>
-        <div id="analysis_log"></div>
-      </details>
+      {% endif %}
+    </table>
+    <div class="bottom-buttons">
+      <a href="/setup" id="prev_uploads_btn" class="button">Previous: Upload Files</a>
+      <input type="submit" class="button" id="submit_button" value="Submit" disabled>
     </div>
+  </form>
 
-    <script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>
-  </body>
-</html>
+  <div id="overlay">
+    <span id="time"></span>
+    <details id="console_log">
+      <summary style="font-size: 20px; font-weight:bold;">Show console output</summary>
+      <div id="analysis_log"></div>
+    </details>
+  </div>
+
+  <script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>
+{% endblock %}

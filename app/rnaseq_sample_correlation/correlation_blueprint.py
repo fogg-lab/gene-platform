@@ -1,7 +1,7 @@
 import os
 import time
 import fitz
-from . import corr
+from . import correlation_prep
 import base64
 from ..common import common_blueprint as common
 from .. import helpers
@@ -87,7 +87,7 @@ def submit_rnaseq_sample_correlation():
     helpers.delete_user_file("pearson.png", common.get_session_dir())
     helpers.delete_user_file("spearman.png", common.get_session_dir())
 
-    status_msg = corr.call_corr(userdir, corr_method)
+    status_msg = correlation_prep.call_corr(userdir, corr_method)
     if not status_msg:
         status_msg = "Done computing sample correlations."
 

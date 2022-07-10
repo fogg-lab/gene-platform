@@ -1,87 +1,74 @@
-<html>
-    <head>
-        <title>Data Visualization</title>
-        <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
-        <link rel="stylesheet" href="https://use.typekit.net/mco6ajw.css">
-        <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-    </head>
-    <body>
-		<div class="topnav">
-			<a href="/">Home</a>
-			<a class="active" href="#">Analysis</a>
-			<a href="/batchsetup">Batch Correction</a>
-			<a href="/rnaseq_sample_correlation">RNAseq Sample Correlation</a>
-			<span class="Fogg">Fogg Lab</span>
-		</div>
-        <table>
-            <tr>
-                <td><a href="/display" class="button">Previous: Display Results</a></td>
-            </tr>
-        </table>
-        <h3 style="text-align:center; font-family:'Alegreya'; color:purple;"> Data Visualization</h3>
-        <h2 align="center">Plots</h2>
-        <div align="center">
-            <select class="data_type">
-                <option>Select</option>
-                <option value="volcano">Unfiltered Volcano</option>
-                <option value="f_volcano">Filtered Volcano</option>
-                <option value="v_trend">Unfiltered Variance Trend</option>
-                <option value="f_v_trend">Filtered Variance Trend</option>
-            </select>
+{% extends 'base.html' %}
+
+{% block content %}
+    <table>
+        <tr>
+            <td><a href="/display" class="button">Previous: Display Results</a></td>
+        </tr>
+    </table>
+    <h3 style="text-align:center; font-family:'Alegreya'; color:purple;"> Data Visualization</h3>
+    <h2 align="center">Plots</h2>
+    <div align="center">
+        <select class="data_type">
+            <option>Select</option>
+            <option value="volcano">Unfiltered Volcano</option>
+            <option value="f_volcano">Filtered Volcano</option>
+            <option value="v_trend">Unfiltered Variance Trend</option>
+            <option value="f_v_trend">Filtered Variance Trend</option>
+        </select>
+    </div>
+    <div align="center">
+        <div class="volcano IMG">
+            <a href="{{ url_for('analysis_bp.getplot', filename=plot_filenames.unfiltered_volcano) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.getplot', filename=plot_filenames.unfiltered_volcano) }}" alt="Volcano Plot"
+                    style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            </a>
         </div>
-        <div align="center">
-            <div class="volcano IMG">
-                <a href="{{ url_for('analysis_bp.getplot', filename=plot_filenames.unfiltered_volcano) }}" download="filename">
-                    <img src="{{ url_for('analysis_bp.getplot', filename=plot_filenames.unfiltered_volcano) }}" alt="Volcano Plot"
-                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
-                </a>
-            </div>
-            <div class="f_volcano IMG">
-                <a href="{{ url_for('analysis_bp.getplot', filename=plot_filenames.filtered_volcano) }}" download="filename">
-                    <img src="{{ url_for('analysis_bp.getplot', filename=plot_filenames.filtered_volcano) }}" alt="Filtered Volcano Plot"
-                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
-                </a>
-            </div>
-            <div class="v_trend IMG">
-                <a href="{{ url_for('analysis_bp.getplot', filename=plot_filenames.unfiltered_mean_variance) }}" download="filename">
-                    <img src="{{ url_for('analysis_bp.getplot', filename=plot_filenames.unfiltered_mean_variance) }}" alt="Mean Variance Trend"
-                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
-                </a>
-            </div>
-            <div class="f_v_trend IMG">
-                <a href="{{ url_for('analysis_bp.getplot', filename=plot_filenames.filtered_mean_variance) }}" download="filename">
-                    <img src="{{ url_for('analysis_bp.getplot', filename=plot_filenames.filtered_mean_variance) }}" alt="Filtered Mean Variance Trend"
-                        style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
-                </a>
-            </div>
+        <div class="f_volcano IMG">
+            <a href="{{ url_for('analysis_bp.getplot', filename=plot_filenames.filtered_volcano) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.getplot', filename=plot_filenames.filtered_volcano) }}" alt="Filtered Volcano Plot"
+                    style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            </a>
         </div>
-        <h2 align="center">Description</h2>
-        <div class="desc">
-            <p>Up: l2fc > 0.6 and p-value < 0.0e</p>
-            <p>Down: l2fc < -0.6 and p-value < 0.05</p>
-            <p>Not sig: Does not meet criteria for Up or Down</p>
+        <div class="v_trend IMG">
+            <a href="{{ url_for('analysis_bp.getplot', filename=plot_filenames.unfiltered_mean_variance) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.getplot', filename=plot_filenames.unfiltered_mean_variance) }}" alt="Mean Variance Trend"
+                    style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            </a>
         </div>
-        <script type="text/javascript">
-            $(document).ready(function()
+        <div class="f_v_trend IMG">
+            <a href="{{ url_for('analysis_bp.getplot', filename=plot_filenames.filtered_mean_variance) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.getplot', filename=plot_filenames.filtered_mean_variance) }}" alt="Filtered Mean Variance Trend"
+                    style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            </a>
+        </div>
+    </div>
+    <h2 align="center">Description</h2>
+    <div class="desc">
+        <p>Up: l2fc > 0.6 and p-value < 0.0e</p>
+        <p>Down: l2fc < -0.6 and p-value < 0.05</p>
+        <p>Not sig: Does not meet criteria for Up or Down</p>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function()
+        {
+            $("select").on('change', function()
             {
-                $("select").on('change', function()
+                $(this).find("option:selected").each(function()
                 {
-                    $(this).find("option:selected").each(function()
+                    var pic = $(this).attr("value");
+                    if (pic)
                     {
-                        var pic = $(this).attr("value");
-                        if (pic)
-                        {
-                            $(".IMG").not("." + pic).hide();
-                            $("div." + pic + ".IMG").show();
-                        }
-                        else
-                        {
-                            $(".IMG").hide();
-                        }
-                    });
-                }).change();
-            });
-        </script>
-    </body>
-</html>
+                        $(".IMG").not("." + pic).hide();
+                        $("div." + pic + ".IMG").show();
+                    }
+                    else
+                    {
+                        $(".IMG").hide();
+                    }
+                });
+            }).change();
+        });
+    </script>
+{% endblock %}

@@ -1,143 +1,128 @@
-<html>
-	<head>
-		<title>{{title}}</title>
-		<link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
-		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-		<link rel="stylesheet" href="https://use.typekit.net/mco6ajw.css">
-		<link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
-	</head>
-	<body>
-		<div class="topnav">
-			<a href="/">Home</a>
-			<a href="/setup">Analysis</a>
-			<a href="/batchsetup">Batch Correction</a>
-            <a class="active" href="#">RNAseq Sample Correlation</a>
-			<span class="Fogg">Fogg Lab</span>
-		</div>
+{% extends 'base.html' %}
 
-		<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
-		
-		<table class="centerinfo">
-			<tr>
-				<td colspan="2"><h1>RNAseq Sample Correlation</h1></td>
-			</tr>
-			<tr>
-				<td><table style="border: 1px solid black; margin-left: auto; margin-right: auto;">
-					<tr>
-						<th>Counts</th>
-					</tr>
-					<tr>
-						<td>
-							<form class="filedrag" id="upload_counts" action="{{ url_for('correlation_bp.upload_rnaseq_sample_correlation') }}" method="POST" enctype="multipart/form-data" style="display: block;">
-								<div class="upload_div" id="counts_upload_div">
-									<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
-									<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
-								</div>
-								<div class="progress_div" id="progress_of_counts_div">
-								{% if cur_uploads["counts.tsv"] -%}
-									<div class="success" id="progress_of_counts">
-										Uploaded counts
-									</div>
-								{%- endif %}
-								</div>
-								<button type="button" onclick="cancel_counts()" class="upload_action_button" id="cancel_counts_button">Cancel</button>
-							</form>
-						</td>
-					</tr>
-				</table>
-			</tr>
-		</td>
-		</table>
-
-		<br>
-		<form style="text-align:center;" id="rnaseq_correlation_form" action="javascript:submit_rnaseq_correlation()" method="POST">
-			<span>Method:</span>
-			<select id="corr_method" name="corr_method">
-				<option value=""></option>
-				<option value="pearson">Pearson</option>
-				<option value="spearman">Spearman</option>
-                <option value="both">Pearson and Spearman</option>
-			</select>
-		</form>
-		
-		<div class="bottom-buttons">
-			<button onclick="submit_rnaseq_correlation()" class="button" id="next_button" disabled>Submit</button>
-		</div>
-		<br>
-
-		<div id="pearson_plot"></div>
-		<div id="spearman_plot"></div>
-
-		<div id="messages" class="bottom-buttons">
-		</div>
-		<br>
-		<script>
-            var UPLOAD_ENDPOINT = "\\upload_rnaseq_sample_correlation";
-			// hide progress bar divs and cancel buttonsfor files which have not been uploaded
-			if (document.getElementById("progress_of_counts") == null) {
-				document.getElementById("progress_of_counts_div").style.display = 'none';
-				document.getElementById("cancel_counts_button").style.display = 'none';
-			} else {
-				document.getElementById("progress_of_counts_div").style.backgroundPosition = "0% 0";
-				document.getElementById("counts_upload_div").style.display = 'none';
-			}
+{% block content %}
+	<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
 	
-			// disable next button if progress counts not uploaded
-			update_next_button()
+	<table class="centerinfo">
+		<tr>
+			<td colspan="2"><h1>RNAseq Sample Correlation</h1></td>
+		</tr>
+		<tr>
+			<td><table style="border: 1px solid black; margin-left: auto; margin-right: auto;">
+				<tr>
+					<th>Counts</th>
+				</tr>
+				<tr>
+					<td>
+						<form class="filedrag" id="upload_counts" action="{{ url_for('correlation_bp.upload_rnaseq_sample_correlation') }}" method="POST" enctype="multipart/form-data" style="display: block;">
+							<div class="upload_div" id="counts_upload_div">
+								<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
+								<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
+							</div>
+							<div class="progress_div" id="progress_of_counts_div">
+							{% if cur_uploads["counts.tsv"] -%}
+								<div class="success" id="progress_of_counts">
+									Uploaded counts
+								</div>
+							{%- endif %}
+							</div>
+							<button type="button" onclick="cancel_counts()" class="upload_action_button" id="cancel_counts_button">Cancel</button>
+						</form>
+					</td>
+				</tr>
+			</table>
+		</tr>
+	</td>
+	</table>
 
-			function cancelReqListener() {
-				// file upload successfully cancelled
-				console.log(this.responseText);
-			}
-
-			function cancel_counts() {
-				cancel("counts.tsv");
-				update_next_button();
-			}
-
-			function cancel(filename) {
-				var cancelReq = new XMLHttpRequest();
-				let filename_base = filename.split(".")[0];
-				let progress_bar_id = "progress_of_" + filename_base;
-				let upload_div_id = filename_base + "_upload_div";
-				let cancel_button_id = "cancel_" + filename_base + "_button";
-				let cancel_req_query = "filename=" + filename;
-				let file_progress_bar = document.getElementById(progress_bar_id);
-				cancelReq.addEventListener("load", cancelReqListener);
-				cancelReq.open("POST", "/cancelupload");
-				cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-				cancelReq.send(cancel_req_query);
+	<br>
+	<form style="text-align:center;" id="rnaseq_correlation_form" action="javascript:submit_rnaseq_correlation()" method="POST">
+		<span>Method:</span>
+		<select id="corr_method" name="corr_method">
+			<option value=""></option>
+			<option value="pearson">Pearson</option>
+			<option value="spearman">Spearman</option>
+			<option value="both">Pearson and Spearman</option>
+		</select>
+	</form>
 	
-				// hide the progress bar
-				file_progress_bar.remove();
-				progress_div = document.getElementById(progress_bar_id + "_div");
-				progress_div.style.backgroundPosition = "100% 0";
-				progress_div.style.display = 'none';
+	<div class="bottom-buttons">
+		<button onclick="submit_rnaseq_correlation()" class="button" id="next_button" disabled>Submit</button>
+	</div>
+	<br>
 
-				// hide the cancel button
-				document.getElementById(cancel_button_id).style.display = 'none';
+	<div id="pearson_plot"></div>
+	<div id="spearman_plot"></div>
 
-				// show the file upload div
-				document.getElementById(upload_div_id).style.display = 'block';
-			}
+	<div id="messages" class="bottom-buttons">
+	</div>
+	<br>
+	<script>
+		var UPLOAD_ENDPOINT = "\\upload_rnaseq_sample_correlation";
+		// hide progress bar divs and cancel buttonsfor files which have not been uploaded
+		if (document.getElementById("progress_of_counts") == null) {
+			document.getElementById("progress_of_counts_div").style.display = 'none';
+			document.getElementById("cancel_counts_button").style.display = 'none';
+		} else {
+			document.getElementById("progress_of_counts_div").style.backgroundPosition = "0% 0";
+			document.getElementById("counts_upload_div").style.display = 'none';
+		}
 
-			function update_next_button() {
-				// hide next button if progress counts or coldata not uploaded
-				if (
-					document.getElementById("progress_of_counts") == null
-					|| document.getElementById("progress_of_counts").className != "success"
-					) {
-						document.getElementById("next_button").disabled = true;
-					}
-					else {
-					    document.getElementById("next_button").disabled = false;
-					}
-			}
+		// disable next button if progress counts not uploaded
+		update_next_button()
 
-		</script>
+		function cancelReqListener() {
+			// file upload successfully cancelled
+			console.log(this.responseText);
+		}
 
-		<script src="{{ url_for('static',filename='scripts/correlation.js') }}"></script>
-		<script src="{{ url_for('static',filename='scripts/uploads_form.js') }}"></script>
-	</body>
-</html>
+		function cancel_counts() {
+			cancel("counts.tsv");
+			update_next_button();
+		}
+
+		function cancel(filename) {
+			var cancelReq = new XMLHttpRequest();
+			let filename_base = filename.split(".")[0];
+			let progress_bar_id = "progress_of_" + filename_base;
+			let upload_div_id = filename_base + "_upload_div";
+			let cancel_button_id = "cancel_" + filename_base + "_button";
+			let cancel_req_query = "filename=" + filename;
+			let file_progress_bar = document.getElementById(progress_bar_id);
+			cancelReq.addEventListener("load", cancelReqListener);
+			cancelReq.open("POST", "/cancelupload");
+			cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+			cancelReq.send(cancel_req_query);
+
+			// hide the progress bar
+			file_progress_bar.remove();
+			progress_div = document.getElementById(progress_bar_id + "_div");
+			progress_div.style.backgroundPosition = "100% 0";
+			progress_div.style.display = 'none';
+
+			// hide the cancel button
+			document.getElementById(cancel_button_id).style.display = 'none';
+
+			// show the file upload div
+			document.getElementById(upload_div_id).style.display = 'block';
+		}
+
+		function update_next_button() {
+			// hide next button if progress counts or coldata not uploaded
+			if (
+				document.getElementById("progress_of_counts") == null
+				|| document.getElementById("progress_of_counts").className != "success"
+				) {
+					document.getElementById("next_button").disabled = true;
+				}
+				else {
+					document.getElementById("next_button").disabled = false;
+				}
+		}
+
+	</script>
+
+	<script src="{{ url_for('static',filename='scripts/correlation.js') }}"></script>
+	<script src="{{ url_for('static',filename='scripts/uploads_form.js') }}"></script>
+{% endblock %}
