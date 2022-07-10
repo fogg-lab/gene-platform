@@ -16,7 +16,7 @@
   </table>
 
   {% if filtered_data %}
-  <div style="width:100%;">
+  <div style="width:100%; text-align: center;">
   <div class="output_filter_div">
     <label for="filter_select"><strong>Display:</strong></label>
     <select name="filter_select" id="filter_select">
@@ -26,7 +26,7 @@
   </div>
   <p></p>
   {% endif %}
-  <div class="output_filter_div">
+  <div class="output_filter_div" style="width:100%; text-align: center;">
     <form onsubmit="return false">
       <label for="sort_select"><strong>Sort by:</strong></label>
       <select name="sort_select" id="sort_select" style="display:inline-block;">
@@ -43,7 +43,7 @@
     </form>
   </div>
   <p></p>
-  <div class="output_filter_div">
+  <div class="output_filter_div" style="width:100%; text-align: center;">
     <form onsubmit="return false">
       <label for="search_field"><strong>Find genes:</strong></label>
       <input id="search_field" type="text" value="">
@@ -53,7 +53,7 @@
   </div>
   <br>
   
-  <form onsubmit="return false" style="margin: 0; padding: 0;">
+  <form onsubmit="return false" style="margin: 0; padding: 0; text-align:center;">
       <label style="display:inline-block;">Page </label>
       <input style="display:inline-block;" id="page_num_input" type="number" value=1>
       <label style="display:inline-block;" id="total_pages"></label>
