@@ -1,4 +1,4 @@
-Gene Expression Analysis Platform
+Differential Gene Expression Analysis Platform
 
 Runs on Linux, including the Windows Subsystem for Linux (WSL)
 Prerequisite: Singularity
