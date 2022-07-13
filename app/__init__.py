@@ -7,7 +7,7 @@ from flask_session.__init__ import Session
 from app.common.common_blueprint import common_bp
 from app.analysis.analysis_blueprint import analysis_bp
 from app.batch_correction.batch_correction_blueprint import batch_correction_bp
-from app.rnaseq_sample_correlation.correlation_blueprint import correlation_bp
+from app.rnaseq_correlation.correlation_blueprint import correlation_bp
 
 def init_app():
     """Initialize the core application."""

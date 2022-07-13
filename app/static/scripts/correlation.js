@@ -23,7 +23,7 @@ function submit_rnaseq_correlation() {
     let submitCorrReq = new XMLHttpRequest();
     let submit_corr_query = "corr_method=" + corr_method
     submitCorrReq.addEventListener("load", corrReqListener);
-    submitCorrReq.open("POST", "/submit_rnaseq_sample_correlation");
+    submitCorrReq.open("POST", "/submit_rnaseq_correlation");
     submitCorrReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     submitCorrReq.send(submit_corr_query);
     let messages = document.getElementById("messages");

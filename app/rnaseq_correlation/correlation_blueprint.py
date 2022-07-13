@@ -18,8 +18,8 @@ correlation_bp = Blueprint('correlation_bp', __name__,
     template_folder='../templates', static_folder='../static')
 
 
-@correlation_bp.route("/rnaseq_sample_correlation")
-def rnaseq_sample_correlation():
+@correlation_bp.route("/rnaseq_correlation")
+def rnaseq_correlation():
     '''RNAseq sample correlation page'''
 
     common.ensure_session_dir()
@@ -31,8 +31,8 @@ def rnaseq_sample_correlation():
             title="RNAseq Sample Correlation")
 
 
-@correlation_bp.route("/upload_rnaseq_sample_correlation", methods=["POST"])
-def upload_rnaseq_sample_correlation():
+@correlation_bp.route("/upload_rnaseq_correlation", methods=["POST"])
+def upload_rnaseq_correlation():
     '''handles uploading counts for rnaseq sample correlation'''
 
     result = {}
@@ -66,8 +66,8 @@ def get_spearman_plot():
         return img_data
 
 
-@correlation_bp.route("/submit_rnaseq_sample_correlation", methods=["POST"])
-def submit_rnaseq_sample_correlation():
+@correlation_bp.route("/submit_rnaseq_correlation", methods=["POST"])
+def submit_rnaseq_correlation():
 
     userdir = session["user_session_dir"]
 
