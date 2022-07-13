@@ -1,7 +1,7 @@
 body {
 	background-color: #FFF;
 	color: #333;
-	font: 17px alegreya, serif;
+	font: 17px montserrat, serif;
 	word-wrap: break-word;
 	line-height: 1.7;
 	-webkit-font-smoothing: antialiased;
@@ -10,7 +10,7 @@ body {
 a {
 	color: #4183c4;
 	text-decoration: none;
-	font-family: alegreya, serif;
+	font-family: montserrat, serif;
 	font-weight: 400;
 }
 
@@ -19,12 +19,12 @@ a:hover {
 }
 
 span {
-	font-family: alegreya, serif;
+	font-family: montserrat, serif;
 }
 
 p, blockquote, ul, ol, dl, table, pre {
 	margin: 15px 0;
-	font-family: alegreya, serif;
+	font-family: montserrat, serif;
 }
 
 ul, ol {
@@ -60,7 +60,7 @@ h6 {
 }
 
 h1, h2, h3, h4, h5, h6 {
-	font-family: alegreya, serif;
+	font-family: montserrat, serif;
 	font-weight: bold;
 	line-height: 1.7;
 	margin: 1em 0 15px 0;
@@ -176,7 +176,7 @@ pre {
   color: #fff;
   cursor: pointer;
   display: inline-block;
-  font-family: alegreya, serif;
+  font-family: montserrat, serif;
   font-size: 16px;
   line-height: 20px;
   padding: 6px 16px;
@@ -379,7 +379,7 @@ pre {
 }
 
 .hp {
-	font-family: alegreya, serif;
+	font-family: montserrat, serif;
 	bottom: 35%;
 	left: 38%;
 	margin-left: auto;
@@ -443,15 +443,14 @@ pre {
 .topnav {
 	overflow: hidden;
 	background-color: #d73f09;
-	height: 65px;
-	padding-right: 265px;
-	text-align: center;
+	height: 70px;
+	text-align: left;
 }
   
 .topnav a {
 	display:inline-block;
 	color: #f2f2f2;
-	padding: 16px 10px;
+	padding: 16px 15px;
 	text-align: center;
 	text-decoration: none;
 	font-size: 25px;
@@ -468,16 +467,17 @@ pre {
 	color: black;
 }
 
-.Fogg {
-	font-family: alegreya, serif;
+.fogg-logo {
+	font-family: montserrat, serif;
 	font-size: 42px;
 	font-weight: 600;
 }
 
-span.Fogg {
+span.fogg-logo {
 	float: left;
 	font-weight: 600;
 	margin-left: 18px;
+	margin-right: 30px;
 	pointer-events: none;
 }
 
@@ -498,7 +498,7 @@ span.Fogg {
     margin-left: auto;
     margin-right: auto;
     font-size: 1em;
-    font-family: "Alegreya", "Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    font-family: montserrat, serif;
     min-width: 400px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
