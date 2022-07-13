@@ -8,6 +8,7 @@
 	</head>
 	<body>
 		<div class="topnav">
+            <span class="fogg-logo">Fogg Lab</span>
             {% if request.endpoint == 'common_bp.index'  %}
                 <a class="active" href="#">Home</a>
             {% else %}
@@ -28,7 +29,6 @@
             {% else %}
                 <a href="/rnaseq_correlation">RNAseq Correlation</a>
             {% endif %}
-			<span class="fogg-logo">Fogg Lab</span>
 		</div>
         {% block content %}{% endblock %}
     </body>
