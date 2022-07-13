@@ -25,10 +25,20 @@
                     <i class="fa fa-caret-down"></i>
                 </button>
                 <div class="dropdown-content">
-                    {% if request.endpoint == 'batch_correction_bp.batchsetup' %}
+                    {% if request.endpoint == 'batch_correction_bp.batchcorrection' %}
                         <a class="active" href="#">Batch Correction</a>
                     {% else %}
-                        <a href="/batchsetup">Batch Correction</a>
+                        <a href="/batchcorrection">Batch Correction</a>
+                    {% endif %}
+                    {% if request.endpoint == 'preprocessing_bp.preprocessing' %}
+                        <a class="active" href="#">Preprocessing</a>
+                    {% else %}
+                        <a href="/preprocessing">Preprocessing</a>
+                    {% endif %}
+                    {% if request.endpoint == 'normalization_bp.normalization' %}
+                        <a class="active" href="#">Normalization</a>
+                    {% else %}
+                        <a href="/normalization">Normalization</a>
                     {% endif %}
                 </div>
             </div>

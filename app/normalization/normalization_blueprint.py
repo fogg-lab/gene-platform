@@ -2,7 +2,6 @@ import os
 from ..common import common_blueprint as common
 from .. import helpers
 import time
-from . import bc
 from flask import Blueprint, render_template, request, session, jsonify, \
     send_from_directory, session
 
@@ -11,26 +10,28 @@ SCRIPT_PATH = os.path.realpath(__file__)
 SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
 USER_FILES_LOCATION = "../user_files"
 
-batch_correction_bp = Blueprint('batch_correction_bp', __name__,
-    template_folder = '../templates', static_folder='../static')
+os.chdir(SCRIPT_DIR)
+
+normalization_bp = Blueprint('normalization_bp', __name__, template_folder='../templates', \
+    static_folder='../static')
 
 
-@batch_correction_bp.route("/batchcorrection")
-def batchcorrection():
-    '''batch correction input form'''
+@normalization_bp.route("/normalization")
+def normalization():
+    '''normalization input form'''
 
     common.ensure_session_dir()
 
     cur_uploads, all_uploads = common.list_user_files()
 
-    return render_template("batchcorrection.html", \
-        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Batch Correction")
+    return render_template("normalization.html", \
+        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Normalization")
 
 
-@batch_correction_bp.route("/batchupload", methods=["POST"])
-def batchupload():
+@normalization_bp.route("/normalization_upload", methods=["POST"])
+def normalization_upload():
     '''
-    handles uploading counts and coldata files for batch correction
+    handles uploading counts and coldata files for normalization
     one file per request
     file contents are in request.data (a bytes object)
     '''
@@ -48,52 +49,41 @@ def batchupload():
     common.save_temp_file(request.data, standard_filename, user_filename)
 
     if standard_filename == "coldata.tsv":
-        result["error_status"] = check_bc_coldata()
+        result["error_status"] = "todo"
 
     return jsonify(result)
 
 
-@batch_correction_bp.route("/submitbc", methods=["POST"])
-def submit_batch_correction():
+@normalization_bp.route("/submit_normalization", methods=["POST"])
+def submit_normalization():
 
     datatype = request.form.get("data_type")
     reference_level = request.form.get("reference_level")
     contrast_level = request.form.get("contrast_level")
     userdir = session["user_session_dir"]
 
-    expected_bc_counts_path = f"{session['user_session_dir']}counts_bc.tsv"
+    expected_norm_counts_path = f"{session['user_session_dir']}counts_norm.tsv"
 
-    # Delete any previous batch correction results
-    if os.path.isfile(expected_bc_counts_path):
-        os.remove(expected_bc_counts_path)
+    # Delete any previous normalization results
+    if os.path.isfile(expected_norm_counts_path):
+        os.remove(expected_norm_counts_path)
 
-    status_msg = bc.call_bc(userdir, datatype, reference_level, contrast_level)
+    #status_msg = norm.call_bc(userdir, datatype, reference_level, contrast_level)
+    status_msg = "todo"
     if not status_msg:
-        status_msg = "Batch correction complete."
+        status_msg = "Normalization complete."
 
     is_output = False
     while not is_output:
-        is_output = os.path.exists(expected_bc_counts_path)
+        is_output = os.path.exists(expected_norm_counts_path)
         if not is_output:
             time.sleep(0.25)
 
     return status_msg
 
 
-@batch_correction_bp.route("/getbccounts")
-def get_batch_correction_counts():
+@normalization_bp.route("/get_normalized_counts")
+def get_normalized_counts():
     rel_user_dir = common.get_session_dir()
     abs_user_dir = os.path.abspath(rel_user_dir)
-    return send_from_directory(abs_user_dir, "counts_bc.tsv")
-
-
-def check_bc_coldata():
-    '''ensures coldata has batches'''
-
-    coldata = common.get_tsv_rows("coldata.tsv")
-    err_msg = helpers.ensure_batches(coldata)
-
-    if err_msg:
-        helpers.delete_user_file("coldata.tsv",  common.get_session_dir())
-
-    return err_msg
+    return send_from_directory(abs_user_dir, "counts_norm.tsv")
