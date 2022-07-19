@@ -39,7 +39,9 @@ def submit_preprocessing():
 
     # Delete any previous preprocessing results
     if os.path.isfile(expected_counts_path):
-        os.remove(expected_norm_counts_path)
+        os.remove(expected_counts_path)
+    if os.path.isfile(expected_coldata_path):
+        os.remove(expected_coldata_path)
 
     if data_source == "gdc":
         subprocess.Popen([f"{PREP_GDC_SCRIPT} {user_dir} {target}"], shell=True)
