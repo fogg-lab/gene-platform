@@ -5,14 +5,14 @@
 	<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
 
 	<table class="centerinfo">
-		<tr>
-			<td colspan="2"><h2>Normalization - Upload Files</h2></td>
-		</tr>
+		<tr><td colspan="2"><h2>Normalization - Upload Files</h2></td></tr>
+		<tr><td colspan="2"><h5 style="margin:0; padding:0;">Performs library size normalization on an RNAseq expression matrix.</h4></td></tr>
+		<tr><td colspan="2"><p style="margin:0; padding:0;">Note: To normalize microarray data from a GEO dataset, visit <a href="/preprocessing">the preprocessing page</a>.</p></td></tr>
 		<tr>
 			<td><table style="border: 1px solid black; margin-left: auto; margin-right: auto;">
 				<tr>
-					<th>Counts</th>
-					<th>Coldata</th>
+					<th style="font-size: 20px">Counts</th>
+					<th style="font-size: 20px">Coldata</th>
 				</tr>
 				<tr>
 					<td>
@@ -48,6 +48,7 @@
 						</form>
 					</td>
 				</tr>
+
 			</table>
 		</tr>
 	</td>
@@ -55,43 +56,23 @@
 
 	<br>
 	<form style="text-align:center;" id="normalization_form" action="javascript:submit_normalization()" method="POST">
-		<span>Data type:</span>
-		<select id="data_type" name="data_type">
-			<option value=""></option>
-			<option value="microarray">microarray</option>
-			<option value="RNA-Seq">RNA-Seq</option>
-		</select>
-		<br>
-		<span>Normalization method:</span>
-		<select id="normalization_method" name="normalization_method">
-			<option value=""></option>
-			<option value="option1">option1</option>
-			<option value="option2">option2</option>
-			<option value="option3">option3</option>
-		</select>
-		<br>
-		<span class="tooltip">Reference level:
-			<span class="tooltiptext">
-				The level (value) of condition against which effect size is being compared (e.g., “healthy”).
-			</span>
-		</span>
-		<input id="reference_level" type="text" name="reference_level">
-		<br>
-		<span class="tooltip">Contrast level:
-			<span class="tooltiptext">
-				The level (value) of condition for which effect size is being studied (e.g., “tumor”).
-			</span>
-		</span>
-		<input id="contrast_level" type="text" name="contrast_level">
+		<table id="form_parameters" class="centerinfo">
+			<tr>
+				<th><span>Normalization method:</span></th>
+				<td><select id="normalization_method" name="normalization_method">
+					<option value="mrn">Median of ratios (MRN)</option>
+					<option value="tmm">Trimmed mean of M values (TMM)</option>
+				</select></td>
+			</tr>
+		</table>
 	</form>
 
 	<div class="bottom-buttons">
-		<button onclick="submit_normalization()" class="button" id="next_button" disabled>Submit</button>
+		<button onclick="submit_normalization()" class="button" id="submit_button" disabled>Submit</button>
 	</div>
 	<br>
 	<div id="messages" class="bottom-buttons">
 	</div>
-	<br>
 	<div class="bottom-buttons">
 		<button onclick="window.location.href='/get_normalized_counts'" class="button" id="download-norm-btn" disabled>
 			Download normalized counts
@@ -99,6 +80,7 @@
 	</div>
 	<script>
 		var UPLOAD_ENDPOINT = "\\normalization_upload";
+
 		// hide progress bar divs and cancel buttons for files which have not been uploaded
 		if (document.getElementById("progress_of_counts") == null) {
 			document.getElementById("progress_of_counts_div").style.display = 'none';
@@ -116,8 +98,8 @@
 			document.getElementById("coldata_upload_div").style.display = 'none';
 		}
 
-		// disable next button if progress counts or coldata not uploaded
-		update_next_button()
+		// disable submit button if progress counts or coldata not uploaded
+		update_submit_button();
 
 		function cancelReqListener() {
 			// file upload successfully cancelled
@@ -136,12 +118,12 @@
 
 		function cancel_counts() {
 			cancel("counts.tsv");
-			update_next_button();
+			update_submit_button();
 		}
 
 		function cancel_coldata() {
 			cancel("coldata.tsv");
-			update_next_button();
+			update_submit_button();
 		}
 
 		function cancel(filename) {
@@ -171,28 +153,25 @@
 			document.getElementById(upload_div_id).style.display = 'block';
 		}
 
-		function update_next_button() {
-			// hide next button if progress counts or coldata not uploaded
+		function update_submit_button() {
+			// hide submit button if progress counts or coldata not uploaded
 			if (
 				document.getElementById("progress_of_counts") == null
 				|| document.getElementById("progress_of_coldata") == null
 				|| document.getElementById("progress_of_counts").className != "success"
 				|| document.getElementById("progress_of_coldata").className != "success"
 				) {
-					document.getElementById("next_button").disabled = true;
-				}
-				else {
-					document.getElementById("next_button").disabled = false;
-				}
+				document.getElementById("submit_button").disabled = true;
+			}
+			else {
+				document.getElementById("submit_button").disabled = false;
+			}
 		}
 
 		function submit_normalization() {
-			datatype_select = document.getElementById("data_type")
-			let data_type = datatype_select.options[datatype_select.selectedIndex].text
-			let reference_level = document.getElementById("reference_level").value;
-			let contrast_level = document.getElementById("contrast_level").value;
+			let method = document.getElementById("normalization_method").value;
 			let submitnormReq = new XMLHttpRequest();
-			let submit_norm_query = "data_type=" + data_type + "&reference_level=" + reference_level + "&contrast_level=" + contrast_level;
+			let submit_norm_query = "method=" + method;
 			submitnormReq.addEventListener("load", normReqListener);
 			submitnormReq.open("POST", "/submit_normalization");
 			submitnormReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");

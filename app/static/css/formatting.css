@@ -248,7 +248,7 @@ pre {
 }
 
 #console_log {
-	font-size: 20px;
+	font-size: 12px;
 	color: white;
 	border-radius: 4px;
     padding: .5em .5em 0;
@@ -261,8 +261,8 @@ pre {
 }
 
 #analysis_log {
-	height: 20em;
-	width: 40em;
+	height: 40em;
+	width: 55em;
 	pointer-events: all;
 }
 
@@ -360,7 +360,7 @@ pre {
 	left: 50%;
 	margin-left: -60px;
 }
-  
+
 .tooltip .tooltiptext::after {
 	content: "";
 	position: absolute;
@@ -371,7 +371,7 @@ pre {
 	border-style: solid;
 	border-color: transparent transparent black transparent;
 }
-  
+
 .tooltip:hover .tooltiptext {
 	visibility: visible;
 }
@@ -391,7 +391,6 @@ pre {
     border-spacing: 0;
     margin-left: auto;
 	margin-right:auto;
-	min-width:400px;
 	text-align: center;
 }
 
@@ -607,7 +606,6 @@ span.fogg-logo {
     background-color: #dc4405;
     color: #ffffff;
     text-align: left;
-    font-size: 0.8em;
 	padding-left: 7px;
 }
 
@@ -634,8 +632,4 @@ span.fogg-logo {
 .header-table th {
     padding: 5px 10px;
     border: none
-}
-
-th {
-	font-size: 24px;
 }

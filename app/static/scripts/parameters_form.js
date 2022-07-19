@@ -4,7 +4,6 @@ counter = 0
 
 
 function show_hide_parameters() {
-
   if (!document.getElementById("data_type").value) {
     document.getElementById("form_parameters").style.display = "none";
     document.getElementById("form_parameters").style.visibility = "hidden";

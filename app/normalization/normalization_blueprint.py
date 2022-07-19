@@ -1,6 +1,6 @@
 import os
+import subprocess
 from ..common import common_blueprint as common
-from .. import helpers
 import time
 from flask import Blueprint, render_template, request, session, jsonify, \
     send_from_directory, session
@@ -9,6 +9,7 @@ from flask import Blueprint, render_template, request, session, jsonify, \
 SCRIPT_PATH = os.path.realpath(__file__)
 SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
 USER_FILES_LOCATION = "../user_files"
+NORMALIZATION_SCRIPT = "Rscript ../../rscripts/normalize.r"
 
 os.chdir(SCRIPT_DIR)
 
@@ -41,15 +42,11 @@ def normalization_upload():
     user_filename = request.args.get("user_filename")
     standard_filename = request.headers.get('X_FILENAME')
 
-    if standard_filename not in ["counts.tsv", "coldata.tsv", "filter.txt", \
-        "config.yml"]:
+    if standard_filename not in {"counts.tsv", "coldata.tsv"}:
         result["error"] = "Unrecognized file."
         return jsonify(result)
 
     common.save_temp_file(request.data, standard_filename, user_filename)
-
-    if standard_filename == "coldata.tsv":
-        result["error_status"] = "todo"
 
     return jsonify(result)
 
@@ -57,21 +54,17 @@ def normalization_upload():
 @normalization_bp.route("/submit_normalization", methods=["POST"])
 def submit_normalization():
 
-    datatype = request.form.get("data_type")
-    reference_level = request.form.get("reference_level")
-    contrast_level = request.form.get("contrast_level")
-    userdir = session["user_session_dir"]
+    method = request.form.get("method")
+    user_dir = session["user_session_dir"]
 
-    expected_norm_counts_path = f"{session['user_session_dir']}counts_norm.tsv"
+    expected_norm_counts_path = f"{user_dir}counts_normalized.tsv"
 
     # Delete any previous normalization results
     if os.path.isfile(expected_norm_counts_path):
         os.remove(expected_norm_counts_path)
 
-    #status_msg = norm.call_bc(userdir, datatype, reference_level, contrast_level)
-    status_msg = "todo"
-    if not status_msg:
-        status_msg = "Normalization complete."
+    subprocess.Popen([f"{NORMALIZATION_SCRIPT} {user_dir} {method}"], shell=True)
+    status_msg = "Normalization complete."
 
     is_output = False
     while not is_output:
@@ -86,4 +79,4 @@ def submit_normalization():
 def get_normalized_counts():
     rel_user_dir = common.get_session_dir()
     abs_user_dir = os.path.abspath(rel_user_dir)
-    return send_from_directory(abs_user_dir, "counts_norm.tsv")
+    return send_from_directory(abs_user_dir, "counts_normalized.tsv")

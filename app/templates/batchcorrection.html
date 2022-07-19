@@ -11,8 +11,8 @@
 		<tr>
 			<td><table style="border: 1px solid black; margin-left: auto; margin-right: auto;">
 				<tr>
-					<th>Counts</th>
-					<th>Coldata</th>
+					<th style="font-size: 20px">Counts</th>
+					<th style="font-size: 20px">Coldata</th>
 				</tr>
 				<tr>
 					<td>
@@ -91,7 +91,8 @@
 	</div>
 	<script>
 		var UPLOAD_ENDPOINT = "\\batchupload";
-		// hide progress bar divs and cancel buttonsfor files which have not been uploaded
+
+		// hide progress bar divs and cancel buttons for files which have not been uploaded
 		if (document.getElementById("progress_of_counts") == null) {
 			document.getElementById("progress_of_counts_div").style.display = 'none';
 			document.getElementById("cancel_counts_button").style.display = 'none';
