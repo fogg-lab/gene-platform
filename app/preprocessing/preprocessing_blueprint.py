@@ -26,7 +26,7 @@ def preprocessing():
     cur_uploads, all_uploads = common.list_user_files()
 
     return render_template("preprocessing.html", \
-        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Batch Correction")
+        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Preprocessing")
 
 @preprocessing_bp.route("/submit_preprocessing", methods=["POST"])
 def submit_preprocessing():
