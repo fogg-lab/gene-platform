@@ -34,7 +34,7 @@ From: ubuntu:20.04
     R -e    "install.packages('corrplot', repos='https://cloud.r-project.org/')"
     R -e    "install.packages('corrr', repos='https://cloud.r-project.org/')"
     R -e    "install.packages('BiocManager', repos='https://cloud.r-project.org/')"
-    R -e    "BiocManager::install(c('BiocParallel', 'TCGAbiolinks', 'HDF5Array', 'affycoretools', 'affyPLM', 'hgu133plus2.db', 'qvalue', 'sva', 'edgeR'))"
+    R -e    "BiocManager::install(c('BiocParallel', 'TCGAbiolinks', 'HDF5Array', 'affycoretools', 'affyPLM', 'hgu133plus2.db', 'qvalue', 'sva', 'edgeR', 'GEOquery'))"
     R -e    "install.packages('devtools', repos='https://cloud.r-project.org/')"
     R -e    "devtools::install_github('IRkernel/IRkernel')"
     R -e    "IRkernel::installspec()"
