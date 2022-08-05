@@ -2,8 +2,8 @@ import os
 import subprocess
 from ..common import common_blueprint as common
 import time
-from flask import Blueprint, render_template, request, session, jsonify, \
-    send_from_directory, session
+from . import combine_gdc_data
+from flask import Blueprint, render_template, request, session, send_from_directory, session
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -14,8 +14,9 @@ PREP_GEO_SCRIPT = "Rscript ../../rscripts/prep_geo.r"
 
 os.chdir(SCRIPT_DIR)
 
-preprocessing_bp = Blueprint('preprocessing_bp', __name__, template_folder='../templates', \
-    static_folder='../static')
+preprocessing_bp = Blueprint('preprocessing_bp', __name__,
+                             template_folder='../templates',
+                             static_folder='../static')
 
 @preprocessing_bp.route("/preprocessing")
 def preprocessing():
@@ -56,6 +57,8 @@ def submit_preprocessing():
             and os.path.exists(expected_coldata_path)
         if not is_output:
             time.sleep(0.25)
+
+    combine_gdc_data.combine_gdc(user_dir)
 
     return status_msg
 
