@@ -74,7 +74,7 @@
 	<div id="messages" class="bottom-buttons">
 	</div>
 	<div class="bottom-buttons">
-		<button onclick="window.location.href='/get_normalized_counts'" class="button" id="download-norm-btn" disabled>
+		<button onclick="window.location.href='/get-normalized-counts'" class="button" id="download-norm-btn" disabled>
 			Download normalized counts
 		</button>
 	</div>
@@ -135,7 +135,7 @@
 			let cancel_req_query = "filename=" + filename;
 			let file_progress_bar = document.getElementById(progress_bar_id);
 			cancelReq.addEventListener("load", cancelReqListener);
-			cancelReq.open("POST", "/cancelupload");
+			cancelReq.open("POST", "/cancel-upload");
 			cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
 			cancelReq.send(cancel_req_query);
@@ -173,7 +173,7 @@
 			let submitnormReq = new XMLHttpRequest();
 			let submit_norm_query = "method=" + method;
 			submitnormReq.addEventListener("load", normReqListener);
-			submitnormReq.open("POST", "/submit_normalization");
+			submitnormReq.open("POST", "/submit-normalization");
 			submitnormReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			submitnormReq.send(submit_norm_query);
 			let messages = document.getElementById("messages");

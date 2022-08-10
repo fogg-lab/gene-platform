@@ -118,6 +118,7 @@ pre {
 	width: 95%;
 	height: 20em;
 	font-size: 1.1em;
+	font-family: monaco, consolas, monospace;
 	padding: 1px 2px;
 	margin: 0 0 1em auto;
 	border: 1px inset #666;
@@ -260,13 +261,13 @@ pre {
 	margin-top: 5%;
 }
 
-#analysis_log {
+#job_log {
 	height: 40em;
 	width: 55em;
 	pointer-events: all;
 }
 
-#cancel_analysis_button {
+#cancel_job_button {
 	position: absolute;
 	top: 75%;
 	left: 50%;

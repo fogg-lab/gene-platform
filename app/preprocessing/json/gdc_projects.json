@@ -1,0 +1,93 @@
+{
+    "beataml1.0": [
+        "cohort"
+    ],
+    "cgci": [
+        "blgsp",
+        "htmcp-cc"
+    ],
+    "cmi": [
+        "asc",
+        "mbc"
+    ],
+    "cptac": [
+        "2",
+        "3"
+    ],
+    "ctsp": [
+        "dlbcl1"
+    ],
+    "exceptional_responders": [
+        "er"
+    ],
+    "hcmi": [
+        "cmdc"
+    ],
+    "mmrf": [
+        "commpass"
+    ],
+    "mp2prt": [
+        "wt"
+    ],
+    "nciccr": [
+        "dlbcl"
+    ],
+    "ohsu": [
+        "cnl"
+    ],
+    "organoid": [
+        "pancreatic"
+    ],
+    "rebc": [
+        "thyr"
+    ],
+    "target": [
+        "all-p1",
+        "all-p2",
+        "all-p3",
+        "aml",
+        "ccsk",
+        "nbl",
+        "os",
+        "rt",
+        "wt"
+    ],
+    "tcga": [
+        "acc",
+        "blca",
+        "brca",
+        "cesc",
+        "chol",
+        "coad",
+        "dlbc",
+        "esca",
+        "gbm",
+        "hnsc",
+        "kich",
+        "kirc",
+        "kirp",
+        "laml",
+        "lgg",
+        "lihc",
+        "luad",
+        "lusc",
+        "meso",
+        "ov",
+        "paad",
+        "pcpg",
+        "prad",
+        "read",
+        "sarc",
+        "skcm",
+        "stad",
+        "tgct",
+        "thca",
+        "thym",
+        "ucec",
+        "ucs",
+        "uvm"
+    ],
+    "wcdt": [
+        "mcrpc"
+    ]
+}

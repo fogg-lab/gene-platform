@@ -212,7 +212,7 @@ def check_coldata_matches_counts(counts_colnames, coldata_rows):
     return err_msg
 
 
-def get_confirmation_message(config_params):
+def get_analysis_confirmation_msg(config_params):
     '''get analysis formula from the config parameters'''
 
     condition = config_params["condition"]

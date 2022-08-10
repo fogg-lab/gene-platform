@@ -95,8 +95,8 @@ def submit():
     return "analysis completed"
 
 
-@analysis_bp.route("/confirmsubmission", methods=["POST"])
-def confirm_submission():
+@analysis_bp.route("/confirm-analysis-submission", methods=["POST"])
+def confirm_analysis_submission():
     '''validate input and display formula before submission'''
 
     # get whether analysis is microarray or RNA-Seq, and get params
@@ -128,24 +128,9 @@ def confirm_submission():
         confirmation_message += f"<p>Error: {config_file_error}</p>"
 
     if not confirmation_message:
-        confirmation_message = helpers.get_confirmation_message(params)
+        confirmation_message = helpers.get_analysis_confirmation_msg(params)
 
     return confirmation_message
-
-
-@analysis_bp.route("/getconsoleoutput")
-def get_console_output():
-    '''
-    returns the contents of the log file in user session directory
-    the log file contains terminal output from the analysis script
-    '''
-
-    log = common.read_user_file("log", common.get_session_dir())
-
-    if not log:
-        return ("", 204)
-
-    return Response(log, mimetype='text/plain')
 
 
 @analysis_bp.route("/display")
@@ -221,7 +206,7 @@ def reset():
     return redirect(url_for("common_bp.index"))
 
 
-@analysis_bp.route("/getunfilteredtsv")
+@analysis_bp.route("/get-unfiltered-tsv")
 def get_unfiltered_tsv():
     '''download unfiltered output'''
 
@@ -235,7 +220,7 @@ def get_unfiltered_tsv():
                 'attachment; filename=output.tsv'})
 
 
-@analysis_bp.route("/getfilteredtsv")
+@analysis_bp.route("/get-filtered-tsv")
 def get_filtered_tsv():
     '''download filtered output'''
 
@@ -258,11 +243,11 @@ def call_analysis(data_type):
     log = common.get_session_dir() + "log"
 
     if data_type == 'microarray':
-        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']} "\
-                            f"1> {log} 2>& 1"], shell=True)
+        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']} "
+                          f"1> {log} 2>& 1"], shell=True)
     elif data_type == 'RNA-Seq':
-        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']} "\
-                            f"1> {log} 2>& 1"], shell=True)
+        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']} "
+                          f"1> {log} 2>& 1"], shell=True)
 
 
 def wait_for_output():

@@ -10,7 +10,7 @@
 	</td>
 	</table>
 
-	<form style="text-align:center;" id="preprocessing_form" action="javascript:submit_preprocessing()" method="POST">
+	<form style="text-align:center;" id="preprocessing_form" action="javascript:submit()" method="POST">
 		<table id="form_parameters" class="centerinfo">
 			<tr>
 				<th><span>Data source:</span></th>
@@ -22,73 +22,41 @@
 			</tr>
 			<tr>
 				<th>
-					<span class="tooltip" id="gdc_entry_label">GDC project name:
+					<span class="tooltip" id="gdc_entry_label">GDC project name(s):
 						<span class="tooltiptext" id="gdc_entry_tooltip">
-							The name of the GDC project, i.e "TCGA-BRCA".
+							Enter one of the following:<br>
+							- The name of the GDC project, i.e "TCGA-STAD".<br>
+							- A comma-separated list of GDC projects, i.e "OHSU-CNL, TCGA-KICH, TARGET-OS".
 						</span>
 					</span>
 					<span class="tooltip" id="geo_entry_label">GEO series accession(s):
 						<span class="tooltiptext" id="geo_entry_tooltip">
 							Enter one of the following:<br>
-							- The GEO series accession, i.e "GSE83411".<br>
-							- A comma-separated list of GEO accessions, i.e "GSE4888, GSE6364, GSE7305".
+							- A GEO series accessions, i.e "GSE11462".<br>
+							- A comma-separated list of GEO series accessions, i.e "GSE11462, GSE156274, GSE117247".
+
 						</span>
 				</th>
 				<td>
-					<input type="text" id="gdc_entry" name="gdc_entry" placeholder="GDC project name">
-					<input type="text" id="geo_entry" name="geo_entry" placeholder="GEO series accession(s)">
+					<input type="text" id="gdc_entry" name="gdc_entry" placeholder="GDC project name(s)">
+					<input type="text" id="geo_entry" name="geo_entry" placeholder="GEO series accession">
 				</td>
 			</tr>
 		</table>
 	</form>
 
 	<div class="bottom-buttons">
-		<button onclick="submit_preprocessing()" class="button" id="submit_button" disabled>Submit</button>
+		<button onclick="submit()" class="button" id="submit_button" disabled>Submit</button>
 	</div>
 	<br>
 	<div id="messages" class="bottom-buttons">
 	</div>
 	<div class="bottom-buttons">
-		<button onclick="window.location.href='/get_preprocessed_data'" class="button" id="download-preprocessing-btn" disabled>
+		<button onclick="window.location.href='/get-preprocessed-data'" class="button" id="download-preprocessed-data-btn" disabled>
 			Download preprocessed data
 		</button>
 	</div>
 
-	<script>
-		// show the rest of the form if data source is selected
-		update_form();
-
-		document.getElementById("data_source").onchange = update_form;
-
-		function update_form() {
-			let data_source = document.getElementById("data_source").value;
-			if (data_source && data_source == "gdc") {
-				document.getElementById("gdc_entry").style.display = 'block';
-				document.getElementById("gdc_entry_label").style.display = 'block';
-				document.getElementById("geo_entry").style.display = 'none';
-				document.getElementById("geo_entry_label").style.display = 'none';
-			}
-			else if (data_source && data_source == "geo") {
-				document.getElementById("gdc_entry").style.display = 'none';
-				document.getElementById("gdc_entry_label").style.display = 'none';
-				document.getElementById("geo_entry").style.display = 'block';
-				document.getElementById("geo_entry_label").style.display = 'block';
-			}
-			if (!data_source) {
-				document.getElementById("submit_button").style.display = 'none';
-				document.getElementById("submit_button").disabled=true;
-				document.getElementById("download-preprocessing-btn").style.display = 'none';
-				document.getElementById("gdc_entry").style.display = 'none';
-				document.getElementById("gdc_entry_label").style.display = 'none';
-				document.getElementById("geo_entry").style.display = 'none';
-				document.getElementById("geo_entry_label").style.display = 'none';
-			}
-			else {
-				document.getElementById("submit_button").style.display = 'inline-block';
-				document.getElementById("submit_button").disabled=false;
-				document.getElementById("download-preprocessing-btn").style.display = 'inline-block';
-			}
-		}
-
-	</script>
+	<script src="{{ url_for('static',filename='scripts/job_utilities.js') }}"></script>
+	<script src="{{ url_for('static',filename='scripts/data_retrieval_form.js') }}"></script>
 {% endblock %}

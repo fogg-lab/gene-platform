@@ -15,7 +15,7 @@ batch_correction_bp = Blueprint('batch_correction_bp', __name__,
     template_folder = '../templates', static_folder='../static')
 
 
-@batch_correction_bp.route("/batchcorrection")
+@batch_correction_bp.route("/batch-correction")
 def batchcorrection():
     '''batch correction input form'''
 
@@ -27,7 +27,7 @@ def batchcorrection():
         cur_uploads=cur_uploads, all_uploads=all_uploads, title="Batch Correction")
 
 
-@batch_correction_bp.route("/batchupload", methods=["POST"])
+@batch_correction_bp.route("/batch-upload", methods=["POST"])
 def batchupload():
     '''
     handles uploading counts and coldata files for batch correction
@@ -53,7 +53,7 @@ def batchupload():
     return jsonify(result)
 
 
-@batch_correction_bp.route("/submitbc", methods=["POST"])
+@batch_correction_bp.route("/submit-batch-correction", methods=["POST"])
 def submit_batch_correction():
 
     datatype = request.form.get("data_type")
@@ -80,7 +80,7 @@ def submit_batch_correction():
     return status_msg
 
 
-@batch_correction_bp.route("/getbccounts")
+@batch_correction_bp.route("/get-batch-corrected-counts")
 def get_batch_correction_counts():
     rel_user_dir = common.get_session_dir()
     abs_user_dir = os.path.abspath(rel_user_dir)

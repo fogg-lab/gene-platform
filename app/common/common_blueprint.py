@@ -8,7 +8,7 @@ import shutil
 import csv
 import tempfile
 from .. import helpers
-from flask import Blueprint, render_template, request, session
+from flask import Blueprint, render_template, request, session, Response
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -27,7 +27,7 @@ def index():
     return render_template("home.html", title="Welcome!")
 
 
-@common_bp.route("/cancelupload", methods=["POST"])
+@common_bp.route("/cancel-upload", methods=["POST"])
 def cancelupload():
     '''
     removes uploaded file from user session directory
@@ -37,6 +37,24 @@ def cancelupload():
     helpers.delete_user_file(filename, get_session_dir())
 
     return f"{filename} upload cancelled"
+
+
+@common_bp.route("/get-console-output")
+def get_console_output():
+    '''
+    returns the contents of the log file in user session directory
+    the log file contains terminal output from the analysis script
+    '''
+
+    log = read_user_file("log", get_session_dir())
+    log_content = log.read()
+    log.close()
+    clear_user_file("log", get_session_dir())
+
+    if not log:
+        return ("", 204)
+
+    return Response(log_content, mimetype='text/plain')
 
 
 def save_temp_file(file_contents, standard_filename, user_filename):
@@ -83,6 +101,16 @@ def read_user_file(filename, session_dir):
             user_file = open(filepath, "r", encoding="UTF-8")
 
     return user_file
+
+
+def clear_user_file(filename, session_dir):
+    '''clears a user file'''
+    if session_dir:
+        filepath = f"{session_dir}{filename}"
+        if os.path.isfile(filepath):
+            f = open(filepath, "w")
+            f.truncate(0)
+            f.close()
 
 
 def cleanup_old_sessions():

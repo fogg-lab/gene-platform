@@ -2,7 +2,7 @@ function corrReqListener() {
     // Done computing correlations
     let messages = document.getElementById("messages");
     messages.innerHTML = this.responseText;
-    get_plots();
+    getPlots();
 }
 
 function getPearsonPlotListener() {
@@ -17,7 +17,7 @@ function getSpearmanPlotListener() {
     plot_div.innerHTML = '<img src="data:image/png;base64,' + this.responseText + '"/>';
 }
 
-function submit_rnaseq_correlation() {
+function submitRNASeqCorrelation() {
     corr_select = document.getElementById("corr_method")
     let corr_method = corr_select.options[corr_select.selectedIndex].value;
     let submitCorrReq = new XMLHttpRequest();
@@ -30,7 +30,7 @@ function submit_rnaseq_correlation() {
     messages.innerHTML = "Computing sample correlations...";
 }
 
-function get_plots() {
+function getPlots() {
     for (corr_method of ["pearson", "spearman"]) {
         let getPlotsReq = new XMLHttpRequest();
         let getPlotsQuery = "corr_method=" + corr_method;
@@ -39,7 +39,7 @@ function get_plots() {
         } else {
             getPlotsReq.addEventListener("load", getSpearmanPlotListener);
         }
-        getPlotsReq.open("POST", "/get_" + corr_method + "_plot");
+        getPlotsReq.open("POST", "/get-" + corr_method + "-plot");
         getPlotsReq.send(getPlotsQuery);
     }
 }

@@ -51,7 +51,7 @@ def normalization_upload():
     return jsonify(result)
 
 
-@normalization_bp.route("/submit_normalization", methods=["POST"])
+@normalization_bp.route("/submit-normalization", methods=["POST"])
 def submit_normalization():
 
     method = request.form.get("method")
@@ -75,7 +75,7 @@ def submit_normalization():
     return status_msg
 
 
-@normalization_bp.route("/get_normalized_counts")
+@normalization_bp.route("/get-normalized-counts")
 def get_normalized_counts():
     rel_user_dir = common.get_session_dir()
     abs_user_dir = os.path.abspath(rel_user_dir)
