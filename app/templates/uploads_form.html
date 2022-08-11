@@ -10,10 +10,10 @@
 		<tr>
 			<td><table style="border: 1px solid black;">
 				<tr>
-					<th>Counts</th>
-					<th>Coldata</th>
-					<th>Filter (optional)</th>
-					<th>Config (optional)</th>
+					<th style="font-size: 20px">Counts</th>
+					<th style="font-size: 20px">Coldata</th>
+					<th style="font-size: 20px">Filter (optional)</th>
+					<th style="font-size: 20px">Config (optional)</th>
 				</tr>
 				<tr>
 					<td>
@@ -168,7 +168,7 @@
 			let cancel_req_query = "filename=" + filename;
 			let file_progress_bar = document.getElementById(progress_bar_id);
 			cancelReq.addEventListener("load", cancelReqListener);
-			cancelReq.open("POST", "/cancelupload");
+			cancelReq.open("POST", "/cancel-upload");
 			cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
 			cancelReq.send(cancel_req_query);

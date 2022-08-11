@@ -10,7 +10,7 @@
 		<tr>
 			<td><table style="border: 1px solid black; margin-left: auto; margin-right: auto;">
 				<tr>
-					<th>Counts</th>
+					<th style="font-size: 20px">Counts</th>
 				</tr>
 				<tr>
 					<td>
@@ -36,7 +36,7 @@
 	</table>
 
 	<br>
-	<form style="text-align:center;" id="rnaseq_correlation_form" action="javascript:submit_rnaseq_correlation()" method="POST">
+	<form style="text-align:center;" id="rnaseq_correlation_form" action="javascript:submitRNASeqCorrelation()" method="POST">
 		<span>Method:</span>
 		<select id="corr_method" name="corr_method">
 			<option value=""></option>
@@ -47,7 +47,7 @@
 	</form>
 	
 	<div class="bottom-buttons">
-		<button onclick="submit_rnaseq_correlation()" class="button" id="next_button" disabled>Submit</button>
+		<button onclick="submitRNASeqCorrelation()" class="button" id="next_button" disabled>Submit</button>
 	</div>
 	<br>
 
@@ -58,7 +58,7 @@
 	</div>
 	<br>
 	<script>
-		var UPLOAD_ENDPOINT = "\\upload_rnaseq_correlation";
+		var UPLOAD_ENDPOINT = "\\upload-rnaseq-correlation";
 		// hide progress bar divs and cancel buttonsfor files which have not been uploaded
 		if (document.getElementById("progress_of_counts") == null) {
 			document.getElementById("progress_of_counts_div").style.display = 'none';
@@ -90,7 +90,7 @@
 			let cancel_req_query = "filename=" + filename;
 			let file_progress_bar = document.getElementById(progress_bar_id);
 			cancelReq.addEventListener("load", cancelReqListener);
-			cancelReq.open("POST", "/cancelupload");
+			cancelReq.open("POST", "/cancel-upload");
 			cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
 			cancelReq.send(cancel_req_query);

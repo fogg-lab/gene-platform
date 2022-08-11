@@ -18,7 +18,7 @@ correlation_bp = Blueprint('correlation_bp', __name__,
     template_folder='../templates', static_folder='../static')
 
 
-@correlation_bp.route("/rnaseq_correlation")
+@correlation_bp.route("/rnaseq-correlation")
 def rnaseq_correlation():
     '''RNAseq sample correlation page'''
 
@@ -31,7 +31,7 @@ def rnaseq_correlation():
             title="RNAseq Sample Correlation")
 
 
-@correlation_bp.route("/upload_rnaseq_correlation", methods=["POST"])
+@correlation_bp.route("/upload-rnaseq-correlation", methods=["POST"])
 def upload_rnaseq_correlation():
     '''handles uploading counts for rnaseq sample correlation'''
 
@@ -55,7 +55,7 @@ def get_pearson_plot():
         return img_data
 
 
-@correlation_bp.route("/get_spearman_plot", methods=["POST"])
+@correlation_bp.route("/get-spearman-plot", methods=["POST"])
 def get_spearman_plot():
     img_path = f"{session['user_session_dir']}spearman.png"
     if not os.path.isfile(img_path):

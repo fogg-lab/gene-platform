@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+	<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
+
+	<table class="centerinfo">
+		<tr><td colspan="2"><h2>Preprocessing</h2></td></tr>
+		<tr><td colspan="2"><h5 style="margin:0; padding:0;">Prepares data from GEO or the GDC data portal for DE analysis</h4></td></tr>
+	</td>
+	</table>
+
+	<form style="text-align:center;" id="preprocessing_form" action="javascript:submit()" method="POST">
+		<table id="form_parameters" class="centerinfo">
+			<tr>
+				<th><span>Data source:</span></th>
+				<td><select id="data_source" name="data_source">
+					<option value=""></option>
+					<option value="gdc">GDC Data Portal</option>
+					<option value="geo">Gene Expression Omnibus (GEO)</option>
+				</select></td>
+			</tr>
+			<tr>
+				<th>
+					<span class="tooltip" id="gdc_entry_label">GDC project name(s):
+						<span class="tooltiptext" id="gdc_entry_tooltip">
+							Enter one of the following:<br>
+							- The name of the GDC project, i.e "TCGA-STAD".<br>
+							- A comma-separated list of GDC projects, i.e "OHSU-CNL, TCGA-KICH, TARGET-OS".
+						</span>
+					</span>
+					<span class="tooltip" id="geo_entry_label">GEO series accession(s):
+						<span class="tooltiptext" id="geo_entry_tooltip">
+							Enter one of the following:<br>
+							- A GEO series accessions, i.e "GSE11462".<br>
+							- A comma-separated list of GEO series accessions, i.e "GSE11462, GSE156274, GSE117247".
+
+						</span>
+				</th>
+				<td>
+					<input type="text" id="gdc_entry" name="gdc_entry" placeholder="GDC project name(s)">
+					<input type="text" id="geo_entry" name="geo_entry" placeholder="GEO series accession">
+				</td>
+			</tr>
+		</table>
+	</form>
+
+	<div class="bottom-buttons">
+		<button onclick="submit()" class="button" id="submit_button" disabled>Submit</button>
+	</div>
+	<br>
+	<div id="messages" class="bottom-buttons">
+	</div>
+	<div class="bottom-buttons">
+		<button onclick="window.location.href='/get-preprocessed-data'" class="button" id="download-preprocessed-data-btn" disabled>
+			Download preprocessed data
+		</button>
+	</div>
+
+	<script src="{{ url_for('static',filename='scripts/job_utilities.js') }}"></script>
+	<script src="{{ url_for('static',filename='scripts/data_retrieval_form.js') }}"></script>
+{% endblock %}

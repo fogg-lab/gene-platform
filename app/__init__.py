@@ -8,6 +8,8 @@ from app.common.common_blueprint import common_bp
 from app.analysis.analysis_blueprint import analysis_bp
 from app.batch_correction.batch_correction_blueprint import batch_correction_bp
 from app.rnaseq_correlation.correlation_blueprint import correlation_bp
+from app.normalization.normalization_blueprint import normalization_bp
+from app.preprocessing.preprocessing_blueprint import preprocessing_bp
 
 def init_app():
     """Initialize the core application."""
@@ -24,5 +26,7 @@ def init_app():
         app.register_blueprint(analysis_bp)
         app.register_blueprint(batch_correction_bp)
         app.register_blueprint(correlation_bp)
+        app.register_blueprint(normalization_bp)
+        app.register_blueprint(preprocessing_bp)
 
         return app

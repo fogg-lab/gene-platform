@@ -11,12 +11,12 @@
 		<tr>
 			<td><table style="border: 1px solid black; margin-left: auto; margin-right: auto;">
 				<tr>
-					<th>Counts</th>
-					<th>Coldata</th>
+					<th style="font-size: 20px">Counts</th>
+					<th style="font-size: 20px">Coldata</th>
 				</tr>
 				<tr>
 					<td>
-						<form class="filedrag" id="upload_counts" action="/batchupload" method="POST" enctype="multipart/form-data">
+						<form class="filedrag" id="upload_counts" action="/batch-upload" method="POST" enctype="multipart/form-data">
 							<div class="upload_div" id="counts_upload_div">
 								<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
 								<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
@@ -32,7 +32,7 @@
 						</form>
 					</td>
 					<td>
-						<form class="filedrag" id="upload_coldata" action="/batchupload" method="POST" enctype="multipart/form-data">
+						<form class="filedrag" id="upload_coldata" action="/batch-upload" method="POST" enctype="multipart/form-data">
 							<div class="upload_div" id="coldata_upload_div">
 								<input type="file" class="fileselect" id="fileselect_coldata" name="fileselect[]" style="display:none">
 								<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
@@ -85,13 +85,14 @@
 	</div>
 	<br>
 	<div class="bottom-buttons">
-		<button onclick="window.location.href='/getbccounts'" class="button" id="download-bc-btn" disabled>
+		<button onclick="window.location.href='/get-batch-corrected-counts'" class="button" id="download-bc-btn" disabled>
 			Download batch corrected counts
 		</button>
 	</div>
 	<script>
-		var UPLOAD_ENDPOINT = "\\batchupload";
-		// hide progress bar divs and cancel buttonsfor files which have not been uploaded
+		var UPLOAD_ENDPOINT = "\\batch-upload";
+
+		// hide progress bar divs and cancel buttons for files which have not been uploaded
 		if (document.getElementById("progress_of_counts") == null) {
 			document.getElementById("progress_of_counts_div").style.display = 'none';
 			document.getElementById("cancel_counts_button").style.display = 'none';
@@ -145,7 +146,7 @@
 			let cancel_req_query = "filename=" + filename;
 			let file_progress_bar = document.getElementById(progress_bar_id);
 			cancelReq.addEventListener("load", cancelReqListener);
-			cancelReq.open("POST", "/cancelupload");
+			cancelReq.open("POST", "/cancel-upload");
 			cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
 			cancelReq.send(cancel_req_query);
@@ -186,7 +187,7 @@
 			let submitbcReq = new XMLHttpRequest();
 			let submit_bc_query = "data_type=" + data_type + "&reference_level=" + reference_level + "&contrast_level=" + contrast_level;
 			submitbcReq.addEventListener("load", bcReqListener);
-			submitbcReq.open("POST", "/submitbc");
+			submitbcReq.open("POST", "/submit-batch-correction");
 			submitbcReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			submitbcReq.send(submit_bc_query);
 			let messages = document.getElementById("messages");
