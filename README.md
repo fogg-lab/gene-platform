@@ -1,10 +1,6 @@
 # GENE Platform
 
----
-
 ## Gene Expression Explorer (GENE) Platform: A web app for exploring gene expression data and running differential expression analyses.
-
----
 
 ## Installation
 The web server runs on Linux, including the Windows Subsystem for Linux (WSL).
