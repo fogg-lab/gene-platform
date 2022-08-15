@@ -13,8 +13,8 @@ coldata_cols = ["sample_name", "condition", "batch"]
 def call_bc(user_dir, data_type, reference_level, contrast_level):
 
     # Get paths to the counts and coldata files
-    counts_path = f"{user_dir}counts.tsv"
-    coldata_path = f"{user_dir}coldata.tsv"
+    counts_path = os.path.join(user_dir, "counts.tsv")
+    coldata_path = os.path.join(user_dir, "coldata.tsv")
 
     # Make sure the counts and coldata files exist
     counts_exists = os.path.isfile(counts_path)
@@ -49,16 +49,19 @@ def call_bc(user_dir, data_type, reference_level, contrast_level):
 
     coldata = filtered_samples
 
+    counts_in_path = os.path.join(user_dir, "counts_bc-in.tsv")
+    coldata_in_path = os.path.join(user_dir, "coldata_bc-in.tsv")
+
     # Save prepared counts and coldata files for batch correction
-    counts.to_csv(f"{user_dir}counts_bc-in.tsv", sep='\t', index=False)
-    coldata.to_csv(f"{user_dir}coldata_bc-in.tsv", sep='\t', index=False)
+    counts.to_csv(counts_in_path, sep='\t', index=False)
+    coldata.to_csv(coldata_in_path, sep='\t', index=False)
 
     # Call the batch correction R script
     if data_type == 'microarray':
-        subprocess.Popen([f"{MICROARRAY_BC_SCRIPT} {user_dir}counts_bc-in.tsv "\
-                            f"{user_dir}coldata_bc-in.tsv {user_dir}"], shell=True)
+        subprocess.Popen([f"{MICROARRAY_BC_SCRIPT} {counts_in_path} "
+                        f"{coldata_in_path} {user_dir}"], shell=True)
     elif data_type == "RNA-Seq":
-        subprocess.Popen([f"{RNA_SEQ_BC_SCRIPT} {user_dir}counts_bc-in.tsv "\
-                            f"{user_dir}coldata_bc-in.tsv {user_dir}"], shell=True)
+        subprocess.Popen([f"{RNA_SEQ_BC_SCRIPT} {counts_in_path} "
+                          f"{coldata_in_path} {user_dir}"], shell=True)
 
     return ""

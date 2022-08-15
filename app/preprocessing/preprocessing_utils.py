@@ -78,8 +78,8 @@ def combine_gdc(data_dir):
     combined_counts = pd.concat(counts_dfs,axis=1)
     combined_coldata = pd.concat(coldata_dfs,axis=0)
 
-    combined_counts.to_csv(f"{data_dir}counts_processed.tsv", sep="\t")
-    combined_coldata.to_csv(f"{data_dir}coldata_processed.tsv", sep="\t")
+    combined_counts.to_csv(os.path.join(data_dir, "counts_processed.tsv"), sep="\t")
+    combined_coldata.to_csv(os.path.join(data_dir, "coldata_processed.tsv"), sep="\t")
 
 
 def get_counts_paths(data_dir):
@@ -87,7 +87,7 @@ def get_counts_paths(data_dir):
 
     for fname in os.listdir(data_dir):
         if "_counts.tsv" in fname:
-            counts_paths.append(f"{data_dir}{fname}")
+            counts_paths.append(os.path.join(data_dir, fname))
 
     return counts_paths
 
@@ -97,7 +97,7 @@ def get_unmapped_counts_paths(data_dir):
 
     for fname in os.listdir(data_dir):
         if "_counts_unmapped.tsv" in fname:
-            counts_paths.append(f"{data_dir}{fname}")
+            counts_paths.append(os.path.join(data_dir, fname))
     
     return counts_paths
 
@@ -107,7 +107,7 @@ def get_coldata_paths(data_dir):
 
     for fname in os.listdir(data_dir):
         if "_coldata.tsv" in fname:
-            coldata_paths.append(f"{data_dir}{fname}")
+            coldata_paths.append(os.path.join(data_dir, fname))
     
     return coldata_paths
 
@@ -157,13 +157,12 @@ def zip_preprocessed_data(data_dir):
     new_wd = data_dir
     os.chdir(new_wd)
 
-    file_suffix = "_processed.tsv"
     files_to_zip = []
     is_geo = False
     for fname in os.listdir():
-        if file_suffix in fname:
+        if fname.endswith("processed.tsv"):
             files_to_zip.append(fname)
-            is_geo = True if "gse" in fname.lower() else is_geo
+            is_geo = True if "gse" in fname.lower() else False
 
     source = "geo" if is_geo else "gdc"
     zip_fname = f"{source}_processed.zip"

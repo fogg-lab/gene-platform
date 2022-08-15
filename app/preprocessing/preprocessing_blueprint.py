@@ -3,7 +3,7 @@ import subprocess
 from ..common import common_blueprint as common
 import time
 from . import preprocessing_utils as utils
-from flask import Blueprint, render_template, request, send_from_directory, session
+from flask import Blueprint, render_template, request, send_from_directory
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -45,44 +45,38 @@ def submit_preprocessing():
     dsets = dsets.strip()
 
     user_dir = common.get_session_dir()
-    abs_user_dir = os.path.abspath(user_dir)
 
     src = "geo" if "geo" in data_source.lower() else "gdc"
 
     if src == "geo":
         expected_unmapped_counts_paths = []
         for dset in valid_dsets:
-            expected_unmapped_counts_paths.append(f"{user_dir}{dset}_counts_unmapped.tsv")
-
-    expected_zip_path = f"{user_dir}{src}_processed.zip"
+            expected_unmapped_counts_paths.append(
+                os.path.join(user_dir, f"{dset}_counts_unmapped.tsv"))
 
     expected_paths = []
-
     for dset in valid_dsets:
         dset = dset.lower()
-        expected_counts_path = f"{user_dir}{dset}_counts_processed.tsv"
-        expected_coldata_path = f"{user_dir}{dset}_coldata_processed.tsv"
+        expected_counts_path = os.path.join(user_dir,
+                                            f"{dset}_counts_processed.tsv")
+        expected_coldata_path = os.path.join(user_dir,
+                                            f"{dset}_coldata_processed.tsv")
         expected_paths.append(expected_counts_path)
         expected_paths.append(expected_coldata_path)
 
     # Delete any previous preprocessing results
-    if os.path.isfile(expected_zip_path):
-        os.remove(expected_zip_path)
-    for path in expected_paths:
-        if os.path.isfile(path):
-            os.remove(path)
-    for file in os.listdir(abs_user_dir):
+    for file in os.listdir(user_dir):
         if file.endswith("processed.tsv"):
-            os.remove(os.path.join(abs_user_dir, file))
+            os.remove(os.path.join(user_dir, file))
 
-    log = common.get_session_dir() + "log"
+    log = os.path.join(user_dir, "log")
 
     if "gdc" in data_source.lower():
-        print(f"Running command: {PREP_GDC_SCRIPT} {abs_user_dir}/ {dsets} 1> {log} 2>& 1")
+        print(f"Running command: {PREP_GDC_SCRIPT} {user_dir}/ {dsets} 1> {log} 2>& 1")
         subprocess.Popen([f"{PREP_GDC_SCRIPT} {user_dir} {dsets} "
                           f"1> {log} 2>& 1"], shell=True)
     elif "geo" in data_source.lower():
-        subprocess.Popen([f"{PREP_GEO_SCRIPT} {abs_user_dir}/ {dsets} "
+        subprocess.Popen([f"{PREP_GEO_SCRIPT} {user_dir}/ {dsets} "
                           f"1> {log} 2>& 1"], shell=True)
 
     status_msg = "Preprocessing complete."
@@ -128,11 +122,10 @@ def confirm_preprocessing_submission():
 
 @preprocessing_bp.route("/get-preprocessed-data")
 def get_preprocessed_data():
-    rel_user_dir = common.get_session_dir()
-    abs_user_dir = os.path.abspath(rel_user_dir)
-    processed_data = utils.zip_preprocessed_data(rel_user_dir)
+    user_dir = common.get_session_dir()
+    processed_data = utils.zip_preprocessed_data(user_dir)
     zip_fname = processed_data.split("/")[-1]
-    return send_from_directory(abs_user_dir, zip_fname)
+    return send_from_directory(user_dir, zip_fname)
 
 
 def get_preprocessing_confirmation_msg(dsets, source):

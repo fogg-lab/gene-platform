@@ -251,13 +251,13 @@ def ensure_batches(coldata_rows):
     return ""
 
 
-def delete_user_file(filename, session_dir):
+def delete_user_file(filename, user_dir):
     '''
     deletes a user input file if it exists
     pass in the filename i.e "counts.tsv"
     '''
 
-    if session_dir:
-        filepath = f"{session_dir}{filename}"
+    if user_dir:
+        filepath = os.path.join(user_dir, filename)
         if os.path.isfile(filepath):
             os.remove(filepath)

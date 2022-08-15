@@ -67,9 +67,9 @@ def save_temp_file(file_contents, standard_filename, user_filename):
     '''
 
     # create session directory if none exists
-    ensure_session_dir()
+    user_dir = get_session_dir()
 
-    user_file_path = f"{session['user_session_dir']}{standard_filename}"
+    user_file_path = os.path.join(user_dir, standard_filename)
 
     if os.path.exists(user_file_path):
         os.remove(user_file_path)
@@ -87,7 +87,7 @@ def save_temp_file(file_contents, standard_filename, user_filename):
     user_file.close()
 
 
-def read_user_file(filename, session_dir):
+def read_user_file(filename, user_dir):
     '''
     opens a user file for reading
     pass in the filename i.e "counts.tsv"
@@ -95,18 +95,18 @@ def read_user_file(filename, session_dir):
     '''
     user_file = None
 
-    if session_dir:
-        filepath = f"{session_dir}{filename}"
+    if user_dir:
+        filepath = os.path.join(user_dir, filename)
         if os.path.isfile(filepath):
             user_file = open(filepath, "r", encoding="UTF-8")
 
     return user_file
 
 
-def clear_user_file(filename, session_dir):
+def clear_user_file(filename, user_dir):
     '''clears a user file'''
-    if session_dir:
-        filepath = f"{session_dir}{filename}"
+    if user_dir:
+        filepath = os.path.join(user_dir, filename)
         if os.path.isfile(filepath):
             f = open(filepath, "w")
             f.truncate(0)
@@ -117,13 +117,13 @@ def cleanup_old_sessions():
     '''Clean up other sessions older than 4 hours (14400 seconds)'''
 
     for old_dir in os.listdir(USER_FILES_LOCATION):
-        old_dir = f"{USER_FILES_LOCATION}/{old_dir}"
+        old_dir = os.path.join(USER_FILES_LOCATION, old_dir)
 
         if old_dir != f"{USER_FILES_LOCATION}/.gitkeep":
-            get_age = "$(($(date +%s) - $(date +%s -r " + old_dir + ")))"
+            get_age = f"$(($(date +%s) - $(date +%s -r {old_dir})))"
 
             # Run bash command and return the stdout output
-            age_seconds = subprocess.Popen([f"echo {get_age}"], \
+            age_seconds = subprocess.Popen([f"echo {get_age}"],
                 stdout=subprocess.PIPE, shell=True).communicate()[0]
 
             try:
@@ -137,10 +137,10 @@ def cleanup_old_sessions():
 def get_session_dir():
     ''' returns session dir if it exists, otherwise returns False '''
 
-    if "user_session_dir" in session:
-        return session["user_session_dir"]
-    else:
-        return ""
+    if "user_session_dir" not in session:
+        ensure_session_dir()
+
+    return session["user_session_dir"]
 
 
 def ensure_session_dir():
@@ -154,16 +154,16 @@ def ensure_session_dir():
         temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
         os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
 
-        session["user_session_dir"] = f"{temp_dir}/"
+        session["user_session_dir"] = os.path.abspath(temp_dir)
         session["session_id"] = temp_dir.split("/")[-1:]
 
 
 def get_tsv_rows(filename):
     '''returns the rows of the user input file as a 2d array'''
 
-    session_dir = get_session_dir()
+    user_dir = get_session_dir()
 
-    tsv_file = read_user_file(filename, session_dir)
+    tsv_file = read_user_file(filename, user_dir)
     data_reader = csv.reader(tsv_file, delimiter="\t")
     rows = list(data_reader)
     tsv_file.close()

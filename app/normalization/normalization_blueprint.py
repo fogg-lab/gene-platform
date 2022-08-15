@@ -57,7 +57,7 @@ def submit_normalization():
     method = request.form.get("method")
     user_dir = session["user_session_dir"]
 
-    expected_norm_counts_path = f"{user_dir}counts_normalized.tsv"
+    expected_norm_counts_path = os.path.join(user_dir, "counts_normalized.tsv")
 
     # Delete any previous normalization results
     if os.path.isfile(expected_norm_counts_path):
