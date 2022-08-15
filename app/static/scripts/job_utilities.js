@@ -8,14 +8,14 @@ function cancelJob() {
     overlay_div.style.display = "none";
     cancel_job_button = document.getElementById("cancel_job_button")
     cancel_job_button.remove()
-    timer = {};
-    counter = 0;
     document.getElementById("time").innerHTML = "";
 }
+
 
 const escapeHtml = (unsafe) => {
     return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 }
+
 
 function jobLogReqListener() {
     console.log(this.responseText);
@@ -62,7 +62,9 @@ function requestConsoleOutput() {
 
 
 function showRuntime() {
+    clearInterval(timer);
     timer = {};
+    counter = 0;
     overlay_div = getOverlay();
     console_log = document.getElementById("console_log");
     console_log.style.display="block";

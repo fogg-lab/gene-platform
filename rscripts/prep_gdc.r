@@ -97,6 +97,7 @@ for (i in seq_along(projects)) {
         if(!query_failed) {
             tryCatch({
                 saveHDF5SummarizedExperiment(data, dir = RSE_objects_dest_dir, prefix = paste0(projects[i], "_RNA_"), replace=TRUE)
+                #writeHDF5SummarizedExperiment(data, dir = RSE_objects_dest_dir, prefix = paste0(projects[i], "_RNA_"), replace=TRUE)
                 project_saved <- TRUE
             }, warning= function(w) {
                 message(w)

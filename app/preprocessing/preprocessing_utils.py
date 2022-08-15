@@ -53,6 +53,8 @@ def get_valid_gdc_projects(project_names):
 
     valid_projects = []
     for project_name in project_names:
+        if "-" not in project_name:
+            continue
         proj_name_lower = project_name.lower()
         proj_base, proj_ext = proj_name_lower.split("-", 1)
         if proj_base in gdc_projects and proj_ext in gdc_projects[proj_base]:

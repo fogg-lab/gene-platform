@@ -72,8 +72,7 @@ def submit_preprocessing():
     log = os.path.join(user_dir, "log")
 
     if "gdc" in data_source.lower():
-        print(f"Running command: {PREP_GDC_SCRIPT} {user_dir}/ {dsets} 1> {log} 2>& 1")
-        subprocess.Popen([f"{PREP_GDC_SCRIPT} {user_dir} {dsets} "
+        subprocess.Popen([f"{PREP_GDC_SCRIPT} {user_dir}/ {dsets} "
                           f"1> {log} 2>& 1"], shell=True)
     elif "geo" in data_source.lower():
         subprocess.Popen([f"{PREP_GEO_SCRIPT} {user_dir}/ {dsets} "
@@ -160,7 +159,6 @@ def get_preprocessing_confirmation_msg(dsets, source):
 
 
 def get_valid_invalid_dsets(dsets, source):
-    print(f"the dsets: {dsets}")
     if " " in dsets and not "," in dsets:
         dsets = dsets.split(" ")
     elif "," in dsets:
@@ -169,7 +167,6 @@ def get_valid_invalid_dsets(dsets, source):
         dsets = [dsets.lower()]
     for i in range(len(dsets)):
         dsets[i] = dsets[i].replace(" ", "").lower()
-        print(f"----{dsets[i]}----")
 
     if "gdc" in source.lower():
         valid_dsets = utils.get_valid_gdc_projects(dsets)
