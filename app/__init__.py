@@ -1,14 +1,10 @@
-# imports for debugging (allow printing to stderr)
-#from __future__ import print_function
-#import sys
-
 from flask import Flask
 from flask_session.__init__ import Session
 from app.common.common_blueprint import common_bp
 from app.analysis.analysis_blueprint import analysis_bp
 from app.batch_correction.batch_correction_blueprint import batch_correction_bp
 from app.rnaseq_correlation.correlation_blueprint import correlation_bp
-from app.normalization.normalization_blueprint import normalization_bp
+from app.preprocessing.normalization_blueprint import normalization_bp
 from app.preprocessing.preprocessing_blueprint import preprocessing_bp
 
 def init_app():
