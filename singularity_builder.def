@@ -37,6 +37,5 @@ From: ubuntu:20.04
     R -e "devtools::install_github('IRkernel/IRkernel')"
     R -e "IRkernel::installspec()"
     R -e "devtools::install_github('zhangyuqing/sva-devel')"
-    R -e "devtools::install_github('tudo-r/BatchJobs')"
 
     python3 -m pip install pyOpenSSL
