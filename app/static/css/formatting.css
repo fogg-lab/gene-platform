@@ -554,15 +554,15 @@ pre {
 	}
 }
 
-.fogg-logo {
+.organizational-logo {
 	font-family: montserrat, serif;
-	font-size: 35px;
-	font-weight: 600;
+	font-size: 22px;
+	font-weight: 700;
 	white-space: nowrap;
 }
 
-span.fogg-logo {
-	font-weight: 600;
+span.organizational-logo {
+	font-weight: 700;
 	margin-left: 18px;
 	margin-right: 30px;
 	margin-top: 5px;
