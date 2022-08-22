@@ -8,8 +8,8 @@ from .. import helpers
 from flask import Blueprint, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 
-RNA_SEQ_SCRIPT = "Rscript ../../rscripts/rnaseq.R"
-MICROARRAY_SCRIPT = "Rscript ../../rscripts/microarray.R"
+RNASEQ_SCRIPT = "Rscript ../../rscripts/rnaseq.r"
+MICROARRAY_SCRIPT = "Rscript ../../rscripts/microarray.r"
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -139,14 +139,16 @@ def display_output():
     display output in a table
     '''
 
+    user_dir = common.get_session_dir()
+
     # check here if output.tsv exists and errors.txt doesn't
-    unfiltered_output_path = f"{session['user_session_dir']}output.tsv"
+    unfiltered_output_path = os.path.join(user_dir, "output.tsv")
     unfiltered_output_file = open(unfiltered_output_path, encoding="UTF-8")
     output_reader = csv.reader(unfiltered_output_file, delimiter="\t")
     unfiltered_output = list(output_reader)
     unfiltered_output_file.close()
 
-    filter_output_path = f"{session['user_session_dir']}{'filter_output.tsv'}"
+    filter_output_path = os.path.join(user_dir, "filter_output.tsv")
     filter_output_exists = os.path.exists(filter_output_path)
     filtered_data = None
     if filter_output_exists:
@@ -166,13 +168,12 @@ def plots():
     display plots
     '''
 
-    common.ensure_session_dir()
+    user_dir = common.get_session_dir()
 
-    session_dir = f"{session['user_session_dir']}"
     plot_filenames = {}
 
-    if session_dir:
-        for filename in os.listdir(session_dir):
+    if user_dir:
+        for filename in os.listdir(user_dir):
             if "mean" in filename and ".png" and "unfiltered" in filename:
                 plot_filenames["unfiltered_mean_variance"] = filename
             elif "mean" in filename and ".png" in filename:
@@ -210,8 +211,10 @@ def reset():
 def get_unfiltered_tsv():
     '''download unfiltered output'''
 
-    unfiltered_output = open(f"{session['user_session_dir']}output.tsv", \
-        encoding="UTF-8")
+    user_dir = common.get_session_dir()
+
+    unfiltered_output_path = os.path.join(user_dir, "output.tsv")
+    unfiltered_output = open(unfiltered_output_path, encoding="UTF-8")
 
     return Response(
         unfiltered_output,
@@ -224,8 +227,10 @@ def get_unfiltered_tsv():
 def get_filtered_tsv():
     '''download filtered output'''
 
-    filtered_output = open(f"{session['user_session_dir']}filter_output.tsv",\
-         encoding="UTF-8")
+    user_dir = common.get_session_dir()
+
+    filtered_output_path = os.path.join(user_dir, "filter_output.tsv")
+    filtered_output = open(filtered_output_path, encoding="UTF-8")
 
     return Response(
         filtered_output,
@@ -237,29 +242,28 @@ def get_filtered_tsv():
 def call_analysis(data_type):
     '''
     calls microarray or rna-seq analysis depending on data_type
-    sends the session_id as an argument
+    sends the session path as an argument, redirects output to a log file
     '''
 
-    log = common.get_session_dir() + "log"
-
-    if data_type == 'microarray':
-        subprocess.Popen([f"{MICROARRAY_SCRIPT} {session['session_id']} "
-                          f"1> {log} 2>& 1"], shell=True)
-    elif data_type == 'RNA-Seq':
-        subprocess.Popen([f"{RNA_SEQ_SCRIPT} {session['session_id']} "
-                          f"1> {log} 2>& 1"], shell=True)
+    user_dir = common.get_session_dir()
+    log_path = os.path.join(user_dir, "log")
+    script = MICROARRAY_SCRIPT if data_type == "microarray" else RNASEQ_SCRIPT
+    
+    subprocess.Popen([f"{script} {user_dir} 1> {log_path} 2>& 1"], shell=True)
 
 
 def wait_for_output():
     '''waits until output shows up in users session directory'''
 
-    unfilt_output_path = f"{session['user_session_dir']}output.tsv"
-    filt_output_path = f"{session['user_session_dir']}filter_output.tsv"
-    filter_path = f"{session['user_session_dir']}filter.txt"
+    user_dir = common.get_session_dir()
+
+    unfiltered_output_path = os.path.join(user_dir, "output.tsv")
+    filt_output_path = os.path.join(user_dir, "filter_output.tsv")
+    filter_path = os.path.join(user_dir, "filter.txt")
 
     is_output = False
     while not is_output:
-        is_output = os.path.exists(unfilt_output_path)
+        is_output = os.path.exists(unfiltered_output_path)
         if is_output and os.path.exists(filter_path):
             is_output = os.path.exists(filt_output_path)
 
@@ -270,7 +274,9 @@ def wait_for_output():
 def generate_config(config_parameters):
     '''generates a config file using user-entered parameters'''
 
-    config_file_path = f"{session['user_session_dir']}config.yml"
+    user_dir = common.get_session_dir()
+
+    config_file_path = os.path.join(user_dir, "config.yml")
     config_file = open(config_file_path, "w", encoding="UTF-8")
 
     for param in config_parameters.keys():
@@ -287,7 +293,7 @@ def parse_config():
     ''' parses config into a dict of parameters '''
 
     session_dir = common.get_session_dir()
-    config_file_path = session_dir + "config.yml"
+    config_file_path = os.path.join(session_dir, "config.yml")
     config_params = {}
 
     if session_dir and os.path.exists(config_file_path):

@@ -56,12 +56,14 @@ def batchupload():
 @batch_correction_bp.route("/submit-batch-correction", methods=["POST"])
 def submit_batch_correction():
 
+    user_dir = common.get_session_dir()
+
     datatype = request.form.get("data_type")
     reference_level = request.form.get("reference_level")
     contrast_level = request.form.get("contrast_level")
     userdir = session["user_session_dir"]
 
-    expected_bc_counts_path = f"{session['user_session_dir']}counts_bc.tsv"
+    expected_bc_counts_path = os.path.join(user_dir, "counts_bc.tsv")
 
     # Delete any previous batch correction results
     if os.path.isfile(expected_bc_counts_path):

@@ -64,6 +64,8 @@ def submit_preprocessing():
         expected_paths.append(expected_counts_path)
         expected_paths.append(expected_coldata_path)
 
+    print(f"\n\nexpected_paths: {expected_paths}\n\n")
+
     # Delete any previous preprocessing results
     for file in os.listdir(user_dir):
         if file.endswith("processed.tsv"):
@@ -72,16 +74,16 @@ def submit_preprocessing():
     log = os.path.join(user_dir, "log")
 
     if "gdc" in data_source.lower():
-        subprocess.Popen([f"{PREP_GDC_SCRIPT} {user_dir}/ {dsets} "
+        subprocess.Popen([f"{PREP_GDC_SCRIPT} {user_dir} {dsets} "
                           f"1> {log} 2>& 1"], shell=True)
     elif "geo" in data_source.lower():
-        subprocess.Popen([f"{PREP_GEO_SCRIPT} {user_dir}/ {dsets} "
+        subprocess.Popen([f"{PREP_GEO_SCRIPT} {user_dir} {dsets} "
                           f"1> {log} 2>& 1"], shell=True)
 
     status_msg = "Preprocessing complete."
 
     if src == "geo":
-        # Map probes to gene symbols once the r script is finished getting the unmapped counts
+        # Map probes to gene symbols once the r script gets the unmapped counts
         unmapped_counts_exists = False
         while not unmapped_counts_exists:
             unmapped_counts_exists = True
@@ -90,7 +92,17 @@ def submit_preprocessing():
                     unmapped_counts_exists = False
             if not unmapped_counts_exists:
                 time.sleep(0.25)
-        utils.prep_geo_counts(user_dir)
+        counts_unmappable = utils.prep_geo_counts(user_dir)
+        for counts_path in counts_unmappable:
+            failed_project = counts_path.split("/")[-1].split("_")[0]
+            counts_path = counts_path.replace("unmapped", "processed")
+            if counts_path in expected_paths:
+                idx = expected_paths.index(counts_path)
+                # remove unmappable counts and associated coldata
+                expected_paths.pop(idx)
+                expected_paths.pop(idx)
+                
+                status_msg += f" {failed_project.upper()} could not be processed."
 
     is_output = False
     while not is_output:

@@ -124,11 +124,17 @@ def map_probes(counts_path, species):
     if not probeset:
         return ""
     counts_df.rename(columns={"probe": probeset}, inplace=True)
-    probe_map = pd.read_csv(f"probe_maps/{species}_{probeset}.tsv", sep="\t")
+    probeset_map_path = f"probe_maps/{species}_{probeset}.tsv"
+    if not os.path.exists(probeset_map_path):
+        print(f"No probe map found: {probeset_map_path}")
+    else:
+        print(f"Probe map found: {probeset_map_path}")
+    probe_map = pd.read_csv(probeset_map_path, sep="\t")
     try:
         counts_df = pd.merge(counts_df, probe_map, on=probeset, how="outer")
     except:
-        print("Something went wrong while mapping probes to gene symbols.")
+        print(f"Something went wrong while mapping probes to gene symbols for {counts_path}.")
+        return ""
 
     cols = list(counts_df.columns)
     cols = [cols[-1]] + cols[1:-1]
@@ -142,14 +148,20 @@ def prep_geo_counts(data_dir):
     '''Prepares unmapped expression matrices from GEO'''
 
     counts_paths = get_unmapped_counts_paths(data_dir)
+    counts_unmapped = set()
     for counts_path in counts_paths:
         counts_df = map_probes(counts_path, "hsapiens")
+        if not isinstance(counts_df, pd.DataFrame):
+            counts_unmapped.add(counts_path)
+            continue
         new_counts_path = counts_path.replace("_unmapped.tsv", "_processed.tsv")
         counts_df.to_csv(new_counts_path, sep="\t", index=False)
 
     # Cleanup unmapped counts
     for counts_path in counts_paths:
         os.remove(counts_path)
+
+    return counts_unmapped
 
 
 def zip_preprocessed_data(data_dir):
@@ -171,12 +183,18 @@ def zip_preprocessed_data(data_dir):
     print(zip_fname)
     with ZipFile(zip_fname, "w") as zip_file:
         for file in files_to_zip:
-            print(f"zipping file: {file}")
-            zip_file.write(file)
+            if "counts" in file or "coldata" in file:
+                file_category = "counts" if "counts" in file else "coldata"
+                matched_category = "coldata" if "counts" in file else "counts"
+                matched_file = file.replace(file_category, matched_category)
+                if os.path.exists(file) and os.path.exists(matched_file):
+                    print(f"zipping file: {file}")
+                    zip_file.write(file)
 
     # clean up files
     for fpath in files_to_zip:
-        os.remove(fpath)
+        if os.path.exists(fpath):
+            os.remove(fpath)
 
     os.chdir(old_wd)
 

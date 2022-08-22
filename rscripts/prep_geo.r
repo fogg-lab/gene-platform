@@ -13,12 +13,12 @@ for(i in seq_along(args[-c(1)])) {
 }
 
 saveExpression <- function(expr, series, platform) {
-    output_file = paste0(user_dir, series, "_counts_unmapped.tsv")
+    output_file = paste0(user_dir, "/", series, "_counts_unmapped.tsv")
     write.table(expr, file=output_file, sep="\t", quote=F, row.names=FALSE)
 }
 
 saveColdata <- function(coldata, series) {
-    output_file = paste0(user_dir, series,"_coldata_processed.tsv")
+    output_file = paste0(user_dir, "/", series, "_coldata_processed.tsv")
     write.table(coldata, file=output_file, sep="\t", quote=F, row.names = FALSE)
 }
 

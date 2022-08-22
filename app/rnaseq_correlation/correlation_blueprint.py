@@ -38,7 +38,6 @@ def upload_rnaseq_correlation():
     result = {}
 
     user_filename = request.args.get("user_filename")
-
     common.save_temp_file(request.data, "counts.tsv", user_filename)
 
     return jsonify(result)
@@ -46,10 +45,14 @@ def upload_rnaseq_correlation():
 
 @correlation_bp.route("/get_pearson_plot", methods=["POST"])
 def get_pearson_plot():
-    img_path = f"{session['user_session_dir']}pearson.png"
+    user_dir = common.get_session_dir()
+
+    img_path = os.path.join(user_dir, "pearson.png")
+
     if not os.path.isfile(img_path):
         print(f"{img_path} not found")
         return ('', 204)
+
     with open(f'{img_path}', 'rb') as f:
         img_data = base64.b64encode(f.read()).decode("utf-8")
         return img_data
@@ -57,10 +60,14 @@ def get_pearson_plot():
 
 @correlation_bp.route("/get-spearman-plot", methods=["POST"])
 def get_spearman_plot():
-    img_path = f"{session['user_session_dir']}spearman.png"
+    user_dir = common.get_session_dir()
+
+    img_path = os.path.join(user_dir, "spearman.png")
+
     if not os.path.isfile(img_path):
         print(f"{img_path} not found")
         return ('', 204)
+
     with open(f'{img_path}', 'rb') as f:
         img_data = base64.b64encode(f.read()).decode("utf-8")
         return img_data
@@ -69,17 +76,15 @@ def get_spearman_plot():
 @correlation_bp.route("/submit_rnaseq_correlation", methods=["POST"])
 def submit_rnaseq_correlation():
 
-    userdir = session["user_session_dir"]
+    user_dir = common.get_session_dir()
 
     corr_method = request.form.get("corr_method")
-
-    print(corr_method)
 
     expect_spearman = corr_method != "pearson"
     expect_pearson = corr_method != "spearman"
 
-    expected_pearson_path = f"{session['user_session_dir']}pearson.pdf"
-    expected_spearman_path = f"{session['user_session_dir']}spearman.pdf"
+    expected_pearson_path = os.path.join(user_dir, "pearson.pdf")
+    expected_spearman_path = os.path.join(user_dir, "spearman.pdf")
 
     # Delete any previous correlation results
     helpers.delete_user_file("pearson.pdf", common.get_session_dir())
@@ -87,7 +92,7 @@ def submit_rnaseq_correlation():
     helpers.delete_user_file("pearson.png", common.get_session_dir())
     helpers.delete_user_file("spearman.png", common.get_session_dir())
 
-    status_msg = correlation_prep.call_corr(userdir, corr_method)
+    status_msg = correlation_prep.call_corr(user_dir, corr_method)
     if not status_msg:
         status_msg = "Done computing sample correlations."
 

@@ -35,7 +35,7 @@ load_RSE_objects <- function(RSE_objects_dest_dir, projects) {
 args = commandArgs(trailingOnly = TRUE)
 
 user_dir <- args[1]
-data_dir <- paste0(user_dir, "../../../app/gdc_data/")
+data_dir <- file.path(user_dir, "../../../app/gdc_data/")
 
 # Read in the project names
 projects <- vector(mode='list', length=length(args)-1)
@@ -44,10 +44,10 @@ for(i in seq_along(args[-1])) {
 }
 
 # Data paths
-project_paths <- unlist(map(projects, function(prj) paste0(data_dir, prj)))
+project_paths <- unlist(map(projects, function(prj) file.path(data_dir, prj)))
 biolinks_dir <- "tcga_biolinks_downloads"
-TCGA_dest_dir <- paste0(data_dir, biolinks_dir)
-RSE_objects_dest_dir <- paste0(data_dir, "saved_RSE_objects")
+TCGA_dest_dir <- file.path(data_dir, biolinks_dir)
+RSE_objects_dest_dir <- file.path(data_dir, "saved_RSE_objects")
 dir.create(RSE_objects_dest_dir, showWarnings = FALSE)
 dir.create(TCGA_dest_dir, showWarnings = FALSE)
 
@@ -84,6 +84,7 @@ for (i in seq_along(projects)) {
 
         data = NULL
         if(!query_failed) {
+            message(paste0("Preparing data for ", projects[i]))
             data = tryCatch({
                 GDCprepare(q, directory = TCGA_dest_dir)
             }, warning= function(w) {
@@ -92,12 +93,13 @@ for (i in seq_along(projects)) {
                 message(e)
                 query_failed <- TRUE
             }, finally = { })
+            message(paste0("Data prepared for ", projects[i]))
         }
 
         if(!query_failed) {
+            message(paste0("Saving RSE object for project ", projects[i]))
             tryCatch({
-                saveHDF5SummarizedExperiment(data, dir = RSE_objects_dest_dir, prefix = paste0(projects[i], "_RNA_"), replace=TRUE)
-                #writeHDF5SummarizedExperiment(data, dir = RSE_objects_dest_dir, prefix = paste0(projects[i], "_RNA_"), replace=TRUE)
+                saveHDF5SummarizedExperiment(data, dir = RSE_objects_dest_dir, prefix = paste0(projects[i], "_RNA_"), replace=TRUE, as.sparse=TRUE)
                 project_saved <- TRUE
             }, warning= function(w) {
                 message(w)
@@ -106,6 +108,7 @@ for (i in seq_along(projects)) {
                 query_failed <- TRUE
                 project_saved <- FALSE
             }, finally = { })
+            message(paste0("Saved RSE object for project ", projects[i]))
         }
 
         tries_left <- tries_left - 1
@@ -143,10 +146,10 @@ for (rse_index in seq_along(rses)){
     # Filter out extraneous columns
     sample_names <- as.vector(rownames(colData(rses[[project_name]])))
     cols_to_keep <- c("gene_name", sample_names)
-    
+
     counts_df <- counts_df[,cols_to_keep]
     counts_df <- dplyr::rename(counts_df, Hugo_Symbol = gene_name)
-    
+
     ###
     # Get coldata
     ###
@@ -167,8 +170,8 @@ for (rse_index in seq_along(rses)){
 
     # Write counts and coldata dataframes to tsv files
     message("Writing counts and coldata files...")
-    write_tsv(counts_df, path = paste0(user_dir, project_name, "_counts_processed.tsv"))
-    write_tsv(coldata_df, path = paste0(user_dir, project_name, "_coldata_processed.tsv"))
+    write_tsv(counts_df, path = paste0(user_dir, "/", tolower(project_name), "_counts_processed.tsv"))
+    write_tsv(coldata_df, path = paste0(user_dir, "/", tolower(project_name), "_coldata_processed.tsv"))
 
     message("Done.")
 }

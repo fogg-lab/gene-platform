@@ -35,7 +35,8 @@ function show_hide_parameters() {
 
 
 function analysisReqListener() {
-  console.log(this.responseText);
+  status_msg = this.responseText;
+  console.log(status_msg);
   // analysis is complete - load the results page
   if (!job_cancelled) {
     window.location.href = "/display";

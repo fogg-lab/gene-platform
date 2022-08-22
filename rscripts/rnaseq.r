@@ -14,15 +14,15 @@ suppressMessages(suppressWarnings(library(ggrepel)))
 # Command arguments stored in args variable, used to get Session ID from Flask app
 args = commandArgs(trailingOnly = TRUE)
 
-# Grabs directory where User session is located, creates variables for each file required for analysis
-user_directory <- paste("../user_files/", gsub("[][]","",args[1]), "/", sep="")
-counts_filepath <- paste(user_directory, "counts.tsv", sep="")
-coldata_filepath <- paste(user_directory, "coldata.tsv", sep="")
-config_filepath <- paste(user_directory, "config.yml", sep="")
-filter_filepath <- paste(user_directory, "filter.txt", sep="")
+# Get paths
+user_directory <- args[1]
+counts_filepath <- file.path(user_directory, "counts.tsv")
+coldata_filepath <- file.path(user_directory, "coldata.tsv")
+config_filepath <- file.path(user_directory, "config.yml")
+filter_filepath <- file.path(user_directory, "filter.txt")
 
 mean_difference = function(fit, name){
-  mean_diff_rna_seq_path <- paste(user_directory, name, sep="")
+  mean_diff_rna_seq_path <- file.path(user_directory, name)
   differential_expression = data.frame(fit)
   colnames(differential_expression) <- c("symbol", "baseMean", "log2FoldChange", "l2fc_se", "test_stat", "pval", "padj")
   options(ggrepel.max.overlaps = Inf)
@@ -43,7 +43,7 @@ mean_difference = function(fit, name){
 }
 
 volcano_plot = function(fit, name){
-  rna_volcano_path <- paste(user_directory, name, sep="")
+  rna_volcano_path <- file.path(user_directory, name)
   de <- fit
 
   de$differential_expression <- "Not sig."
@@ -118,14 +118,14 @@ colnames(dge_res_df) <- c("symbol", "base_avg", "l2fc", "l2fc_se", "test_stat", 
 
 write("Analysis complete, writing output files", stderr())
 
-write_tsv(dge_res_df, paste(user_directory,"output.tsv", sep=""))
+write_tsv(dge_res_df, file.path(user_directory,"output.tsv"))
 volcano_plot(dge_res_df, "volcano_rnaseq_unfiltered.png")
 mean_difference(dge_res_df, "mean_difference_rnaseq_unfiltered.png")
 
 if (file.info(filter_filepath)$size != 0) {
     filter_list <- scan(filter_filepath, what="character")
     filtered_df <- dge_res_df[dge_res_df$symbol %in% filter_list,]
-    write_tsv(filtered_df, paste(user_directory, "filter_output.tsv", sep=""))
+    write_tsv(filtered_df, file.path(user_directory, "filter_output.tsv"))
     volcano_plot(filtered_df, "volcano_rnaseq_filtered.png")
     mean_difference(filtered_df, "mean_difference_rnaseq_filtered.png")
 }

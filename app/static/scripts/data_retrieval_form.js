@@ -36,11 +36,12 @@ function update_form() {
 
 function preprocessingReqListener() {
     // preprocessing completed
+    let status_msg = this.responseText;
     overlay = document.getElementById("overlay");
     overlay.remove();
     let messages = document.getElementById("messages");
-    messages.innerHTML = this.responseText;
-    if (this.responseText.includes("Preprocessing complete.")) {
+    messages.innerHTML = status_msg;
+    if (status_msg.includes("Preprocessing complete.")) {
         document.getElementById("download-preprocessed-data-btn").disabled = false;
     }
 }

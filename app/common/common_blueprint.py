@@ -46,13 +46,16 @@ def get_console_output():
     the log file contains terminal output from the analysis script
     '''
 
+    log_content = ""
     log = read_user_file("log", get_session_dir())
-    log_content = log.read()
-    log.close()
-    clear_user_file("log", get_session_dir())
+    if log:
+        log_content = log.read()[-1000:]
+        log.close()
+        clear_user_file("log", get_session_dir())
+    else:
+        return (log_content, 204)
 
-    if not log:
-        return ("", 204)
+    print(f"{log_content} \n length: {len(log_content)}\n")
 
     return Response(log_content, mimetype='text/plain')
 
@@ -89,9 +92,12 @@ def save_temp_file(file_contents, standard_filename, user_filename):
 
 def read_user_file(filename, user_dir):
     '''
-    opens a user file for reading
-    pass in the filename i.e "counts.tsv"
-    returns lines from a file in the users session directory
+    Opens a user file for reading. Caller is responsible for closing the file
+    Parameters:
+        filename: string
+        user_dir: string
+    Returns:
+        file object
     '''
     user_file = None
 
@@ -104,12 +110,18 @@ def read_user_file(filename, user_dir):
 
 
 def clear_user_file(filename, user_dir):
-    '''clears a user file'''
+    '''
+    Clears all content from a user file if it exists
+    Parameters:
+        filename: string
+        user_dir: string
+    '''
     if user_dir:
         filepath = os.path.join(user_dir, filename)
         if os.path.isfile(filepath):
             f = open(filepath, "w")
-            f.truncate(0)
+            f.truncate()
+            f.seek(0)
             f.close()
 
 
