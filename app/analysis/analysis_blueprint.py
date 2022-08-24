@@ -246,7 +246,7 @@ def call_analysis(data_type):
     '''
 
     user_dir = common.get_session_dir()
-    log_path = os.path.join(user_dir, "log")
+    log_path = os.path.join(user_dir, ".log")
     script = MICROARRAY_SCRIPT if data_type == "microarray" else RNASEQ_SCRIPT
     
     subprocess.Popen([f"{script} {user_dir} 1> {log_path} 2>& 1"], shell=True)

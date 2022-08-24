@@ -47,11 +47,11 @@ def get_console_output():
     '''
 
     log_content = ""
-    log = read_user_file("log", get_session_dir())
+    log = read_user_file(".log", get_session_dir())
     if log:
         log_content = log.read()[-1000:]
         log.close()
-        clear_user_file("log", get_session_dir())
+        clear_user_file(".log", get_session_dir())
     else:
         return (log_content, 204)
 

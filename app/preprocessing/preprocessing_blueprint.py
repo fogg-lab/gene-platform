@@ -71,7 +71,7 @@ def submit_preprocessing():
         if file.endswith("processed.tsv"):
             os.remove(os.path.join(user_dir, file))
 
-    log = os.path.join(user_dir, "log")
+    log = os.path.join(user_dir, ".log")
 
     if "gdc" in data_source.lower():
         subprocess.Popen([f"{PREP_GDC_SCRIPT} {user_dir} {dsets} "
