@@ -13,7 +13,7 @@ Instructions to set up and start the web app:
 
 2. Build the container  
   `cd gene-platform`  
-  `singularity build image.sif singularity_builder.def`  
+  `sudo singularity build image.sif singularity_builder.def`  
   Note: It may take an hour or longer to build the image.  
 
 3. Run the container  
