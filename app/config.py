@@ -1,16 +1,13 @@
-#Flask config
-
-from datetime import timedelta
 import os
+from datetime import timedelta
+from dotenv import load_dotenv
 
-SECRET_key = ""
-if os.path.isfile("session_secret_key.txt"):
-    with open("session_secret_key.txt", "r") as f:
-        SECRET_KEY = f.read()
-else:
-    with open("session_secret_key.txt", "w") as f:
-        SECRET_KEY = os.urandom(16)
-        f.write(str(SECRET_KEY))
+load_dotenv()
+
+SECRET_KEY = os.getenv("SESSION_SECRET_KEY", None)
+if SECRET_KEY is None:
+    os.environ["SESSION_SECRET_KEY"] = os.urandom(24)
+    SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 
 SESSION_PERMANENT = True
 SESSION_TYPE = "filesystem"
