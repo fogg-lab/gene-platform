@@ -21,7 +21,7 @@ preprocessing_bp = Blueprint('preprocessing_bp', __name__,
 
 @preprocessing_bp.route("/preprocessing")
 def preprocessing():
-    '''Load preprocessing page'''
+    """Load preprocessing page"""
 
     common.ensure_session_dir()
 
@@ -120,7 +120,7 @@ def submit_preprocessing():
 
 @preprocessing_bp.route("/confirm-preprocessing-submission", methods=["POST"])
 def confirm_preprocessing_submission():
-    '''Validate submitted datasets and display datasets to load before submission'''
+    """Validate submitted datasets and display datasets to load before submission"""
 
     data_source = request.form.get("source")
     dsets = request.form.get("dsets")
@@ -140,7 +140,7 @@ def get_preprocessed_data():
 
 
 def get_preprocessing_confirmation_msg(dsets, source):
-    '''Return html confirmation message with datasets to load'''
+    """Return html confirmation message with datasets to load"""
 
     err_msg = f"<p><b>Error:</b> No provided datasets were recognized from source: {source}.</p>"
 

@@ -19,7 +19,7 @@ normalization_bp = Blueprint('normalization_bp', __name__, template_folder='../t
 
 @normalization_bp.route("/normalization")
 def normalization():
-    '''normalization input form'''
+    """normalization input form"""
 
     common.ensure_session_dir()
 
@@ -31,11 +31,11 @@ def normalization():
 
 @normalization_bp.route("/normalization_upload", methods=["POST"])
 def normalization_upload():
-    '''
+    """
     handles uploading counts and coldata files for normalization
     one file per request
     file contents are in request.data (a bytes object)
-    '''
+    """
 
     result = {}
 

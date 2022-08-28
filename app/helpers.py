@@ -1,9 +1,9 @@
-'''utility functions for app.py.  '''
+"""utility functions for app.py.  """
 
 import os
 
 def check_parameter_names(config_parameters):
-    '''
+    """
     ensures config parameters contain the required parameters,
     and that there are no unrecognized parameters
     min_expr, min_prop, padj_thresh, adj_method, condition,
@@ -11,7 +11,7 @@ def check_parameter_names(config_parameters):
 
     returns an empty string if valid
     if invalid, returns error message
-    '''
+    """
 
     all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method",
         "condition", "contrast_level", "reference_level", "use_qual_weights"}
@@ -47,10 +47,10 @@ def check_parameter_names(config_parameters):
 
 
 def validate_parameters(config_parameters):
-    '''
+    """
     returns an error message if config parameters are invalid
     returns an empty string if config parameters are valid
-    '''
+    """
 
     error_msg = ""
     param_names_invalid = check_parameter_names(config_parameters)
@@ -102,7 +102,7 @@ def validate_parameters(config_parameters):
 
 
 def get_request_parameters(form, data_type):
-    '''returns request parameters from the parameter form'''
+    """returns request parameters from the parameter form"""
 
     request_parameters = {}
 
@@ -127,10 +127,10 @@ def get_request_parameters(form, data_type):
 
 
 def check_factor_levels(config_params, coldata):
-    '''
+    """
     ensures factor levels are present in the input files
     if the factor levels look good, returns empty string
-    '''
+    """
 
     condition = config_params["condition"]
     contrast_level = config_params["contrast_level"]
@@ -166,13 +166,13 @@ def check_factor_levels(config_params, coldata):
 
 
 def check_coldata_matches_counts(counts_colnames, coldata_rows):
-    '''
+    """
     ensure rows in coldata match with the column names for samples in counts
     Assumes that sample names are listed on first row (header) of counts file
     Also assumes that sample names are listed in first column of coldata file,
         starting on second row of coldata file (first row after the header)
     Returns empty string if coldata and counts sample names match
-    '''
+    """
 
     samples = []
 
@@ -213,7 +213,7 @@ def check_coldata_matches_counts(counts_colnames, coldata_rows):
 
 
 def get_analysis_confirmation_msg(config_params):
-    '''get analysis formula from the config parameters'''
+    """get analysis formula from the config parameters"""
 
     condition = config_params["condition"]
     contrast_level = config_params["contrast_level"]
@@ -230,10 +230,10 @@ def get_analysis_confirmation_msg(config_params):
 
 
 def ensure_batches(coldata_rows):
-    '''
+    """
     ensure that all samples have a batch number
     if all samples have a batch number, returns empty string
-    '''
+    """
 
     # check header row to make sure there is a batch column
     header = coldata_rows.pop(0)
@@ -252,10 +252,10 @@ def ensure_batches(coldata_rows):
 
 
 def delete_user_file(filename, user_dir):
-    '''
+    """
     deletes a user input file if it exists
     pass in the filename i.e "counts.tsv"
-    '''
+    """
 
     if user_dir:
         filepath = os.path.join(user_dir, filename)

@@ -23,15 +23,15 @@ common_bp = Blueprint('common_bp', __name__, template_folder='../templates', \
 
 @common_bp.route("/")
 def index():
-    '''main page'''
+    """main page"""
     return render_template("home.html", title="Welcome!")
 
 
 @common_bp.route("/cancel-upload", methods=["POST"])
 def cancelupload():
-    '''
+    """
     removes uploaded file from user session directory
-    '''
+    """
 
     filename = request.form.get("filename")
     helpers.delete_user_file(filename, get_session_dir())
@@ -41,10 +41,10 @@ def cancelupload():
 
 @common_bp.route("/get-console-output")
 def get_console_output():
-    '''
+    """
     returns the contents of the log file in user session directory
     the log file contains terminal output from the analysis script
-    '''
+    """
 
     log_content = ""
     log = read_user_file(".log", get_session_dir())
@@ -61,13 +61,13 @@ def get_console_output():
 
 
 def save_temp_file(file_contents, standard_filename, user_filename):
-    '''
+    """
     Saves uploaded file to user session directory
 
     Parameters:
         file_contents: bytes object
         filename: string
-    '''
+    """
 
     # create session directory if none exists
     user_dir = get_session_dir()
@@ -91,14 +91,14 @@ def save_temp_file(file_contents, standard_filename, user_filename):
 
 
 def read_user_file(filename, user_dir):
-    '''
+    """
     Opens a user file for reading. Caller is responsible for closing the file
     Parameters:
         filename: string
         user_dir: string
     Returns:
         file object
-    '''
+    """
     user_file = None
 
     if user_dir:
@@ -110,12 +110,12 @@ def read_user_file(filename, user_dir):
 
 
 def clear_user_file(filename, user_dir):
-    '''
+    """
     Clears all content from a user file if it exists
     Parameters:
         filename: string
         user_dir: string
-    '''
+    """
     if user_dir:
         filepath = os.path.join(user_dir, filename)
         if os.path.isfile(filepath):
@@ -126,7 +126,7 @@ def clear_user_file(filename, user_dir):
 
 
 def cleanup_old_sessions():
-    '''Clean up other sessions older than 4 hours (14400 seconds)'''
+    """Clean up other sessions older than 4 hours (14400 seconds)"""
 
     for old_dir in os.listdir(USER_FILES_LOCATION):
         old_dir = os.path.join(USER_FILES_LOCATION, old_dir)
@@ -147,7 +147,7 @@ def cleanup_old_sessions():
 
 
 def get_session_dir():
-    ''' returns session dir if it exists, otherwise returns False '''
+    """ returns session dir if it exists, otherwise returns False """
 
     if "user_session_dir" not in session:
         ensure_session_dir()
@@ -156,10 +156,10 @@ def get_session_dir():
 
 
 def ensure_session_dir():
-    '''
+    """
     if there is no directory for the user session, create one now
     directory path is stored in the user session variable 'user_session_dir'
-    '''
+    """
 
     if ("user_session_dir" not in session or
         not os.path.exists(session["user_session_dir"])):
@@ -171,7 +171,7 @@ def ensure_session_dir():
 
 
 def get_tsv_rows(filename):
-    '''returns the rows of the user input file as a 2d array'''
+    """returns the rows of the user input file as a 2d array"""
 
     user_dir = get_session_dir()
 

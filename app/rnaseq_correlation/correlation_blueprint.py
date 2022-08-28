@@ -20,7 +20,7 @@ correlation_bp = Blueprint('correlation_bp', __name__,
 
 @correlation_bp.route("/rnaseq-correlation")
 def rnaseq_correlation():
-    '''RNAseq sample correlation page'''
+    """RNAseq sample correlation page"""
 
     common.ensure_session_dir()
 
@@ -33,7 +33,7 @@ def rnaseq_correlation():
 
 @correlation_bp.route("/upload-rnaseq-correlation", methods=["POST"])
 def upload_rnaseq_correlation():
-    '''handles uploading counts for rnaseq sample correlation'''
+    """handles uploading counts for rnaseq sample correlation"""
 
     result = {}
 

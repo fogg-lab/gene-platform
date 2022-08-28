@@ -5,7 +5,7 @@ from zipfile import ZipFile
 
 
 def get_series_probesets(accessions):
-    '''Returns a dict of accessions with their respective probesets'''
+    """Returns a dict of accessions with their respective probesets"""
 
     with open("json/series_platforms.json") as series_platforms_json:
         series_platforms = json.load(series_platforms_json)
@@ -38,7 +38,7 @@ def get_series_probesets(accessions):
 
 
 def get_valid_geo_accessions(accessions):
-    '''Returns a list of valid GEO accessions from given list of accessions'''
+    """Returns a list of valid GEO accessions from given list of accessions"""
 
     valid_accessions = list(get_series_probesets(accessions).keys())
 
@@ -46,7 +46,7 @@ def get_valid_geo_accessions(accessions):
 
 
 def get_valid_gdc_projects(project_names):
-    '''Returns a list of valid GDC projects from project_names'''
+    """Returns a list of valid GDC projects from project_names"""
 
     with open("json/gdc_projects.json") as gdc_projects_json:
         gdc_projects = json.load(gdc_projects_json)
@@ -145,7 +145,7 @@ def map_probes(counts_path, species):
 
 
 def prep_geo_counts(data_dir):
-    '''Prepares unmapped expression matrices from GEO'''
+    """Prepares unmapped expression matrices from GEO"""
 
     counts_paths = get_unmapped_counts_paths(data_dir)
     counts_unmapped = set()
@@ -165,7 +165,7 @@ def prep_geo_counts(data_dir):
 
 
 def zip_preprocessed_data(data_dir):
-    '''Zips counts and coldata files and returns filename'''
+    """Zips counts and coldata files and returns filename"""
 
     old_wd = os.getcwd()
     new_wd = data_dir

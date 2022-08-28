@@ -17,7 +17,7 @@ batch_correction_bp = Blueprint('batch_correction_bp', __name__,
 
 @batch_correction_bp.route("/batch-correction")
 def batchcorrection():
-    '''batch correction input form'''
+    """batch correction input form"""
 
     common.ensure_session_dir()
 
@@ -29,11 +29,11 @@ def batchcorrection():
 
 @batch_correction_bp.route("/batch-upload", methods=["POST"])
 def batchupload():
-    '''
+    """
     handles uploading counts and coldata files for batch correction
     one file per request
     file contents are in request.data (a bytes object)
-    '''
+    """
 
     result = {}
 
@@ -90,7 +90,7 @@ def get_batch_correction_counts():
 
 
 def check_bc_coldata():
-    '''ensures coldata has batches'''
+    """ensures coldata has batches"""
 
     coldata = common.get_tsv_rows("coldata.tsv")
     err_msg = helpers.ensure_batches(coldata)

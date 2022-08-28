@@ -24,7 +24,7 @@ analysis_bp = Blueprint('analysis_bp', __name__,
 
 @analysis_bp.route("/setup")
 def setup():
-    '''first input page (file uploads)'''
+    """first input page (file uploads)"""
 
     common.ensure_session_dir()
 
@@ -36,11 +36,11 @@ def setup():
 
 @analysis_bp.route("/upload", methods=["POST"])
 def upload():
-    '''
+    """
     handles uploading counts, coldata, filter, and config file
     one file per request
     file contents are in request.data (a bytes object)
-    '''
+    """
 
     result = {}
 
@@ -62,7 +62,7 @@ def upload():
 
 @analysis_bp.route("/parameters", methods=["GET"])
 def parameters():
-    '''loads the parameter form'''
+    """loads the parameter form"""
 
     params = parse_config()
     return render_template("parameters_form.html", params=params,\
@@ -71,11 +71,11 @@ def parameters():
 
 @analysis_bp.route("/submit", methods=["POST"])
 def submit():
-    '''
+    """
     submit_parameters()
     submits input for analysis if valid
     generates a config file from the parameter form
-    '''
+    """
 
     # get whether analysis is microarray or RNA-Seq
     data_type = request.form.get("data_type")
@@ -97,7 +97,7 @@ def submit():
 
 @analysis_bp.route("/confirm-analysis-submission", methods=["POST"])
 def confirm_analysis_submission():
-    '''validate input and display formula before submission'''
+    """validate input and display formula before submission"""
 
     # get whether analysis is microarray or RNA-Seq, and get params
     data_type = request.form.get("data_type")
@@ -135,9 +135,9 @@ def confirm_analysis_submission():
 
 @analysis_bp.route("/display")
 def display_output():
-    '''
+    """
     display output in a table
-    '''
+    """
 
     user_dir = common.get_session_dir()
 
@@ -164,9 +164,9 @@ def display_output():
 
 @analysis_bp.route("/plots")
 def plots():
-    '''
+    """
     display plots
-    '''
+    """
 
     user_dir = common.get_session_dir()
 
@@ -195,7 +195,7 @@ def getplot(filename):
 
 @analysis_bp.route("/reset", methods=["GET"])
 def reset():
-    '''Deletes files from a users session'''
+    """Deletes files from a users session"""
 
     helpers.delete_user_file("counts.tsv",  common.get_session_dir())
     helpers.delete_user_file("coldata.tsv",  common.get_session_dir())
@@ -209,7 +209,7 @@ def reset():
 
 @analysis_bp.route("/get-unfiltered-tsv")
 def get_unfiltered_tsv():
-    '''download unfiltered output'''
+    """download unfiltered output"""
 
     user_dir = common.get_session_dir()
 
@@ -225,7 +225,7 @@ def get_unfiltered_tsv():
 
 @analysis_bp.route("/get-filtered-tsv")
 def get_filtered_tsv():
-    '''download filtered output'''
+    """download filtered output"""
 
     user_dir = common.get_session_dir()
 
@@ -240,10 +240,10 @@ def get_filtered_tsv():
 
 
 def call_analysis(data_type):
-    '''
+    """
     calls microarray or rna-seq analysis depending on data_type
     sends the session path as an argument, redirects output to a log file
-    '''
+    """
 
     user_dir = common.get_session_dir()
     log_path = os.path.join(user_dir, ".log")
@@ -253,7 +253,7 @@ def call_analysis(data_type):
 
 
 def wait_for_output():
-    '''waits until output shows up in users session directory'''
+    """waits until output shows up in users session directory"""
 
     user_dir = common.get_session_dir()
 
@@ -272,7 +272,7 @@ def wait_for_output():
 
 
 def generate_config(config_parameters):
-    '''generates a config file using user-entered parameters'''
+    """generates a config file using user-entered parameters"""
 
     user_dir = common.get_session_dir()
 
@@ -290,7 +290,7 @@ def generate_config(config_parameters):
 
 
 def parse_config():
-    ''' parses config into a dict of parameters '''
+    """ parses config into a dict of parameters """
 
     session_dir = common.get_session_dir()
     config_file_path = os.path.join(session_dir, "config.yml")
@@ -305,7 +305,7 @@ def parse_config():
 
 
 def check_config():
-    '''get config params in a dict then validate the params'''
+    """get config params in a dict then validate the params"""
 
     err_msg = ""
 
