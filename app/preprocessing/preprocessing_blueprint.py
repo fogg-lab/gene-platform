@@ -1,9 +1,9 @@
 import os
 import subprocess
-from ..common import common_blueprint as common
 import time
-from . import preprocessing_utils as utils
 from flask import Blueprint, render_template, request, send_from_directory
+from ..common import common_blueprint as common
+from . import preprocessing_utils as utils
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -35,6 +35,7 @@ def preprocessing():
 
 @preprocessing_bp.route("/submit-preprocessing", methods=["POST"])
 def submit_preprocessing():
+    """Submit preprocessing job"""
     data_source = request.form.get("source")
     dsets = request.form.get("dsets")
     valid_dsets, _ = get_valid_invalid_dsets(dsets, data_source)
@@ -101,7 +102,7 @@ def submit_preprocessing():
                 # remove unmappable counts and associated coldata
                 expected_paths.pop(idx)
                 expected_paths.pop(idx)
-                
+
                 status_msg += f" {failed_project.upper()} could not be processed."
 
     is_output = False
@@ -133,6 +134,7 @@ def confirm_preprocessing_submission():
 
 @preprocessing_bp.route("/get-preprocessed-data")
 def get_preprocessed_data():
+    """Return preprocessed data for user to download"""
     user_dir = common.get_session_dir()
     processed_data = utils.zip_preprocessed_data(user_dir)
     zip_fname = processed_data.split("/")[-1]
@@ -146,7 +148,7 @@ def get_preprocessing_confirmation_msg(dsets, source):
 
     if not dsets:
         return err_msg
-    
+
     valid_dsets, invalid_dsets = get_valid_invalid_dsets(dsets, source)
     if not valid_dsets:
         return err_msg
@@ -171,14 +173,15 @@ def get_preprocessing_confirmation_msg(dsets, source):
 
 
 def get_valid_invalid_dsets(dsets, source):
+    """Return valid and invalid datasets from user input"""
     if " " in dsets and not "," in dsets:
         dsets = dsets.split(" ")
     elif "," in dsets:
         dsets = dsets.split(",")
     else:
         dsets = [dsets.lower()]
-    for i in range(len(dsets)):
-        dsets[i] = dsets[i].replace(" ", "").lower()
+    for i, dset in enumerate(dsets):
+        dsets[i] = dset.replace(" ", "").lower()
 
     if "gdc" in source.lower():
         valid_dsets = utils.get_valid_gdc_projects(dsets)

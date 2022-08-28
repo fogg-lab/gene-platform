@@ -1,9 +1,8 @@
 import os
 import subprocess
-from ..common import common_blueprint as common
 import time
-from flask import Blueprint, render_template, request, session, jsonify, \
-    send_from_directory, session
+from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
+from ..common import common_blueprint as common
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -13,8 +12,8 @@ NORMALIZATION_SCRIPT = "Rscript ../../rscripts/normalize.r"
 
 os.chdir(SCRIPT_DIR)
 
-normalization_bp = Blueprint('normalization_bp', __name__, template_folder='../templates', \
-    static_folder='../static')
+normalization_bp = Blueprint('normalization_bp', __name__, template_folder='../templates',
+                             static_folder='../static')
 
 
 @normalization_bp.route("/normalization")
@@ -53,6 +52,7 @@ def normalization_upload():
 
 @normalization_bp.route("/submit-normalization", methods=["POST"])
 def submit_normalization():
+    """Submit a normalization job"""
 
     method = request.form.get("method")
     user_dir = session["user_session_dir"]
@@ -77,6 +77,8 @@ def submit_normalization():
 
 @normalization_bp.route("/get-normalized-counts")
 def get_normalized_counts():
+    """Return the normalized counts file to the client"""
+
     rel_user_dir = common.get_session_dir()
     abs_user_dir = os.path.abspath(rel_user_dir)
     return send_from_directory(abs_user_dir, "counts_normalized.tsv")

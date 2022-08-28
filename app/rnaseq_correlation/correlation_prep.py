@@ -1,10 +1,12 @@
 import os
-import pandas as pd
 import subprocess
+import pandas as pd
+import numpy as np
 
 CORR_SCRIPT = "Rscript ../../rscripts/correlation.r"
 
 def call_corr(user_dir, corr_method):
+    """Prepare data for correlation and call R script to generate plots"""
 
     counts_path = os.path.join(user_dir, "counts.tsv")
 
@@ -15,17 +17,15 @@ def call_corr(user_dir, corr_method):
     counts = pd.read_csv(counts_path,
         usecols = [i for i in counts_cols if i.lower() != "entrez_gene_id"], sep='\t')
 
-    counts = counts._get_numeric_data()
+    counts = counts.select_dtypes(include=np.number)
 
     counts.to_csv(os.path.join(user_dir, "counts_corr-in.tsv"), sep='\t', index=False)
 
     counts_in_path = os.path.join(user_dir, 'counts_corr-in.tsv')
 
     if corr_method != "pearson":
-        subprocess.Popen(
-            [f"{CORR_SCRIPT} {counts_in_path} {user_dir} spearman"], shell=True)
+        subprocess.Popen([f"{CORR_SCRIPT} {counts_in_path} {user_dir} spearman"])
     if corr_method != "spearman":
-        subprocess.Popen(
-            [f"{CORR_SCRIPT} {counts_in_path} {user_dir} pearson"], shell=True)
+        subprocess.Popen([f"{CORR_SCRIPT} {counts_in_path} {user_dir} pearson"])
 
     return ""

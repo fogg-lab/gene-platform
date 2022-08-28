@@ -1,16 +1,16 @@
 import json
 import os
-import pandas as pd
 from zipfile import ZipFile
+import pandas as pd
 
 
 def get_series_probesets(accessions):
     """Returns a dict of accessions with their respective probesets"""
 
-    with open("json/series_platforms.json") as series_platforms_json:
+    with open("json/series_platforms.json", encoding="utf-8") as series_platforms_json:
         series_platforms = json.load(series_platforms_json)
 
-    with open("json/platform_probesets.json") as platform_probesets_json:
+    with open("json/platform_probesets.json", encoding="utf-8") as platform_probesets_json:
         platform_probesets = json.load(platform_probesets_json)
 
     supported_probesets = set()
@@ -48,7 +48,7 @@ def get_valid_geo_accessions(accessions):
 def get_valid_gdc_projects(project_names):
     """Returns a list of valid GDC projects from project_names"""
 
-    with open("json/gdc_projects.json") as gdc_projects_json:
+    with open("json/gdc_projects.json", encoding="utf-8") as gdc_projects_json:
         gdc_projects = json.load(gdc_projects_json)
 
     valid_projects = []
@@ -63,28 +63,8 @@ def get_valid_gdc_projects(project_names):
     return valid_projects
 
 
-def combine_gdc(data_dir):
-    counts_paths = get_counts_paths(data_dir)
-    coldata_paths = get_coldata_paths(data_dir)
-    counts_dfs = []
-    coldata_dfs = []
-
-    for counts_path, coldata_path in zip(counts_paths, coldata_paths):
-        counts_df = pd.read_csv(counts_path, sep="\t")
-        coldata_df = pd.read_csv(coldata_path, sep="\t")
-        counts_df.set_index("Hugo_Symbol", inplace=True)
-        coldata_df.set_index("sample_name", inplace=True)
-        counts_dfs.append(counts_df)
-        coldata_dfs.append(coldata_df)
-
-    combined_counts = pd.concat(counts_dfs,axis=1)
-    combined_coldata = pd.concat(coldata_dfs,axis=0)
-
-    combined_counts.to_csv(os.path.join(data_dir, "counts_processed.tsv"), sep="\t")
-    combined_coldata.to_csv(os.path.join(data_dir, "coldata_processed.tsv"), sep="\t")
-
-
 def get_counts_paths(data_dir):
+    """Returns a list of paths to expression matrices"""
     counts_paths = []
 
     for fname in os.listdir(data_dir):
@@ -95,26 +75,29 @@ def get_counts_paths(data_dir):
 
 
 def get_unmapped_counts_paths(data_dir):
+    """Returns a list of paths to unmapped expression matrices"""
     counts_paths = []
 
     for fname in os.listdir(data_dir):
         if "_counts_unmapped.tsv" in fname:
             counts_paths.append(os.path.join(data_dir, fname))
-    
+
     return counts_paths
 
 
 def get_coldata_paths(data_dir):
+    """Returns a list of paths to coldata files"""
     coldata_paths = []
 
     for fname in os.listdir(data_dir):
         if "_coldata.tsv" in fname:
             coldata_paths.append(os.path.join(data_dir, fname))
-    
+
     return coldata_paths
 
 
 def map_probes(counts_path, species):
+    """Maps probes to gene symbols"""
 
     counts_fname = counts_path.split("/")[-1]
     accession_id = counts_fname.split("_")[0].lower()
@@ -132,8 +115,8 @@ def map_probes(counts_path, species):
     probe_map = pd.read_csv(probeset_map_path, sep="\t")
     try:
         counts_df = pd.merge(counts_df, probe_map, on=probeset, how="outer")
-    except:
-        print(f"Something went wrong while mapping probes to gene symbols for {counts_path}.")
+    except KeyError:
+        print(f"Unable to map probes to gene symbols for {counts_path}.")
         return ""
 
     cols = list(counts_df.columns)

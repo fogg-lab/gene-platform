@@ -1,10 +1,9 @@
 import os
+import time
+from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
 from ..common import common_blueprint as common
 from .. import helpers
-import time
 from . import bc
-from flask import Blueprint, render_template, request, session, jsonify, \
-    send_from_directory, session
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -55,6 +54,7 @@ def batchupload():
 
 @batch_correction_bp.route("/submit-batch-correction", methods=["POST"])
 def submit_batch_correction():
+    """Submit a batch correction job"""
 
     user_dir = common.get_session_dir()
 
@@ -84,13 +84,15 @@ def submit_batch_correction():
 
 @batch_correction_bp.route("/get-batch-corrected-counts")
 def get_batch_correction_counts():
+    """Returns batch correction results to the client"""
+
     rel_user_dir = common.get_session_dir()
     abs_user_dir = os.path.abspath(rel_user_dir)
     return send_from_directory(abs_user_dir, "counts_bc.tsv")
 
 
 def check_bc_coldata():
-    """ensures coldata has batches"""
+    """Ensures coldata has batches"""
 
     coldata = common.get_tsv_rows("coldata.tsv")
     err_msg = helpers.ensure_batches(coldata)

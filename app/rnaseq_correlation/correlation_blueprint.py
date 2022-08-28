@@ -1,11 +1,11 @@
 import os
 import time
-import fitz
-from . import correlation_prep
 import base64
+import fitz
+from flask import Blueprint, render_template, request, session, jsonify
+from . import correlation_prep
 from ..common import common_blueprint as common
 from .. import helpers
-from flask import Blueprint, render_template, request, session, jsonify
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -45,36 +45,39 @@ def upload_rnaseq_correlation():
 
 @correlation_bp.route("/get_pearson_plot", methods=["POST"])
 def get_pearson_plot():
-    user_dir = common.get_session_dir()
+    """Returns image of pearson plot to client"""
 
+    user_dir = common.get_session_dir()
     img_path = os.path.join(user_dir, "pearson.png")
 
     if not os.path.isfile(img_path):
         print(f"{img_path} not found")
         return ('', 204)
 
-    with open(f'{img_path}', 'rb') as f:
-        img_data = base64.b64encode(f.read()).decode("utf-8")
+    with open(f'{img_path}', 'rb') as img_fp:
+        img_data = base64.b64encode(img_fp.read()).decode("utf-8")
         return img_data
 
 
 @correlation_bp.route("/get-spearman-plot", methods=["POST"])
 def get_spearman_plot():
-    user_dir = common.get_session_dir()
+    """Returns image of spearman plot to client"""
 
+    user_dir = common.get_session_dir()
     img_path = os.path.join(user_dir, "spearman.png")
 
     if not os.path.isfile(img_path):
         print(f"{img_path} not found")
         return ('', 204)
 
-    with open(f'{img_path}', 'rb') as f:
-        img_data = base64.b64encode(f.read()).decode("utf-8")
+    with open(f'{img_path}', 'rb') as img_fp:
+        img_data = base64.b64encode(img_fp.read()).decode("utf-8")
         return img_data
 
 
 @correlation_bp.route("/submit_rnaseq_correlation", methods=["POST"])
 def submit_rnaseq_correlation():
+    """Submit job to get rnaseq sample correlation plots"""
 
     user_dir = common.get_session_dir()
 
@@ -99,8 +102,8 @@ def submit_rnaseq_correlation():
     is_output = False
     while not is_output:
         if expect_pearson and expect_spearman:
-            is_output = os.path.isfile(expected_pearson_path)\
-                    and os.path.isfile(expected_spearman_path)
+            is_output = (os.path.isfile(expected_pearson_path)
+                         and os.path.isfile(expected_spearman_path))
         elif expect_pearson:
             is_output = os.path.isfile(expected_pearson_path)
         elif expect_spearman:
@@ -117,7 +120,7 @@ def submit_rnaseq_correlation():
             while not doc:
                 try:
                     doc = fitz.open(expected_path)
-                except:
+                except FileNotFoundError:
                     time.sleep(0.2)
             for page in doc:
                 pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))

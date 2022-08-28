@@ -1,14 +1,10 @@
-# imports for debugging (allow printing to stderr)
-#from __future__ import print_function
-#import sys
-
 import os
 import subprocess
 import shutil
 import csv
 import tempfile
-from .. import helpers
 from flask import Blueprint, render_template, request, session, Response
+from .. import helpers
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -119,7 +115,7 @@ def clear_user_file(filename, user_dir):
     if user_dir:
         filepath = os.path.join(user_dir, filename)
         if os.path.isfile(filepath):
-            f = open(filepath, "w")
+            f = open(filepath, "w", encoding="UTF-8")
             f.truncate()
             f.seek(0)
             f.close()
