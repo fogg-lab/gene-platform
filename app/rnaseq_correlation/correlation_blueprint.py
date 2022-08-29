@@ -43,28 +43,15 @@ def upload_rnaseq_correlation():
     return jsonify(result)
 
 
-@correlation_bp.route("/get_pearson_plot", methods=["POST"])
-def get_pearson_plot():
-    """Returns image of pearson plot to client"""
+@correlation_bp.route("/get-correlation-plot")
+def get_correlation_plot():
+    """Returns specified correlation plot to client"""
 
     user_dir = common.get_session_dir()
-    img_path = os.path.join(user_dir, "pearson.png")
-
-    if not os.path.isfile(img_path):
-        print(f"{img_path} not found")
-        return ('', 204)
-
-    with open(f'{img_path}', 'rb') as img_fp:
-        img_data = base64.b64encode(img_fp.read()).decode("utf-8")
-        return img_data
-
-
-@correlation_bp.route("/get-spearman-plot", methods=["POST"])
-def get_spearman_plot():
-    """Returns image of spearman plot to client"""
-
-    user_dir = common.get_session_dir()
-    img_path = os.path.join(user_dir, "spearman.png")
+    print(request.args)
+    print(request.form)
+    corr_method = request.args.get("corr_method")
+    img_path = os.path.join(user_dir, f"{corr_method}.png")
 
     if not os.path.isfile(img_path):
         print(f"{img_path} not found")
@@ -120,7 +107,7 @@ def submit_rnaseq_correlation():
             while not doc:
                 try:
                     doc = fitz.open(expected_path)
-                except FileNotFoundError:
+                except fitz.fitz.EmptyFileError:
                     time.sleep(0.2)
             for page in doc:
                 pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))

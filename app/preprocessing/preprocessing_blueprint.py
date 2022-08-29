@@ -65,8 +65,6 @@ def submit_preprocessing():
         expected_paths.append(expected_counts_path)
         expected_paths.append(expected_coldata_path)
 
-    print(f"\n\nexpected_paths: {expected_paths}\n\n")
-
     # Delete any previous preprocessing results
     for file in os.listdir(user_dir):
         if file.endswith("processed.tsv"):
@@ -81,7 +79,7 @@ def submit_preprocessing():
         subprocess.Popen([f"{PREP_GEO_SCRIPT} {user_dir} {dsets} "
                           f"1> {log} 2>& 1"], shell=True)
 
-    status_msg = "Preprocessing complete."
+    status_msg = ""
 
     if src == "geo":
         # Map probes to gene symbols once the r script gets the unmapped counts
@@ -94,6 +92,7 @@ def submit_preprocessing():
             if not unmapped_counts_exists:
                 time.sleep(0.25)
         counts_unmappable = utils.prep_geo_counts(user_dir)
+        failed_dsets = []
         for counts_path in counts_unmappable:
             failed_project = counts_path.split("/")[-1].split("_")[0]
             counts_path = counts_path.replace("unmapped", "processed")
@@ -103,7 +102,17 @@ def submit_preprocessing():
                 expected_paths.pop(idx)
                 expected_paths.pop(idx)
 
-                status_msg += f" {failed_project.upper()} could not be processed."
+                failed_dsets.append(failed_project.upper())
+
+        if len(expected_paths) == 0:
+            status_msg = "Preprocessing failed."
+        else:
+            status_msg = "Preprocessing complete."
+        if len(failed_dsets) > 0:
+            status_msg += " The following datasets could not be processed:<ul>"
+            for dset in failed_dsets:
+                status_msg += f"<li>{dset}</li>"
+            status_msg += "</ul><br>"
 
     is_output = False
     while not is_output:
@@ -114,7 +123,10 @@ def submit_preprocessing():
         if not is_output:
             time.sleep(0.25)
 
-    print("\n\n\n\nDone, returning status message.\n\n\n\n")
+    print("\nDone, returning status message.\n")
+
+    if len(status_msg) == 0:
+        status_msg = "Preprocessing complete."
 
     return status_msg
 

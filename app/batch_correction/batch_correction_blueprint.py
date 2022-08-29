@@ -39,8 +39,7 @@ def batchupload():
     user_filename = request.args.get("user_filename")
     standard_filename = request.headers.get('X_FILENAME')
 
-    if standard_filename not in ["counts.tsv", "coldata.tsv", "filter.txt", \
-        "config.yml"]:
+    if standard_filename not in ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]:
         result["error"] = "Unrecognized file."
         return jsonify(result)
 
@@ -63,15 +62,32 @@ def submit_batch_correction():
     contrast_level = request.form.get("contrast_level")
     userdir = session["user_session_dir"]
 
+    # Validate input files before calling batch correction
+    error_msg = bc.check_bc_input_files(user_dir)
+    if error_msg:
+        return error_msg
+
+    # Ensure that counts and coldata have the same samples in the same order
+    counts_colnames = common.get_tsv_rows("counts.tsv")[0]
+    error_msg = helpers.check_coldata_matches_counts(
+        counts_colnames, common.get_tsv_rows("coldata.tsv"))
+    if error_msg:
+        return error_msg
+
+    # Ensure factor levels are present in coldata
+    error_msg = helpers.check_factor_levels(reference_level, contrast_level,
+                                            common.get_tsv_rows("coldata.tsv"))
+    if error_msg:
+        return error_msg
+
+    ### Start batch correction job ###
     expected_bc_counts_path = os.path.join(user_dir, "counts_bc.tsv")
 
     # Delete any previous batch correction results
     if os.path.isfile(expected_bc_counts_path):
         os.remove(expected_bc_counts_path)
-
-    status_msg = bc.call_bc(userdir, datatype, reference_level, contrast_level)
-    if not status_msg:
-        status_msg = "Batch correction complete."
+    
+    bc.call_bc(userdir, datatype, reference_level, contrast_level)
 
     is_output = False
     while not is_output:
@@ -79,7 +95,7 @@ def submit_batch_correction():
         if not is_output:
             time.sleep(0.25)
 
-    return status_msg
+    return "Batch correction complete."
 
 
 @batch_correction_bp.route("/get-batch-corrected-counts")

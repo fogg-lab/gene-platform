@@ -15,7 +15,7 @@ function show_hide_parameters() {
     document.getElementById("form_parameters").style.display = "table";
     document.getElementById("form_parameters").style.visibility = "visible";
 
-    if (document.getElementById("data_type").value == "RNA-Seq") {
+    if (document.getElementById("data_type").value == "rnaseq") {
       use_qual_weights_label = document.getElementById("use_qual_weights_label");
       if (use_qual_weights_label != null) {
         document.getElementById("use_qual_weights_label").style.display = "none";
@@ -78,7 +78,7 @@ function submit() {
 
 
 function get_parameters() {
-  var param_labels = ["padj_thresh", "min_prop", "min_expr", "adj_method", "condition", "contrast_level", "reference_level", "use_qual_weights"]
+  var param_labels = ["padj_thresh", "min_prop", "min_expr", "adj_method", "contrast_level", "reference_level", "use_qual_weights"]
   var params = []
   
   for (param_label of param_labels) {

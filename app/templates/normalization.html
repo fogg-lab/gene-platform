@@ -7,7 +7,6 @@
 	<table class="centerinfo">
 		<tr><td colspan="2"><h2>Normalization - Upload Files</h2></td></tr>
 		<tr><td colspan="2"><h5 style="margin:0; padding:0;">Performs library size normalization on an RNAseq expression matrix.</h4></td></tr>
-		<tr><td colspan="2"><p style="margin:0; padding:0;">Note: To normalize microarray data from a GEO dataset, visit <a href="/preprocessing">the preprocessing page</a>.</p></td></tr>
 		<tr>
 			<td><table style="border: 1px solid black; margin-left: auto; margin-right: auto;">
 				<tr>
@@ -97,6 +96,9 @@
 			document.getElementById("progress_of_coldata_div").style.backgroundPosition = "0% 0";
 			document.getElementById("coldata_upload_div").style.display = 'none';
 		}
+
+		// make sure download button is initially disabled
+		document.getElementById("download-norm-btn").disabled = true;
 
 		// disable submit button if progress counts or coldata not uploaded
 		update_submit_button();

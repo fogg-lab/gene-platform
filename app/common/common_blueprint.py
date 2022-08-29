@@ -51,8 +51,6 @@ def get_console_output():
     else:
         return (log_content, 204)
 
-    print(f"{log_content} \n length: {len(log_content)}\n")
-
     return Response(log_content, mimetype='text/plain')
 
 

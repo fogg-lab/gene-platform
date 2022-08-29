@@ -33,13 +33,14 @@ function submitRNASeqCorrelation() {
 function getPlots() {
     for (corr_method of ["pearson", "spearman"]) {
         let getPlotsReq = new XMLHttpRequest();
-        let getPlotsQuery = "corr_method=" + corr_method;
+        let getPlotsQuery = "?corr_method=" + corr_method;
         if (corr_method == "pearson") {
             getPlotsReq.addEventListener("load", getPearsonPlotListener);
         } else {
             getPlotsReq.addEventListener("load", getSpearmanPlotListener);
         }
-        getPlotsReq.open("POST", "/get-" + corr_method + "-plot");
-        getPlotsReq.send(getPlotsQuery);
+        dest = `/get-correlation-plot${getPlotsQuery}`;
+        getPlotsReq.open("GET", dest, true);
+        getPlotsReq.send(null);
     }
 }

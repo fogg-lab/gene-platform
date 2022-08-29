@@ -4,17 +4,15 @@ import os
 
 def check_parameter_names(config_parameters):
     """
-    ensures config parameters contain the required parameters,
+    Ensures config parameters contain the required parameters,
     and that there are no unrecognized parameters
-    min_expr, min_prop, padj_thresh, adj_method, condition,
-    contrast_level, and reference_level
 
-    returns an empty string if valid
-    if invalid, returns error message
+    Returns an empty string if valid
+    Returns error message if invalid
     """
 
     all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method",
-        "condition", "contrast_level", "reference_level", "use_qual_weights"}
+                      "contrast_level", "reference_level", "use_qual_weights"}
 
     config_error_status = ""
     unknown_params = []
@@ -80,9 +78,6 @@ def validate_parameters(config_parameters):
             error_msg += f"Unknown adjustment method: '{config_parameters['adj_method']}'\n"
             error_msg += f"Valid adj_methods: {adj_methods}\n"
 
-        if not isinstance(config_parameters["condition"], str):
-            error_msg += '"condition" must be a string"\n'
-
         if not isinstance(config_parameters["contrast_level"], str):
             error_msg += "contrast_level must be a string\n"
 
@@ -107,7 +102,7 @@ def get_request_parameters(form, data_type):
     request_parameters = {}
 
     # if analysis type is microarray, consider use_qual_weights
-    if data_type != "RNA-Seq":
+    if data_type != "rnaseq":
         # form.get("use_qual_weights") will initially be either 'None' or 'on'
         # it needs to be a boolean True or False
         if form.get("use_qual_weights") is None:
@@ -118,7 +113,6 @@ def get_request_parameters(form, data_type):
     request_parameters["min_prop"] = form.get("min_prop")
     request_parameters["min_expr"] = form.get("min_expr")
     request_parameters["adj_method"] = form.get("adj_method")
-    request_parameters["condition"] = form.get("condition")
     request_parameters["contrast_level"] = form.get("contrast_level")
     request_parameters["reference_level"] = form.get("reference_level")
     request_parameters["padj_thresh"] = form.get("padj_thresh")
@@ -126,21 +120,18 @@ def get_request_parameters(form, data_type):
     return request_parameters
 
 
-def check_factor_levels(config_params, coldata):
+def check_factor_levels(reference_level, contrast_level, coldata):
     """
-    ensures factor levels are present in the input files
-    if the factor levels look good, returns empty string
+    Ensures factor levels are present in the coldata file
+    If factor levels are present, returns empty string
     """
-
-    condition = config_params["condition"]
-    contrast_level = config_params["contrast_level"]
-    reference_level = config_params["reference_level"]
 
     condition_col_index = 0
-    if condition in coldata[0]:
-        condition_col_index = coldata[0].index(condition)
+    col_header_row = [colname.lower() for colname in coldata[0]]
+    if "condition" in col_header_row:
+        condition_col_index = col_header_row.index("condition")
     else:
-        return f"Condition '{condition}' not present in coldata (line 1)\n"
+        return "'condition' column not present in coldata (line 1)\n"
 
     contrast_level_found = False
     reference_level_found = False
@@ -215,16 +206,12 @@ def check_coldata_matches_counts(counts_colnames, coldata_rows):
 def get_analysis_confirmation_msg(config_params):
     """get analysis formula from the config parameters"""
 
-    condition = config_params["condition"]
     contrast_level = config_params["contrast_level"]
     reference_level = config_params["reference_level"]
 
-    analysis_formula =  "<p><b>You are performing the following analysis:"\
-                        "</b></p>\n"
-    analysis_formula += f"<p><i>{condition} ~ (intercept) + "\
-                        f"{contrast_level}</i></p>\n\n"
-    analysis_formula += f"<p>where the reference group is <i>"\
-                        f"{reference_level}</i>.\n</p>"
+    analysis_formula =  "<p><b>You are performing the following analysis:</b></p>\n"
+    analysis_formula += f"<p><i>condition ~ (intercept) + {contrast_level}</i></p>\n\n"
+    analysis_formula += f"<p>where the reference group is <i>{reference_level}</i>.\n</p>"
 
     return analysis_formula
 

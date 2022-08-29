@@ -5,10 +5,10 @@
 #   Rscript correlation.R ./example_data/counts.tsv ./example_output pearson
 
 # load packages
-suppressWarnings(library(tidyverse, warn.conflicts = FALSE))
-suppressWarnings(library(corrr, warn.conflicts = FALSE))
-suppressWarnings(library(ggplot2, warn.conflicts = FALSE))
-suppressWarnings(library(corrplot, warn.conflicts = FALSE))
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(corrr)))
+suppressMessages(suppressWarnings(library(ggplot2)))
+suppressMessages(suppressWarnings(library(corrplot)))
 
 args = commandArgs(trailingOnly = TRUE)
 

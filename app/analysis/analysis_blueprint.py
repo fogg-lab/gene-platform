@@ -8,8 +8,8 @@ from .. import helpers
 from flask import Blueprint, render_template, request, redirect, url_for, \
     session, Response, jsonify, send_from_directory
 
-RNASEQ_SCRIPT = "Rscript ../../rscripts/rnaseq.r"
-MICROARRAY_SCRIPT = "Rscript ../../rscripts/microarray.r"
+RNASEQ_SCRIPT = "Rscript ../../rscripts/dge_rnaseq.r"
+MICROARRAY_SCRIPT = "Rscript ../../rscripts/dge_microarray.r"
 
 # Set the current working directory and relative path to the user files
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -77,7 +77,7 @@ def submit():
     generates a config file from the parameter form
     """
 
-    # get whether analysis is microarray or RNA-Seq
+    # get whether analysis is microarray or rnaseq
     data_type = request.form.get("data_type")
 
     # remove old output
@@ -99,7 +99,7 @@ def submit():
 def confirm_analysis_submission():
     """validate input and display formula before submission"""
 
-    # get whether analysis is microarray or RNA-Seq, and get params
+    # get whether analysis is microarray or rnaseq, and get params
     data_type = request.form.get("data_type")
     params = helpers.get_request_parameters(request.form, data_type)
 
@@ -114,8 +114,9 @@ def confirm_analysis_submission():
     coldata_counts_match_error = helpers.check_coldata_matches_counts(
         counts_colnames, common.get_tsv_rows("coldata.tsv"))
     
-    factor_levels_error = helpers.check_factor_levels(
-        params, common.get_tsv_rows("coldata.tsv"))
+    factor_levels_error = helpers.check_factor_levels(params["reference_level"],
+                                                      params["contrast_level"],
+                                                      common.get_tsv_rows("coldata.tsv"))
 
     # get the analysis formula to display for the user
     confirmation_message = ""
@@ -241,7 +242,7 @@ def get_filtered_tsv():
 
 def call_analysis(data_type):
     """
-    calls microarray or rna-seq analysis depending on data_type
+    calls microarray or rnaseq analysis depending on data type
     sends the session path as an argument, redirects output to a log file
     """
 
@@ -280,8 +281,7 @@ def generate_config(config_parameters):
     config_file = open(config_file_path, "w", encoding="UTF-8")
 
     for param in config_parameters.keys():
-        if param in ["adj_method", "condition", "contrast_level",\
-             "reference_level"]:
+        if param in ["adj_method", "contrast_level", "reference_level"]:
             config_file.write(f"{param}: \'{config_parameters[param]}\'\n")
         else:
             config_file.write(f"{param}: {config_parameters[param]}\n")

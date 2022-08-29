@@ -63,17 +63,6 @@ def get_valid_gdc_projects(project_names):
     return valid_projects
 
 
-def get_counts_paths(data_dir):
-    """Returns a list of paths to expression matrices"""
-    counts_paths = []
-
-    for fname in os.listdir(data_dir):
-        if "_counts.tsv" in fname:
-            counts_paths.append(os.path.join(data_dir, fname))
-
-    return counts_paths
-
-
 def get_unmapped_counts_paths(data_dir):
     """Returns a list of paths to unmapped expression matrices"""
     counts_paths = []
@@ -83,17 +72,6 @@ def get_unmapped_counts_paths(data_dir):
             counts_paths.append(os.path.join(data_dir, fname))
 
     return counts_paths
-
-
-def get_coldata_paths(data_dir):
-    """Returns a list of paths to coldata files"""
-    coldata_paths = []
-
-    for fname in os.listdir(data_dir):
-        if "_coldata.tsv" in fname:
-            coldata_paths.append(os.path.join(data_dir, fname))
-
-    return coldata_paths
 
 
 def map_probes(counts_path, species):
@@ -112,12 +90,13 @@ def map_probes(counts_path, species):
         print(f"No probe map found: {probeset_map_path}")
     else:
         print(f"Probe map found: {probeset_map_path}")
-    probe_map = pd.read_csv(probeset_map_path, sep="\t")
-    try:
-        counts_df = pd.merge(counts_df, probe_map, on=probeset, how="outer")
-    except KeyError:
-        print(f"Unable to map probes to gene symbols for {counts_path}.")
-        return ""
+    probe_map = pd.read_csv(probeset_map_path, sep="\t",
+                            dtype={"hgnc_symbol": object, probeset: object})
+
+    counts_df[probeset] = counts_df[probeset].apply(lambda x: str(x).rstrip("_at"))
+    probe_map[probeset] = probe_map[probeset].apply(lambda x: str(x).rstrip("_at"))
+
+    counts_df = pd.merge(counts_df, probe_map, on=probeset, how="outer")
 
     cols = list(counts_df.columns)
     cols = [cols[-1]] + cols[1:-1]
@@ -134,7 +113,7 @@ def prep_geo_counts(data_dir):
     counts_unmapped = set()
     for counts_path in counts_paths:
         counts_df = map_probes(counts_path, "hsapiens")
-        if not isinstance(counts_df, pd.DataFrame):
+        if not isinstance(counts_df, pd.DataFrame) or len(counts_df) == 0:
             counts_unmapped.add(counts_path)
             continue
         new_counts_path = counts_path.replace("_unmapped.tsv", "_processed.tsv")

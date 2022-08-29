@@ -1,13 +1,30 @@
 import os
 import pandas as pd
 import numpy as np
-from IPython.display import display
 import subprocess
 
-MICROARRAY_BC_SCRIPT = "Rscript ../../rscripts/microarray_bc.r"
-RNA_SEQ_BC_SCRIPT = "Rscript ../../rscripts/rnaseq_bc.r"
+BC_SCRIPT = "Rscript ../../rscripts/batch_correction.r"
 
 coldata_cols = ["sample_name", "condition", "batch"]
+
+
+def check_bc_input_files(user_dir):
+    """Make sure counts and coldata files exist"""
+
+    counts_path = os.path.join(user_dir, "counts.tsv")
+    coldata_path = os.path.join(user_dir, "coldata.tsv")
+
+    counts_exists = os.path.isfile(counts_path)
+    coldata_exists = os.path.isfile(coldata_path)
+
+    if not counts_exists and not coldata_exists:
+        return "Error: Counts and coldata files not found"
+    if not counts_exists:
+        return "Error: Counts file not found"
+    if not coldata_exists:
+        return "Error: Coldata file not found"
+    
+    return ""
 
 
 def call_bc(user_dir, data_type, reference_level, contrast_level):
@@ -16,36 +33,25 @@ def call_bc(user_dir, data_type, reference_level, contrast_level):
     counts_path = os.path.join(user_dir, "counts.tsv")
     coldata_path = os.path.join(user_dir, "coldata.tsv")
 
-    # Make sure the counts and coldata files exist
-    counts_exists = os.path.isfile(counts_path)
-    coldata_exists = os.path.isfile(coldata_path)
-    if not counts_exists and not coldata_exists:
-        return "Error: Counts and coldata files not found"
-    if not counts_exists:
-        return "Error: Counts file not found"
-    if not coldata_exists:
-        return "Error: Coldata file not found"
-
-    # Load counts and coldata to dataframes for manipulation
+    # Read in counts and coldata dataframes
     counts_cols = list(pd.read_csv(counts_path, nrows =1, sep="\t"))
-    counts = pd.read_csv(counts_path, usecols = \
+    counts = pd.read_csv(counts_path, usecols =
         [i for i in counts_cols if i.lower() != "entrez_gene_id"], sep='\t')
+    counts.rename(columns=lambda x: "symbol" if "symbol" in x.lower() else x, inplace=True)
+
     coldata = pd.read_csv(coldata_path, usecols = coldata_cols, sep='\t')
+    coldata.columns= coldata.columns.str.lower()
 
     # Remove samples with levels other than the reference/contrast levels
     factor_levels = [reference_level, contrast_level]
-    print(f"factor levels: {factor_levels}")
-    display(coldata)
     filtered_samples = coldata.loc[coldata['condition'].isin(factor_levels)]
-    display(filtered_samples)
     all_indices = set(range(0,coldata.shape[0]))
-    print(f"all_indices: {all_indices}")
     samples_to_keep = set(filtered_samples.index.values)
-    print(f"samples_to_keep: {samples_to_keep}")
     samples_to_drop = np.asarray(list(all_indices - samples_to_keep))
     samples_to_drop += 1    # Increment index to account for counts header
-    display(samples_to_drop)
-    counts.drop(counts.columns[samples_to_drop], axis=1, inplace=True)
+    print(samples_to_drop)
+    if len(samples_to_drop) > 0:
+        counts.drop(counts.columns[samples_to_drop], axis=1, inplace=True)
 
     coldata = filtered_samples
 
@@ -57,11 +63,7 @@ def call_bc(user_dir, data_type, reference_level, contrast_level):
     coldata.to_csv(coldata_in_path, sep='\t', index=False)
 
     # Call the batch correction R script
-    if data_type == 'microarray':
-        subprocess.Popen([f"{MICROARRAY_BC_SCRIPT} {counts_in_path} "
-                        f"{coldata_in_path} {user_dir}"], shell=True)
-    elif data_type == "RNA-Seq":
-        subprocess.Popen([f"{RNA_SEQ_BC_SCRIPT} {counts_in_path} "
-                          f"{coldata_in_path} {user_dir}"], shell=True)
-
-    return ""
+    subprocess.Popen(
+        [f"{BC_SCRIPT} {counts_in_path} {coldata_in_path} {user_dir} {data_type}"],
+        shell=True
+    )

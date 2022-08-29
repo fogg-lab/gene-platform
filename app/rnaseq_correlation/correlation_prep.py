@@ -24,8 +24,8 @@ def call_corr(user_dir, corr_method):
     counts_in_path = os.path.join(user_dir, 'counts_corr-in.tsv')
 
     if corr_method != "pearson":
-        subprocess.Popen([f"{CORR_SCRIPT} {counts_in_path} {user_dir} spearman"])
+        subprocess.Popen([f"{CORR_SCRIPT} {counts_in_path} {user_dir} spearman"], shell=True)
     if corr_method != "spearman":
-        subprocess.Popen([f"{CORR_SCRIPT} {counts_in_path} {user_dir} pearson"])
+        subprocess.Popen([f"{CORR_SCRIPT} {counts_in_path} {user_dir} pearson"], shell=True)
 
     return ""

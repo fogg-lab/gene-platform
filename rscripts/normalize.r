@@ -1,15 +1,15 @@
-library(tidyverse, quietly = TRUE)
-library(limma, quietly = TRUE)
-library(edgeR, quietly = TRUE)
-library(DESeq2, quietly = TRUE)
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(limma)))
+suppressMessages(suppressWarnings(library(edgeR)))
+suppressMessages(suppressWarnings(library(DESeq2)))
 
 #command line arguments
 args = commandArgs(trailingOnly = TRUE)
 
 user_directory <- args[1]
 normalization_method <- args[2]
-counts_path <- paste0(user_directory, "counts.tsv")
-coldata_path <- paste0(user_directory, "coldata.tsv")
+counts_path <- file.path(user_directory, "counts.tsv")
+coldata_path <- file.path(user_directory, "coldata.tsv")
 
 counts <- readr::read_tsv(counts_path, show_col_types = FALSE)
 metadata <- readr::read_tsv(coldata_path, show_col_types = FALSE)
@@ -46,5 +46,5 @@ rownames(normalized_counts) <- NULL
 normalized_counts <- as.data.frame(normalized_counts)
 final_counts <- do.call(cbind, list(genes, normalized_counts))
 
-output_file = paste0(user_directory, "counts_normalized.tsv")
+output_file = file.path(user_directory, "counts_normalized.tsv")
 write.table(final_counts, file=output_file, sep="\t", quote=F, row.names=FALSE)

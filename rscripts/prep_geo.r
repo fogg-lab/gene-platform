@@ -1,9 +1,8 @@
-suppressMessages(suppressWarnings(require(GEOquery)))
-suppressMessages(suppressWarnings(require(Biobase)))
+suppressMessages(suppressWarnings(library(GEOquery)))
+suppressMessages(suppressWarnings(library(Biobase)))
 suppressMessages(suppressWarnings(library(AnnotationDbi)))
 suppressMessages(suppressWarnings(library(limma)))
-suppressMessages(suppressWarnings(require(tidyverse)))
-
+suppressMessages(suppressWarnings(library(tidyverse)))
 
 args = commandArgs(trailingOnly = TRUE)
 user_dir <- args[1]
@@ -39,7 +38,24 @@ for (series in gses) {
 
         # Get coldata
         coldata <- gset@phenoData@data
-        coldata <- select(coldata, -matches("(channel_count|last_update|submission|status|contact|supplementary|data_row_count|country|treatment|label|tax|hyb_|scan|data_|molecule|extract)"))
+        match_pattern <- paste0("channel_count|",
+                                "last_update|",
+                                "submission|",
+                                "status|",
+                                "contact|",
+                                "supplementary|",
+                                "country|",
+                                "treatment|",
+                                "label|",
+                                "tax|",
+                                "hyb|",
+                                "scan|",
+                                "data|",
+                                "molecule|",
+                                "extract|",
+                                "protocol|",
+                                "description")
+        coldata <- select(coldata, -matches(match_pattern))
         coldata <- as.data.frame(coldata)
         coldata <- data.frame(sample_name = rownames(coldata), coldata, row.names = NULL)
 

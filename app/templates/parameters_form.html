@@ -11,7 +11,7 @@
           <select class="data_type" id="data_type" name="data_type">
             <option value=""></option>
             <option value="microarray">microarray</option>
-            <option value="RNA-Seq">RNA-Seq</option>
+            <option value="rnaseq">RNA-Seq</option>
           </select>
         </td>
       </tr>
@@ -63,18 +63,6 @@
         </th>
         <td>
           <input id="adj_method" type="text" name="adj_method" value="{{ params.get('adj_method', '') }}">
-        </td>
-      </tr>
-      <tr>
-        <th>
-          <span class="tooltip">Condition:
-            <span class="tooltiptext">
-              Name of the column name for the factor of interest (e.g., “disease status”). In a config.yml file, this parameter is called "condition".
-            </span>
-          </span>
-        </th>
-        <td>
-          <input id="condition" type="text" name="condition" value="{{ params.get('condition', '') }}">
         </td>
       </tr>
       <tr>
