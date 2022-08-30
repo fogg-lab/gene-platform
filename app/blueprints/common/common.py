@@ -3,31 +3,22 @@ import subprocess
 import shutil
 import csv
 import tempfile
-from flask import Blueprint, render_template, request, session, Response
-from .. import helpers
+from flask import Blueprint, render_template, request, session, Response, current_app
+import app.helpers as helpers
 
-# Set the current working directory and relative path to the user files
-SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
-USER_FILES_LOCATION = "../user_files"
-
-os.chdir(SCRIPT_DIR)
-
-common_bp = Blueprint('common_bp', __name__, template_folder='../templates', \
-    static_folder='../static')
+common_bp = Blueprint('common_bp', __name__, template_folder='templates')
 
 
 @common_bp.route("/")
 def index():
     """main page"""
+
     return render_template("home.html", title="Welcome!")
 
 
 @common_bp.route("/cancel-upload", methods=["POST"])
 def cancelupload():
-    """
-    removes uploaded file from user session directory
-    """
+    """removes uploaded file from user session directory"""
 
     filename = request.form.get("filename")
     helpers.delete_user_file(filename, get_session_dir())
@@ -93,6 +84,7 @@ def read_user_file(filename, user_dir):
     Returns:
         file object
     """
+
     user_file = None
 
     if user_dir:
@@ -122,10 +114,12 @@ def clear_user_file(filename, user_dir):
 def cleanup_old_sessions():
     """Clean up other sessions older than 4 hours (14400 seconds)"""
 
-    for old_dir in os.listdir(USER_FILES_LOCATION):
-        old_dir = os.path.join(USER_FILES_LOCATION, old_dir)
+    user_files_dir = current_app.config["USER_FILES_LOCATION"]
 
-        if old_dir != f"{USER_FILES_LOCATION}/.gitkeep":
+    for old_dir in os.listdir():
+        old_dir = os.path.join(user_files_dir, old_dir)
+
+        if old_dir.split("/")[-1] != ".gitkeep":
             get_age = f"$(($(date +%s) - $(date +%s -r {old_dir})))"
 
             # Run bash command and return the stdout output
@@ -157,7 +151,8 @@ def ensure_session_dir():
 
     if ("user_session_dir" not in session or
         not os.path.exists(session["user_session_dir"])):
-        temp_dir = tempfile.mkdtemp(dir=USER_FILES_LOCATION)
+        user_files_dir = current_app.config["USER_FILES_LOCATION"]
+        temp_dir = tempfile.mkdtemp(dir=user_files_dir)
         os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
 
         session["user_session_dir"] = os.path.abspath(temp_dir)
@@ -199,7 +194,7 @@ def list_user_files():
             continue
         if fname_base in standard_input_files and filename in session:
             all_uploads[filename] = session[filename]
-    
+
     return current_uploads, all_uploads
 
 

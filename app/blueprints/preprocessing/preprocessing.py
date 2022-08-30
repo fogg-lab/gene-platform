@@ -1,22 +1,15 @@
 import os
 import subprocess
 import time
-from flask import Blueprint, render_template, request, send_from_directory
-from ..common import common_blueprint as common
-from . import preprocessing_utils as utils
+from flask import (Blueprint, render_template, request, send_from_directory,
+                   current_app)
+from app.blueprints.common import common
+from app.blueprints.preprocessing.utils import preprocessing_prep as utils
 
-# Set the current working directory and relative path to the user files
-SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
-USER_FILES_LOCATION = "../user_files"
-PREP_GDC_SCRIPT = "Rscript ../../rscripts/prep_gdc.r"
-PREP_GEO_SCRIPT = "Rscript ../../rscripts/prep_geo.r"
+preprocessing_bp = Blueprint('preprocessing_bp', __name__)
 
-os.chdir(SCRIPT_DIR)
-
-preprocessing_bp = Blueprint('preprocessing_bp', __name__,
-                             template_folder='../templates',
-                             static_folder='../static')
+PREP_GDC_SCRIPT = "prep_gdc.r"
+PREP_GEO_SCRIPT = "prep_geo.r"
 
 
 @preprocessing_bp.route("/preprocessing")
@@ -72,12 +65,13 @@ def submit_preprocessing():
 
     log = os.path.join(user_dir, ".log")
 
+    rscripts_path = current_app.config["RSCRIPTS_PATH"]
     if "gdc" in data_source.lower():
-        subprocess.Popen([f"{PREP_GDC_SCRIPT} {user_dir} {dsets} "
-                          f"1> {log} 2>& 1"], shell=True)
-    elif "geo" in data_source.lower():
-        subprocess.Popen([f"{PREP_GEO_SCRIPT} {user_dir} {dsets} "
-                          f"1> {log} 2>& 1"], shell=True)
+        script_dir = os.path.join(rscripts_path, PREP_GDC_SCRIPT)
+    else:
+        script_dir = os.path.join(rscripts_path, PREP_GEO_SCRIPT)
+
+    subprocess.Popen([f"{script_dir} {user_dir} {dsets} 1> {log} 2>& 1"], shell=True)
 
     status_msg = ""
 

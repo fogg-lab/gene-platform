@@ -1,17 +1,12 @@
 import os
 import time
-from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
-from ..common import common_blueprint as common
-from .. import helpers
-from . import bc
+from flask import (Blueprint, render_template, request, session, jsonify,
+                   send_from_directory)
+from app.blueprints.common import common
+import app.helpers as helpers
+from app.blueprints.batch_correction.utils import batch_correction_prep as bc_prep
 
-# Set the current working directory and relative path to the user files
-SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
-USER_FILES_LOCATION = "../user_files"
-
-batch_correction_bp = Blueprint('batch_correction_bp', __name__,
-    template_folder = '../templates', static_folder='../static')
+batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 
 
 @batch_correction_bp.route("/batch-correction")
@@ -22,8 +17,8 @@ def batchcorrection():
 
     cur_uploads, all_uploads = common.list_user_files()
 
-    return render_template("batchcorrection.html", \
-        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Batch Correction")
+    return render_template("batchcorrection.html", cur_uploads=cur_uploads,
+                           all_uploads=all_uploads, title="Batch Correction")
 
 
 @batch_correction_bp.route("/batch-upload", methods=["POST"])
@@ -63,7 +58,7 @@ def submit_batch_correction():
     userdir = session["user_session_dir"]
 
     # Validate input files before calling batch correction
-    error_msg = bc.check_bc_input_files(user_dir)
+    error_msg = bc_prep.check_bc_input_files(user_dir)
     if error_msg:
         return error_msg
 
@@ -86,8 +81,8 @@ def submit_batch_correction():
     # Delete any previous batch correction results
     if os.path.isfile(expected_bc_counts_path):
         os.remove(expected_bc_counts_path)
-    
-    bc.call_bc(userdir, datatype, reference_level, contrast_level)
+
+    bc_prep.call_bc(userdir, datatype, reference_level, contrast_level)
 
     is_output = False
     while not is_output:

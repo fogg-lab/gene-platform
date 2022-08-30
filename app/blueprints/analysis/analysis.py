@@ -1,25 +1,17 @@
 import os
 import subprocess
 import csv
-import yaml
 import time
-from ..common import common_blueprint as common
-from .. import helpers
-from flask import Blueprint, render_template, request, redirect, url_for, \
-    session, Response, jsonify, send_from_directory
+import yaml
+from flask import (Blueprint, render_template, request, redirect, url_for,
+                   session, Response, jsonify, send_from_directory, current_app)
+from app.blueprints.common import common
+import app.helpers as helpers
 
-RNASEQ_SCRIPT = "Rscript ../../rscripts/dge_rnaseq.r"
-MICROARRAY_SCRIPT = "Rscript ../../rscripts/dge_microarray.r"
+analysis_bp = Blueprint('analysis_bp', __name__)
 
-# Set the current working directory and relative path to the user files
-SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
-USER_FILES_LOCATION = "../user_files"
-
-os.chdir(SCRIPT_DIR)
-
-analysis_bp = Blueprint('analysis_bp', __name__,
-    template_folder='../templates', static_folder='../static')
+RNASEQ_SCRIPT = "dge_rnaseq.r"
+MICROARRAY_SCRIPT = "dge_microarray.r"
 
 
 @analysis_bp.route("/setup")
@@ -105,7 +97,7 @@ def confirm_analysis_submission():
 
     # generate config file from the form parameters
     generate_config(params)
-    
+
     # validate the config, counts and coldata
     config_file_error = check_config()
 
@@ -113,7 +105,7 @@ def confirm_analysis_submission():
 
     coldata_counts_match_error = helpers.check_coldata_matches_counts(
         counts_colnames, common.get_tsv_rows("coldata.tsv"))
-    
+
     factor_levels_error = helpers.check_factor_levels(params["reference_level"],
                                                       params["contrast_level"],
                                                       common.get_tsv_rows("coldata.tsv"))
@@ -198,12 +190,14 @@ def getplot(filename):
 def reset():
     """Deletes files from a users session"""
 
-    helpers.delete_user_file("counts.tsv",  common.get_session_dir())
-    helpers.delete_user_file("coldata.tsv",  common.get_session_dir())
-    helpers.delete_user_file("filter.txt", common.get_session_dir())
-    helpers.delete_user_file("config.yml", common.get_session_dir())
-    helpers.delete_user_file("filter_output.tsv", common.get_session_dir())
-    helpers.delete_user_file("output.tsv", common.get_session_dir())
+    user_dir = common.get_session_dir()
+
+    helpers.delete_user_file("counts.tsv", user_dir)
+    helpers.delete_user_file("coldata.tsv", user_dir)
+    helpers.delete_user_file("filter.txt", user_dir)
+    helpers.delete_user_file("config.yml", user_dir)
+    helpers.delete_user_file("filter_output.tsv", user_dir)
+    helpers.delete_user_file("output.tsv", user_dir)
 
     return redirect(url_for("common_bp.index"))
 
@@ -248,9 +242,14 @@ def call_analysis(data_type):
 
     user_dir = common.get_session_dir()
     log_path = os.path.join(user_dir, ".log")
-    script = MICROARRAY_SCRIPT if data_type == "microarray" else RNASEQ_SCRIPT
-    
-    subprocess.Popen([f"{script} {user_dir} 1> {log_path} 2>& 1"], shell=True)
+
+    rscripts_path = current_app.config["RSCRIPTS_PATH"]
+    if data_type == "microarray":
+        script_dir = os.path.join(rscripts_path, MICROARRAY_SCRIPT)
+    else:
+        script_dir = os.path.join(rscripts_path, RNASEQ_SCRIPT)
+
+    subprocess.Popen([f"{script_dir} {user_dir} 1> {log_path} 2>& 1"], shell=True)
 
 
 def wait_for_output():

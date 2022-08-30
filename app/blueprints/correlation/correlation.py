@@ -3,19 +3,11 @@ import time
 import base64
 import fitz
 from flask import Blueprint, render_template, request, session, jsonify
-from . import correlation_prep
-from ..common import common_blueprint as common
-from .. import helpers
+from app.blueprints.correlation.utils import correlation_prep
+from app.blueprints.common import common
+import app.helpers as helpers
 
-# Set the current working directory and relative path to the user files
-SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
-USER_FILES_LOCATION = "../user_files"
-
-os.chdir(SCRIPT_DIR)
-
-correlation_bp = Blueprint('correlation_bp', __name__,
-    template_folder='../templates', static_folder='../static')
+correlation_bp = Blueprint('correlation_bp', __name__)
 
 
 @correlation_bp.route("/rnaseq-correlation")
@@ -26,9 +18,10 @@ def rnaseq_correlation():
 
     cur_uploads, all_uploads = common.list_user_files()
 
-    return render_template("rnaseq_correlation.html", \
-        cur_uploads=cur_uploads, all_uploads=all_uploads, \
-            title="RNAseq Sample Correlation")
+    return render_template("rnaseq_correlation.html",
+                           cur_uploads=cur_uploads,
+                           all_uploads=all_uploads,
+                           title="RNAseq Sample Correlation")
 
 
 @correlation_bp.route("/upload-rnaseq-correlation", methods=["POST"])

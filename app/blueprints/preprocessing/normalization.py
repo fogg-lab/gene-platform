@@ -2,18 +2,12 @@ import os
 import subprocess
 import time
 from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
-from ..common import common_blueprint as common
+from app.blueprints.common import common
 
-# Set the current working directory and relative path to the user files
-SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = "/".join(SCRIPT_PATH.split("/")[:-1])
-USER_FILES_LOCATION = "../user_files"
-NORMALIZATION_SCRIPT = "Rscript ../../rscripts/normalize.r"
+normalization_bp = Blueprint('normalization_bp', __name__, template_folder='templates',
+                             static_folder='../../static')
 
-os.chdir(SCRIPT_DIR)
-
-normalization_bp = Blueprint('normalization_bp', __name__, template_folder='../templates',
-                             static_folder='../static')
+NORMALIZATION_SCRIPT = "Rscript ../../../rscripts/normalize.r"
 
 
 @normalization_bp.route("/normalization")
@@ -24,8 +18,8 @@ def normalization():
 
     cur_uploads, all_uploads = common.list_user_files()
 
-    return render_template("normalization.html", \
-        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Normalization")
+    return render_template("normalization.html", cur_uploads=cur_uploads,
+                           all_uploads=all_uploads, title="Normalization")
 
 
 @normalization_bp.route("/normalization_upload", methods=["POST"])
