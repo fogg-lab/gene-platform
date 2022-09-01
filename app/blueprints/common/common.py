@@ -135,7 +135,10 @@ def cleanup_old_sessions():
 
 
 def get_session_dir():
-    """ returns session dir if it exists, otherwise returns False """
+    """
+    Returns path to user's session directory.
+    If none exists, ensure_session_dir() is called to create one
+    """
 
     if "user_session_dir" not in session:
         ensure_session_dir()

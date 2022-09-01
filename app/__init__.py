@@ -11,6 +11,7 @@ from app.blueprints.auth.auth import auth_bp
 from app.blueprints.correlation.correlation import correlation_bp
 from app.blueprints.preprocessing.normalization import normalization_bp
 from app.blueprints.preprocessing.preprocessing import preprocessing_bp
+from app.blueprints.jobs.jobs import jobs_bp
 
 def init_app():
     """Initialize the app."""
@@ -35,6 +36,7 @@ def init_app():
     with app.app_context():
         # Register Blueprints
         app.register_blueprint(common_bp)
+        app.register_blueprint(auth_bp)
         app.register_blueprint(analysis_bp)
         app.register_blueprint(batch_correction_bp)
         app.register_blueprint(correlation_bp)

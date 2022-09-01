@@ -4,7 +4,7 @@ from flask import (Blueprint, render_template, request, session, jsonify,
                    send_from_directory)
 from app.blueprints.common import common
 import app.helpers as helpers
-from app.blueprints.batch_correction.utils import batch_correction_prep as bc_prep
+from app.models.job import Job
 
 batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 
@@ -100,15 +100,3 @@ def get_batch_correction_counts():
     rel_user_dir = common.get_session_dir()
     abs_user_dir = os.path.abspath(rel_user_dir)
     return send_from_directory(abs_user_dir, "counts_bc.tsv")
-
-
-def check_bc_coldata():
-    """Ensures coldata has batches"""
-
-    coldata = common.get_tsv_rows("coldata.tsv")
-    err_msg = helpers.ensure_batches(coldata)
-
-    if err_msg:
-        helpers.delete_user_file("coldata.tsv",  common.get_session_dir())
-
-    return err_msg

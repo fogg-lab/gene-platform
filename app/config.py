@@ -31,7 +31,7 @@ ALLOWED_EMAIL_DOMAINS = os.environ.get("ALLOWED_EMAIL_DOMAINS", "*").replace(" "
 # GUEST_SESSION_LIFESPAN specifies how long (in hours) guest user jobs are kept on the server
 # Once a job's lifespan is over, the files associated with the job are queued for deletion
 ENABLE_GUEST_LOGIN = os.environ.get("ENABLE_GUEST_LOGIN", True)
-GUEST_SESSION_LIFESPAN = timedelta(hours=os.environ.get("GUEST_SESSION_LIFESPAN", 1))
+GUEST_SESSION_LIFESPAN = timedelta(hours=os.environ.get("GUEST_SESSION_LIFESPAN", 3))
 GUEST_JOB_LIMIT = os.environ.get("GUEST_JOB_LIMIT", 5)
 
 SECRET_KEY = os.getenv("SESSION_SECRET_KEY", None)
@@ -44,7 +44,7 @@ SESSION_PERMANENT = True
 SESSION_TYPE = "filesystem"
 SESSION_COOKIE_NAME = "my_session"
 PERMANENT_SESSION_LIFETIME = timedelta(hours=GUEST_SESSION_LIFESPAN)
-DEBUG = False
+DEBUG = os.environ.get("DEBUG", False)
 
 # USER_JOB_LIMIT specifies the max number of most recent jobs that are kept for each user
 # USER_JOB_LIFESPAN specifies how long (in hours) user jobs are kept on the server
@@ -58,5 +58,6 @@ SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///u
 
 APP_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 GDC_DATA_PATH = os.path.join(APP_ROOT_PATH,"data/gdc_data")
-USER_FILES_PATH = os.path.join(APP_ROOT_PATH, "data/user_files")
-RSCRIPTS_PATH = os.path.join(APP_ROOT_PATH, "../rscripts")
+USER_JOBS_PATH = os.path.join(APP_ROOT_PATH, "data/user_jobs")
+RSCRIPTS_PATH = os.path.join(APP_ROOT_PATH, "rscripts")
+JOB_SCRIPTS_PATH = os.path.join(APP_ROOT_PATH, "job_scripts")

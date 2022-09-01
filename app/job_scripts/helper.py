@@ -1,4 +1,4 @@
-"""utility functions for app.py.  """
+"""Utility functions for user jobs"""
 
 import os
 

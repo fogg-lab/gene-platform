@@ -5,6 +5,10 @@ from flask import Flask, current_app, g
 app = Flask(__name__)
 
 def get_db():
+    """
+    Return a database connection.
+    If one does not exist, create one.
+    """
     if "db" not in g:
         g.db = sqlite3.connect(
             "sqlite_db", detect_types=sqlite3.PARSE_DECLTYPES
@@ -14,12 +18,14 @@ def get_db():
     return g.db
 
 def close_db(e=None):
+    """Close the database connection."""
     db = g.pop("db", None)
 
     if db is not None:
         db.close()
 
 def init_db():
+    """Initialize the database."""
     db = get_db()
 
     with current_app.open_resource("schema.sql") as f:
@@ -31,5 +37,6 @@ def init_db_command():
         init_db()
 
 def init_app(app):
+    """Register database functions with the Flask app."""
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)

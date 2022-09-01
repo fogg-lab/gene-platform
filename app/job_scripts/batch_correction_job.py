@@ -7,6 +7,8 @@ BC_SCRIPT = "Rscript ../../rscripts/batch_correction.r"
 
 coldata_cols = ["sample_name", "condition", "batch"]
 
+def start_job(job_dir):
+    pass
 
 def check_bc_input_files(user_dir):
     """Make sure counts and coldata files exist"""
@@ -23,7 +25,7 @@ def check_bc_input_files(user_dir):
         return "Error: Counts file not found"
     if not coldata_exists:
         return "Error: Coldata file not found"
-    
+
     return ""
 
 
@@ -67,3 +69,15 @@ def call_bc(user_dir, data_type, reference_level, contrast_level):
         [f"{BC_SCRIPT} {counts_in_path} {coldata_in_path} {user_dir} {data_type}"],
         shell=True
     )
+
+
+def check_bc_coldata():
+    """Ensures coldata has batches"""
+
+    coldata = common.get_tsv_rows("coldata.tsv")
+    err_msg = helpers.ensure_batches(coldata)
+
+    if err_msg:
+        helpers.delete_user_file("coldata.tsv",  common.get_session_dir())
+
+    return err_msg
