@@ -22,8 +22,8 @@ def setup():
 
     cur_uploads, all_uploads = common.list_user_files()
 
-    return render_template("uploads_form.html", \
-        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Uploads")
+    return render_template("uploads_form.html", cur_uploads=cur_uploads,
+                           all_uploads=all_uploads, title="Uploads")
 
 
 @analysis_bp.route("/upload", methods=["POST"])
@@ -39,8 +39,7 @@ def upload():
     user_filename = request.args.get("user_filename")
     standard_filename = request.headers.get('X_FILENAME')
 
-    if standard_filename not in ["counts.tsv", "coldata.tsv", "filter.txt", \
-        "config.yml"]:
+    if standard_filename not in ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]:
         result["error"] = "Unrecognized file."
         return jsonify(result)
 
@@ -57,7 +56,7 @@ def parameters():
     """loads the parameter form"""
 
     params = parse_config()
-    return render_template("parameters_form.html", params=params,\
+    return render_template("parameters_form.html", params=params,
          title="Parameters")
 
 
@@ -151,7 +150,7 @@ def display_output():
         filter_output_file.close()
         filtered_data = filtered_output[1:]
 
-    return render_template("results.html", cols = unfiltered_output[:1][0],\
+    return render_template("results.html", cols = unfiltered_output[:1][0],
          data=unfiltered_output[1:], filtered_data=filtered_data)
 
 
