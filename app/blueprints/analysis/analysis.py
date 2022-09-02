@@ -288,7 +288,7 @@ def generate_config(config_parameters):
 
 
 def parse_config():
-    """ parses config into a dict of parameters """
+    """parses config into a dictionary of parameters"""
 
     session_dir = common.get_session_dir()
     config_file_path = os.path.join(session_dir, "config.yml")
@@ -303,7 +303,7 @@ def parse_config():
 
 
 def check_config():
-    """get config params in a dict then validate the params"""
+    """validate config parameters"""
 
     err_msg = ""
 
