@@ -61,7 +61,6 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 
 		// clear file list to allow user to re-upload certain files
 		e.target.value = "";
-
 	}
 
 
@@ -84,7 +83,11 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			var progress_div_id = "progress_of_" + filename_base + "_div";
 			var progress_div = $id(progress_div_id);
 			var progress = progress_div.appendChild(document.createElement("div"));
-			progress.appendChild(document.createTextNode("upload " + file.name));
+			displayed_filename = file.name
+			if (displayed_filename.length > 12) {
+				displayed_filename = displayed_filename.substring(0,9) + "...";
+			}
+			progress.appendChild(document.createTextNode("upload " + displayed_filename));
 			progress.id = "progress_of_" + filename_base;
 
 			// hide button and text
@@ -94,7 +97,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			// show progress div and cancel button
 			progress_div.style.display = "inline-block";
 			$id("cancel_" + filename_base + "_button").style.display = "block";
-			
+
 			// initially set progress bar to grey
 			progress_div.style.backgroundPosition = "100% 0";
 
@@ -109,7 +112,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 				if (xhr.readyState == 4) {
 					if (xhr.status == 200) {
 						var response = JSON.parse(xhr.responseText);
-						
+
 						// remove prior status messages
 						var file_status_classname = "status_of" + filename_base;
 						var old_file_status = document.getElementsByClassName(file_status_classname);
@@ -126,7 +129,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 							);
 						} else {
 							progress.className = "success";
-							progress.innerHTML = file.name;
+							progress.innerHTML = displayed_filename;
 						}
 						if (UPLOAD_ENDPOINT == "\\normalization_upload") {
 							update_submit_button();
@@ -144,7 +147,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			// start upload
 			upload_url = window.location.origin + UPLOAD_ENDPOINT + user_filename_req_query
 			xhr.open("POST", upload_url, true);
-			
+
 			xhr.setRequestHeader("X_FILENAME", filename);
 			xhr.send(file);
 		}
@@ -173,7 +176,6 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 				filedrag.style.display = "block";
 			}
 		}
-
 	}
 
 
