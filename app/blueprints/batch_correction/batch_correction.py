@@ -2,8 +2,6 @@ import os
 import time
 from flask import (Blueprint, render_template, request, session, jsonify,
                    send_from_directory)
-from app.blueprints.common import common
-import app.helpers as helpers
 from app.models.job import Job
 
 batch_correction_bp = Blueprint("batch_correction_bp", __name__)
@@ -41,7 +39,7 @@ def batchupload():
     common.save_temp_file(request.data, standard_filename, user_filename)
 
     if standard_filename == "coldata.tsv":
-        result["error_status"] = check_bc_coldata()
+        result["error_status"] = check_batch_correction_coldata()
 
     return jsonify(result)
 
@@ -82,7 +80,7 @@ def submit_batch_correction():
     if os.path.isfile(expected_bc_counts_path):
         os.remove(expected_bc_counts_path)
 
-    bc_prep.call_bc(userdir, datatype, reference_level, contrast_level)
+    bc_prep.call_batch_correction(userdir, datatype, reference_level, contrast_level)
 
     is_output = False
     while not is_output:

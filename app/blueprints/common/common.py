@@ -34,13 +34,15 @@ def get_console_output():
     """
 
     log_content = ""
-    log = read_user_file(".log", get_session_dir())
-    if log:
-        log_content = log.read()[-1000:]
-        log.close()
-        clear_user_file(".log", get_session_dir())
+    log_path = os.path.join(get_session_dir(), ".log")
+
+    if os.path.isfile(log_path):
+        with open(log_path, "r", encoding="utf-8") as log_file:
+            log_content = log_file.read()[-1000:]
+        with open(log_path, 'r+', encoding="utf-8") as log_file:
+            log_file.truncate(0)
     else:
-        return (log_content, 204)
+        return ("", 204)
 
     return Response(log_content, mimetype='text/plain')
 
@@ -49,7 +51,7 @@ def save_temp_file(file_contents, standard_filename, user_filename):
     """
     Saves uploaded file to user session directory
 
-    Parameters:
+    Args:
         file_contents: bytes object
         filename: string
     """
@@ -75,42 +77,6 @@ def save_temp_file(file_contents, standard_filename, user_filename):
     user_file.close()
 
 
-def read_user_file(filename, user_dir):
-    """
-    Opens a user file for reading. Caller is responsible for closing the file
-    Parameters:
-        filename: string
-        user_dir: string
-    Returns:
-        file object
-    """
-
-    user_file = None
-
-    if user_dir:
-        filepath = os.path.join(user_dir, filename)
-        if os.path.isfile(filepath):
-            user_file = open(filepath, "r", encoding="UTF-8")
-
-    return user_file
-
-
-def clear_user_file(filename, user_dir):
-    """
-    Clears all content from a user file if it exists
-    Parameters:
-        filename: string
-        user_dir: string
-    """
-    if user_dir:
-        filepath = os.path.join(user_dir, filename)
-        if os.path.isfile(filepath):
-            f = open(filepath, "w", encoding="UTF-8")
-            f.truncate()
-            f.seek(0)
-            f.close()
-
-
 def cleanup_old_sessions():
     """Clean up other sessions older than 4 hours (14400 seconds)"""
 
@@ -132,47 +98,6 @@ def cleanup_old_sessions():
                     shutil.rmtree(old_dir)
             except ValueError:
                 pass
-
-
-def get_session_dir():
-    """
-    Returns path to user's session directory.
-    If none exists, ensure_session_dir() is called to create one
-    """
-
-    if "user_session_dir" not in session:
-        ensure_session_dir()
-
-    return session["user_session_dir"]
-
-
-def ensure_session_dir():
-    """
-    if there is no directory for the user session, create one now
-    directory path is stored in the user session variable 'user_session_dir'
-    """
-
-    if ("user_session_dir" not in session or
-        not os.path.exists(session["user_session_dir"])):
-        user_files_dir = current_app.config["USER_FILES_LOCATION"]
-        temp_dir = tempfile.mkdtemp(dir=user_files_dir)
-        os.chmod(temp_dir, 0o777) # give everyone rwx permission for the dir
-
-        session["user_session_dir"] = os.path.abspath(temp_dir)
-        session["session_id"] = temp_dir.split("/")[-1:]
-
-
-def get_tsv_rows(filename):
-    """returns the rows of the user input file as a 2d array"""
-
-    user_dir = get_session_dir()
-
-    tsv_file = read_user_file(filename, user_dir)
-    data_reader = csv.reader(tsv_file, delimiter="\t")
-    rows = list(data_reader)
-    tsv_file.close()
-
-    return rows
 
 
 def list_user_files():

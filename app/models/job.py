@@ -5,11 +5,12 @@ from redis import Redis
 from rq import Queue
 from flask import current_app
 from app.db.db import get_db
-from app.job_scripts import (batch_correction_job, correlation_job,
-                             normalization_job, preprocessing_job)
+from app.job_tools import run_job, prepare_job
 
 class Job:
     """Models class for user jobs"""
+
+    accepted_job_types = ["batch_correction", "analysis", "preprocessing", "correlation"]
 
     def __init__(self, job_id, job_type, user_id, status, created_at, updated_at):
         self.job_id = job_id
@@ -21,13 +22,6 @@ class Job:
             raise ValueError(f"Invalid job type: {job_type}.\n"
                              f"Job type be one of {list(Job._job_modules.keys())}")
         self.job_type = job_type
-
-    _job_modules = {
-        "batch_correction": batch_correction_job,
-        "correlation": correlation_job,
-        "data_retrieval": preprocessing_job,
-        "normalization": normalization_job
-    }
 
     @staticmethod
     def get_job_path(job_id):

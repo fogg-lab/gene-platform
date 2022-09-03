@@ -1,7 +1,45 @@
+
+def get_valid_geo_accessions(accessions):
+    """
+    Returns a list of valid GEO accessions from given list of accessions
+    Args:
+        accessions (list[str]): List of GEO accessions
+    Returns:
+        list: List of valid GEO accessions
+    """
+
+    valid_accessions = list(get_series_probesets(accessions).keys())
+
+    return valid_accessions
+
+
+def get_valid_gdc_projects(project_names):
+    """
+    Returns a list of valid GDC projects from project_names"""
+
+    with open("json/gdc_projects.json", encoding="utf-8") as gdc_projects_json:
+        gdc_projects = json.load(gdc_projects_json)
+
+    valid_projects = []
+    for project_name in project_names:
+        if "-" not in project_name:
+            continue
+        proj_name_lower = project_name.lower()
+        proj_base, proj_ext = proj_name_lower.split("-", 1)
+        if proj_base in gdc_projects and proj_ext in gdc_projects[proj_base]:
+            valid_projects.append(project_name)
+
+    return valid_projects
+
+
 import json
 import os
 from zipfile import ZipFile
 import pandas as pd
+
+
+def start_job(job_dir):
+    pass
 
 
 def get_series_probesets(accessions):
@@ -35,32 +73,6 @@ def get_series_probesets(accessions):
                 series_probesets[accession] = probeset
 
     return series_probesets
-
-
-def get_valid_geo_accessions(accessions):
-    """Returns a list of valid GEO accessions from given list of accessions"""
-
-    valid_accessions = list(get_series_probesets(accessions).keys())
-
-    return valid_accessions
-
-
-def get_valid_gdc_projects(project_names):
-    """Returns a list of valid GDC projects from project_names"""
-
-    with open("json/gdc_projects.json", encoding="utf-8") as gdc_projects_json:
-        gdc_projects = json.load(gdc_projects_json)
-
-    valid_projects = []
-    for project_name in project_names:
-        if "-" not in project_name:
-            continue
-        proj_name_lower = project_name.lower()
-        proj_base, proj_ext = proj_name_lower.split("-", 1)
-        if proj_base in gdc_projects and proj_ext in gdc_projects[proj_base]:
-            valid_projects.append(project_name)
-
-    return valid_projects
 
 
 def get_unmapped_counts_paths(data_dir):

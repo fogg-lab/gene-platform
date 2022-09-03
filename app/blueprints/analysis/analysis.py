@@ -5,8 +5,6 @@ import time
 import yaml
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    session, Response, jsonify, send_from_directory, current_app)
-from app.blueprints.common import common
-import app.helpers as helpers
 
 analysis_bp = Blueprint('analysis_bp', __name__)
 
@@ -46,7 +44,7 @@ def upload():
     common.save_temp_file(request.data, standard_filename, user_filename)
 
     if standard_filename == "config.yml":
-        result["error_status"] = check_config()
+        result["error_status"] = check_analysis_config()
 
     return jsonify(result)
 
@@ -55,7 +53,7 @@ def upload():
 def parameters():
     """loads the parameter form"""
 
-    params = parse_config()
+    params = parse_analysis_config()
     return render_template("parameters_form.html", params=params,
          title="Parameters")
 
@@ -92,13 +90,13 @@ def confirm_analysis_submission():
 
     # get whether analysis is microarray or rnaseq, and get params
     data_type = request.form.get("data_type")
-    params = helpers.get_request_parameters(request.form, data_type)
+    params = helpers.get_analysis_request_parameters(request.form, data_type)
 
     # generate config file from the form parameters
     generate_config(params)
 
     # validate the config, counts and coldata
-    config_file_error = check_config()
+    config_file_error = check_analysis_config()
 
     counts_colnames = common.get_tsv_rows("counts.tsv")[0]
 
@@ -287,33 +285,29 @@ def generate_config(config_parameters):
     config_file.close()
 
 
-def parse_config():
-    """parses config into a dictionary of parameters"""
-
-    session_dir = common.get_session_dir()
-    config_file_path = os.path.join(session_dir, "config.yml")
-    config_params = {}
-
-    if session_dir and os.path.exists(config_file_path):
-        config_file = open(config_file_path, encoding="UTF-8")
-        config_params = yaml.load(config_file, Loader=yaml.FullLoader)
-        config_file.close()
-
-    return config_params
 
 
-def check_config():
-    """validate config parameters"""
 
-    err_msg = ""
+def get_analysis_request_parameters(form, data_type):
+    """returns request parameters from the parameter form"""
 
-    config_params = parse_config()
-    if isinstance(config_params, str):
-        err_msg = config_params
-    else:
-        err_msg = helpers.validate_parameters(config_params)
+    request_parameters = {}
 
-    if err_msg:
-        helpers.delete_user_file("config.yml", common.get_session_dir())
+    # if analysis type is microarray, consider use_qual_weights
+    if data_type != "rnaseq":
+        # form.get("use_qual_weights") will initially be either 'None' or 'on'
+        # it needs to be a boolean True or False
+        if form.get("use_qual_weights") is None:
+            request_parameters["use_qual_weights"] = False
+        else:
+            request_parameters["use_qual_weights"] = True
 
-    return err_msg
+    request_parameters["min_prop"] = form.get("min_prop")
+    request_parameters["min_expr"] = form.get("min_expr")
+    request_parameters["adj_method"] = form.get("adj_method")
+    request_parameters["contrast_level"] = form.get("contrast_level")
+    request_parameters["reference_level"] = form.get("reference_level")
+    request_parameters["padj_thresh"] = form.get("padj_thresh")
+
+    return request_parameters
+

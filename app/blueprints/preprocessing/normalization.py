@@ -2,7 +2,6 @@ import os
 import subprocess
 import time
 from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
-from app.blueprints.common import common
 
 normalization_bp = Blueprint('normalization_bp', __name__, template_folder='templates',
                              static_folder='../../static')
