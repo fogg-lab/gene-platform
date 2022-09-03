@@ -4,7 +4,7 @@ from flask_session.__init__ import Session
 from flask_login import LoginManager
 from app.db.db import init_db_command
 from app.models.user import User
-from app.blueprints.common.common import common_bp
+from app.blueprints.home.home import home_bp
 from app.blueprints.analysis.analysis import analysis_bp
 from app.blueprints.batch_correction.batch_correction import batch_correction_bp
 from app.blueprints.auth.auth import auth_bp
@@ -35,7 +35,7 @@ def init_app():
 
     with app.app_context():
         # Register Blueprints
-        app.register_blueprint(common_bp)
+        app.register_blueprint(home_bp)
         app.register_blueprint(auth_bp)
         app.register_blueprint(analysis_bp)
         app.register_blueprint(batch_correction_bp)
