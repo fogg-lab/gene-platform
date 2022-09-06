@@ -5,12 +5,10 @@ from redis import Redis
 from rq import Queue
 from flask import current_app
 from app.db.db import get_db
-from app.job_tools import run_job, prepare_job
+from app.job_runner import run_job
 
 class Job:
     """Models class for user jobs"""
-
-    accepted_job_types = ["batch_correction", "analysis", "preprocessing", "correlation"]
 
     def __init__(self, job_id, job_type, user_id, status, created_at, updated_at):
         self.job_id = job_id
@@ -18,9 +16,6 @@ class Job:
         self.status = status
         self.created_at = created_at
         self.updated_at = updated_at
-        if job_type not in Job._job_modules:
-            raise ValueError(f"Invalid job type: {job_type}.\n"
-                             f"Job type be one of {list(Job._job_modules.keys())}")
         self.job_type = job_type
 
     @staticmethod
@@ -35,7 +30,7 @@ class Job:
         return job_path
 
     @staticmethod
-    def queue_job(job_id):
+    def submit_job(job_id):
         """Update job status to 'ready' and queue the job"""
         db = get_db()
         db.execute(
@@ -64,7 +59,6 @@ class Job:
         )
         db.commit()
 
-
     @staticmethod
     def __notify_job_completed(job_id):
         """Update job status to 'completed'"""
@@ -83,13 +77,15 @@ class Job:
         # Notify job started
         Job.__notify_job_started(job_id)
         # Run job script
-        Job._job_modules[job_type].start_job(job_dir)
+        run_job.start(job_dir, job_type)
         # Notify job completed
         Job.__notify_job_completed(job_id)
 
     @staticmethod
     def get(job_id):
         """Retrieve job by id from database"""
+        if job_id is None:
+            return None
         db = get_db()
         job = db.execute(
             "SELECT * FROM job WHERE id = ?", (job_id,)

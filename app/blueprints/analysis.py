@@ -5,6 +5,8 @@ import time
 import yaml
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    session, Response, jsonify, send_from_directory, current_app)
+from app.models.job import Job
+from app.job_runner import prepare_job
 
 analysis_bp = Blueprint('analysis_bp', __name__)
 
@@ -15,6 +17,7 @@ MICROARRAY_SCRIPT = "dge_microarray.r"
 @analysis_bp.route("/setup")
 def setup():
     """first input page (file uploads)"""
+    
 
     common.ensure_session_dir()
 
@@ -285,9 +288,6 @@ def generate_config(config_parameters):
     config_file.close()
 
 
-
-
-
 def get_analysis_request_parameters(form, data_type):
     """returns request parameters from the parameter form"""
 
@@ -310,4 +310,11 @@ def get_analysis_request_parameters(form, data_type):
     request_parameters["padj_thresh"] = form.get("padj_thresh")
 
     return request_parameters
+
+
+def get_current_analysis_job():
+    """returns the current analysis job if it exists"""
+
+    if "analysis_job" in session:
+        return Job.get_
 

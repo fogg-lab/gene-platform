@@ -2,14 +2,14 @@ import os
 import subprocess
 import pandas as pd
 import numpy as np
-from app.job_scripts import job_helper
+from app.job_runner import prepare_job, run_job
 
 BC_SCRIPT = "Rscript ../../rscripts/batch_correction.r"
 
 coldata_cols = ["sample_name", "condition", "batch"]
 
 
-def start_job(job_dir):
+def start_job(directory):
     pass
 
 

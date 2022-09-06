@@ -4,14 +4,13 @@ from flask_session.__init__ import Session
 from flask_login import LoginManager
 from app.db.db import init_db_command
 from app.models.user import User
-from app.blueprints.home.home import home_bp
-from app.blueprints.analysis.analysis import analysis_bp
-from app.blueprints.batch_correction.batch_correction import batch_correction_bp
-from app.blueprints.auth.auth import auth_bp
-from app.blueprints.correlation.correlation import correlation_bp
-from app.blueprints.preprocessing.normalization import normalization_bp
-from app.blueprints.preprocessing.preprocessing import preprocessing_bp
-from app.blueprints.jobs.jobs import jobs_bp
+from app.blueprints.common import common_bp
+from app.blueprints.analysis import analysis_bp
+from app.blueprints.batch_correction import batch_correction_bp
+from app.blueprints.auth import auth_bp
+from app.blueprints.correlation import correlation_bp
+from app.blueprints.normalization import normalization_bp
+from app.blueprints.preprocessing import preprocessing_bp
 
 def init_app():
     """Initialize the app."""
@@ -35,7 +34,7 @@ def init_app():
 
     with app.app_context():
         # Register Blueprints
-        app.register_blueprint(home_bp)
+        app.register_blueprint(main_bp)
         app.register_blueprint(auth_bp)
         app.register_blueprint(analysis_bp)
         app.register_blueprint(batch_correction_bp)

@@ -3,6 +3,8 @@ import time
 import base64
 import fitz
 from flask import Blueprint, render_template, request, session, jsonify
+from app.models.job import Job
+from app.job_runner import prepare_job
 
 correlation_bp = Blueprint('correlation_bp', __name__)
 

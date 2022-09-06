@@ -5,6 +5,11 @@ import numpy as np
 
 CORR_SCRIPT = "Rscript ../../rscripts/correlation.r"
 
+
+def start_job(directory):
+    pass
+
+
 def call_corr(user_dir, corr_method):
     """Prepare data for correlation and call R script to generate plots"""
 

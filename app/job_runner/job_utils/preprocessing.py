@@ -1,3 +1,6 @@
+def start_job(directory):
+    pass
+
 
 def get_valid_geo_accessions(accessions):
     """

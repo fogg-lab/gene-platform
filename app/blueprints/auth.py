@@ -20,6 +20,7 @@ client = WebApplicationClient(client_id)
 
 @auth_bp.before_app_request
 def before_request():
+    """Check if user is logged in on each page load"""
     is_login_endpoint = request.endpoint in ["auth_bp.login", "auth_bp.callback"]
     if not current_user.is_authenticated and not is_login_endpoint:
         print("redirecting...")
@@ -28,6 +29,7 @@ def before_request():
 
 @auth_bp.route("/login")
 def login():
+    """Login page"""
     # Find out what URL to hit for Google login
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
@@ -47,20 +49,15 @@ def login():
 
 @auth_bp.route("/login/callback")
 def callback():
+    """Callback function for Google OAuth"""
     # Get authorization code Google sent back to you
     code = request.args.get("code")
-
-    print(f"request header: {request.headers}")
-    print(f"request.url: {request.url}")
-    print(f"request.base_url: {request.base_url}")
-    print(f"code: {code}")
 
     # Get the token endpoint URL
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
 
     # Prepare and send a request to get tokens
-    print(f"token_endpoint: {token_endpoint}")
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url.replace("http:","https:"),
@@ -110,10 +107,12 @@ def callback():
 @auth_bp.route("/logout")
 @login_required
 def logout():
+    """Logout current user"""
     logout_user()
     return redirect("/")
 
 
 def get_google_provider_cfg():
+    """Get Google provider configuration"""
     discover_url = os.getenv("GOOGLE_DISCOVERY_URL")
     return requests.get(discover_url).json()

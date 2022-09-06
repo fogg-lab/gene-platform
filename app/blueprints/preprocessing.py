@@ -3,6 +3,8 @@ import subprocess
 import time
 from flask import (Blueprint, render_template, request, send_from_directory,
                    current_app)
+from app.models.job import Job
+from app.job_runner import prepare_job
 
 preprocessing_bp = Blueprint('preprocessing_bp', __name__)
 

@@ -3,6 +3,7 @@ import time
 from flask import (Blueprint, render_template, request, session, jsonify,
                    send_from_directory)
 from app.models.job import Job
+from app.job_runner import prepare_job
 
 batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 
