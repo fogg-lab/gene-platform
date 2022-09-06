@@ -4,9 +4,10 @@ import pandas as pd
 import numpy as np
 
 CORR_SCRIPT = "Rscript ../../rscripts/correlation.r"
-
+STANDARD_FNAMES = ["counts.tsv", "config.yml"]
 
 def start_job(directory):
+    """Run an RNASeq correlation job"""
     pass
 
 

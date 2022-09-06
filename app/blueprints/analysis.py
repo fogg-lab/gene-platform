@@ -46,7 +46,7 @@ def upload():
         result["error"] = "Unrecognized file."
         return jsonify(result)
 
-    common.save_job_input_file(request.data, standard_filename, user_filename)
+    add_input_file(request.data, standard_filename, user_filename)
 
     if standard_filename == "config.yml":
         result["error_status"] = check_analysis_config()

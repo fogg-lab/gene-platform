@@ -2,14 +2,15 @@ import os
 import subprocess
 import pandas as pd
 import numpy as np
-from app.job_runner import prepare_job, run_job
 
+STANDARD_FNAMES = ["counts.tsv", "coldata.tsv", "config.yml"]
 BC_SCRIPT = "Rscript ../../rscripts/batch_correction.r"
 
 coldata_cols = ["sample_name", "condition", "batch"]
 
 
 def start_job(directory):
+    """"Run a batch correction job"""
     pass
 
 

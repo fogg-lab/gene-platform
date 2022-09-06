@@ -1,4 +1,12 @@
+import json
+import os
+from zipfile import ZipFile
+import pandas as pd
+
+INPUT_FNAMES = ["config.yml"]
+
 def start_job(directory):
+    """Run a preprocessing job"""
     pass
 
 
@@ -17,8 +25,7 @@ def get_valid_geo_accessions(accessions):
 
 
 def get_valid_gdc_projects(project_names):
-    """
-    Returns a list of valid GDC projects from project_names"""
+    """Returns a list of valid GDC projects from project_names"""
 
     with open("json/gdc_projects.json", encoding="utf-8") as gdc_projects_json:
         gdc_projects = json.load(gdc_projects_json)
@@ -33,16 +40,6 @@ def get_valid_gdc_projects(project_names):
             valid_projects.append(project_name)
 
     return valid_projects
-
-
-import json
-import os
-from zipfile import ZipFile
-import pandas as pd
-
-
-def start_job(job_dir):
-    pass
 
 
 def get_series_probesets(accessions):

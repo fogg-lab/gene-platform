@@ -15,8 +15,6 @@ NORMALIZATION_SCRIPT = "Rscript ../../../rscripts/normalize.r"
 def normalization():
     """normalization input form"""
 
-    common.ensure_session_dir()
-
     cur_uploads, all_uploads = common.list_input_files(job_id)
 
     return render_template("normalization.html", cur_uploads=cur_uploads,

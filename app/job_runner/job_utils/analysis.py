@@ -1,15 +1,15 @@
 import os
 import yaml
-from app.job_runner.job_runner import post_input_file
 
+STANDARD_FNAMES = ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]
 
 def update_job(directory):
-    """Post an update to a job to trigger new input validation."""
+    """Job has a new input file - perform input validation."""
     pass
 
 
-def run_job(directory):
-    """Start a job. Assumes input validation has already been done."""
+def start_job(directory):
+    """Run an analysis job."""
     pass
 
 
