@@ -1,6 +1,6 @@
 import os
 import yaml
-from app.job_runner import prepare_job, run_job
+from app.job_runner.job_runner import post_input_file
 
 
 def update_job(directory):

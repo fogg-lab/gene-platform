@@ -4,7 +4,7 @@ import time
 from flask import (Blueprint, render_template, request, send_from_directory,
                    current_app)
 from app.models.job import Job
-from app.job_runner import prepare_job
+from app.job_runner.job_runner import post_input_file
 
 preprocessing_bp = Blueprint('preprocessing_bp', __name__)
 
@@ -18,7 +18,7 @@ def preprocessing():
 
     common.ensure_session_dir()
 
-    cur_uploads, all_uploads = common.list_user_files()
+    cur_uploads, all_uploads = common.list_input_files(job_id)
 
     return render_template(
         "preprocessing.html",
@@ -38,7 +38,7 @@ def submit_preprocessing():
         dsets += f"{dset} "
     dsets = dsets.strip()
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     src = "geo" if "geo" in data_source.lower() else "gdc"
 
@@ -141,7 +141,7 @@ def confirm_preprocessing_submission():
 @preprocessing_bp.route("/get-preprocessed-data")
 def get_preprocessed_data():
     """Return preprocessed data for user to download"""
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
     processed_data = utils.zip_preprocessed_data(user_dir)
     zip_fname = processed_data.split("/")[-1]
     return send_from_directory(user_dir, zip_fname)

@@ -14,7 +14,7 @@ def batchcorrection():
 
     common.ensure_session_dir()
 
-    cur_uploads, all_uploads = common.list_user_files()
+    cur_uploads, all_uploads = common.list_input_files(job_id)
 
     return render_template("batchcorrection.html", cur_uploads=cur_uploads,
                            all_uploads=all_uploads, title="Batch Correction")
@@ -37,7 +37,7 @@ def batchupload():
         result["error"] = "Unrecognized file."
         return jsonify(result)
 
-    common.save_temp_file(request.data, standard_filename, user_filename)
+    common.save_job_input_file(request.data, standard_filename, user_filename)
 
     if standard_filename == "coldata.tsv":
         result["error_status"] = check_batch_correction_coldata()
@@ -49,7 +49,7 @@ def batchupload():
 def submit_batch_correction():
     """Submit a batch correction job"""
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     datatype = request.form.get("data_type")
     reference_level = request.form.get("reference_level")
@@ -96,6 +96,6 @@ def submit_batch_correction():
 def get_batch_correction_counts():
     """Returns batch correction results to the client"""
 
-    rel_user_dir = common.get_session_dir()
+    rel_user_dir = common.Job.get_dir(job_id)
     abs_user_dir = os.path.abspath(rel_user_dir)
     return send_from_directory(abs_user_dir, "counts_bc.tsv")

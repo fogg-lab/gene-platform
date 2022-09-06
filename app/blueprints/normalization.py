@@ -3,7 +3,7 @@ import subprocess
 import time
 from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
 from app.models.job import Job
-from app.job_runner import prepare_job
+from app.job_runner.job_runner import add_input_file, list_input_files
 
 normalization_bp = Blueprint('normalization_bp', __name__, template_folder='templates',
                              static_folder='../../static')
@@ -17,7 +17,7 @@ def normalization():
 
     common.ensure_session_dir()
 
-    cur_uploads, all_uploads = common.list_user_files()
+    cur_uploads, all_uploads = common.list_input_files(job_id)
 
     return render_template("normalization.html", cur_uploads=cur_uploads,
                            all_uploads=all_uploads, title="Normalization")
@@ -40,7 +40,7 @@ def normalization_upload():
         result["error"] = "Unrecognized file."
         return jsonify(result)
 
-    common.save_temp_file(request.data, standard_filename, user_filename)
+    common.save_job_input_file(request.data, standard_filename, user_filename)
 
     return jsonify(result)
 
@@ -74,6 +74,6 @@ def submit_normalization():
 def get_normalized_counts():
     """Return the normalized counts file to the client"""
 
-    rel_user_dir = common.get_session_dir()
+    rel_user_dir = common.Job.get_dir(job_id)
     abs_user_dir = os.path.abspath(rel_user_dir)
     return send_from_directory(abs_user_dir, "counts_normalized.tsv")

@@ -4,7 +4,7 @@ import base64
 import fitz
 from flask import Blueprint, render_template, request, session, jsonify
 from app.models.job import Job
-from app.job_runner import prepare_job
+from app.job_runner.job_runner import add_input_file, list_input_files
 
 correlation_bp = Blueprint('correlation_bp', __name__)
 
@@ -13,13 +13,11 @@ correlation_bp = Blueprint('correlation_bp', __name__)
 def rnaseq_correlation():
     """RNAseq sample correlation page"""
 
-    common.ensure_session_dir()
+    job_id = request.args.get("job_id")
+    job_dir = Job.get_dir(job_id)
+    uploads = list_input_files(job_dir)
 
-    cur_uploads, all_uploads = common.list_user_files()
-
-    return render_template("rnaseq_correlation.html",
-                           cur_uploads=cur_uploads,
-                           all_uploads=all_uploads,
+    return render_template("rnaseq_correlation.html", cur_uploads=uploads,
                            title="RNAseq Sample Correlation")
 
 
@@ -27,10 +25,13 @@ def rnaseq_correlation():
 def upload_rnaseq_correlation():
     """handles uploading counts for rnaseq sample correlation"""
 
-    result = {}
+    job_id = request.form.get("job_id")
+    job_dir = Job.get_dir(job_id)
+    save_path = os.path.join(job_dir, "counts.tsv")
+    data = request.data
 
-    user_filename = request.args.get("user_filename")
-    common.save_temp_file(request.data, "counts.tsv", user_filename)
+    result = dict()
+    result["status_msg"] = add_input_file(data, save_path, "correlation")
 
     return jsonify(result)
 
@@ -39,11 +40,10 @@ def upload_rnaseq_correlation():
 def get_correlation_plot():
     """Returns specified correlation plot to client"""
 
-    user_dir = common.get_session_dir()
-    print(request.args)
-    print(request.form)
+    job_id = request.args.get("job_id")
+    job_dir = Job.get_dir(job_id)
     corr_method = request.args.get("corr_method")
-    img_path = os.path.join(user_dir, f"{corr_method}.png")
+    img_path = os.path.join(job_dir, f"{corr_method}.png")
 
     if not os.path.isfile(img_path):
         print(f"{img_path} not found")
@@ -58,21 +58,22 @@ def get_correlation_plot():
 def submit_rnaseq_correlation():
     """Submit job to get rnaseq sample correlation plots"""
 
-    user_dir = common.get_session_dir()
-
     corr_method = request.form.get("corr_method")
+    job_id = request.form.get("job_id")
+    job_dir = Job.get_dir(job_id)
+    job_output_dir = os.path.join(job_dir, "output")
 
     expect_spearman = corr_method != "pearson"
     expect_pearson = corr_method != "spearman"
 
-    expected_pearson_path = os.path.join(user_dir, "pearson.pdf")
-    expected_spearman_path = os.path.join(user_dir, "spearman.pdf")
+    expected_pearson_path = os.path.join(job_output_dir, "pearson.pdf")
+    expected_spearman_path = os.path.join(job_output_dir, "spearman.pdf")
 
     # Delete any previous correlation results
-    helpers.delete_user_file("pearson.pdf", common.get_session_dir())
-    helpers.delete_user_file("spearman.pdf", common.get_session_dir())
-    helpers.delete_user_file("pearson.png", common.get_session_dir())
-    helpers.delete_user_file("spearman.png", common.get_session_dir())
+    for fname in job_output_dir:
+        if "pearson" in fname or "spearman" in fname:
+            file_path = os.path.join(job_output_dir, fname)
+            os.remove(file_path)
 
     status_msg = correlation_prep.call_corr(user_dir, corr_method)
     if not status_msg:
@@ -107,7 +108,7 @@ def submit_rnaseq_correlation():
                 save_path = f"{expected_path[:-4]}.png"
                 pix.save(save_path)
 
-    helpers.delete_user_file("pearson.pdf", common.get_session_dir())
-    helpers.delete_user_file("spearman.pdf", common.get_session_dir())
+    helpers.delete_user_file("pearson.pdf", common.Job.get_dir(job_id))
+    helpers.delete_user_file("spearman.pdf", common.Job.get_dir(job_id))
 
     return status_msg

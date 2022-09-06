@@ -101,7 +101,7 @@ def check_batch_correction_coldata(directory):
     status_msg = ensure_batches(coldata)
 
     if status_msg:
-        helpers.delete_user_file("coldata.tsv",  common.get_session_dir())
+        helpers.delete_user_file("coldata.tsv",  common.Job.get_dir(job_id))
 
     return status_msg
 

@@ -6,7 +6,7 @@ import yaml
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    session, Response, jsonify, send_from_directory, current_app)
 from app.models.job import Job
-from app.job_runner import prepare_job
+from app.job_runner.job_runner import add_input_file, list_input_files
 
 analysis_bp = Blueprint('analysis_bp', __name__)
 
@@ -18,13 +18,15 @@ MICROARRAY_SCRIPT = "dge_microarray.r"
 def setup():
     """first input page (file uploads)"""
     
+    job_id = request.args.get("job_id")
+    uploads = dict()
 
-    common.ensure_session_dir()
+    if job_id is not None and len(job_id) == 16:
+        job_dir = Job.get_dir(job_id)
+        uploads = list_input_files(job_dir)
 
-    cur_uploads, all_uploads = common.list_user_files()
-
-    return render_template("uploads_form.html", cur_uploads=cur_uploads,
-                           all_uploads=all_uploads, title="Uploads")
+    return render_template("uploads_form.html", cur_uploads=uploads,
+                           title="DGE Analysis")
 
 
 @analysis_bp.route("/upload", methods=["POST"])
@@ -44,7 +46,7 @@ def upload():
         result["error"] = "Unrecognized file."
         return jsonify(result)
 
-    common.save_temp_file(request.data, standard_filename, user_filename)
+    common.save_job_input_file(request.data, standard_filename, user_filename)
 
     if standard_filename == "config.yml":
         result["error_status"] = check_analysis_config()
@@ -73,12 +75,12 @@ def submit():
     data_type = request.form.get("data_type")
 
     # remove old output
-    helpers.delete_user_file("filter_output.tsv", common.get_session_dir())
-    helpers.delete_user_file("output.tsv", common.get_session_dir())
+    helpers.delete_user_file("filter_output.tsv", common.Job.get_dir(job_id))
+    helpers.delete_user_file("output.tsv", common.Job.get_dir(job_id))
 
     for filename in os.listdir(session["user_session_dir"]):
         if filename.endswith(".png"):
-            helpers.delete_user_file(filename, common.get_session_dir())
+            helpers.delete_user_file(filename, common.Job.get_dir(job_id))
 
     call_analysis(data_type)
 
@@ -132,7 +134,7 @@ def display_output():
     display output in a table
     """
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     # check here if output.tsv exists and errors.txt doesn't
     unfiltered_output_path = os.path.join(user_dir, "output.tsv")
@@ -161,7 +163,7 @@ def plots():
     display plots
     """
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     plot_filenames = {}
 
@@ -181,7 +183,7 @@ def plots():
 
 @analysis_bp.route('/getplot/<filename>')
 def getplot(filename):
-    rel_user_dir = common.get_session_dir()
+    rel_user_dir = common.Job.get_dir(job_id)
     abs_user_dir = os.path.abspath(rel_user_dir)
     return send_from_directory(abs_user_dir, filename)
 
@@ -190,7 +192,7 @@ def getplot(filename):
 def reset():
     """Deletes files from a users session"""
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     helpers.delete_user_file("counts.tsv", user_dir)
     helpers.delete_user_file("coldata.tsv", user_dir)
@@ -206,7 +208,7 @@ def reset():
 def get_unfiltered_tsv():
     """download unfiltered output"""
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     unfiltered_output_path = os.path.join(user_dir, "output.tsv")
     unfiltered_output = open(unfiltered_output_path, encoding="UTF-8")
@@ -222,7 +224,7 @@ def get_unfiltered_tsv():
 def get_filtered_tsv():
     """download filtered output"""
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     filtered_output_path = os.path.join(user_dir, "filter_output.tsv")
     filtered_output = open(filtered_output_path, encoding="UTF-8")
@@ -240,7 +242,7 @@ def call_analysis(data_type):
     sends the session path as an argument, redirects output to a log file
     """
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
     log_path = os.path.join(user_dir, ".log")
 
     rscripts_path = current_app.config["RSCRIPTS_PATH"]
@@ -255,7 +257,7 @@ def call_analysis(data_type):
 def wait_for_output():
     """waits until output shows up in users session directory"""
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     unfiltered_output_path = os.path.join(user_dir, "output.tsv")
     filt_output_path = os.path.join(user_dir, "filter_output.tsv")
@@ -274,7 +276,7 @@ def wait_for_output():
 def generate_config(config_parameters):
     """generates a config file using user-entered parameters"""
 
-    user_dir = common.get_session_dir()
+    user_dir = common.Job.get_dir(job_id)
 
     config_file_path = os.path.join(user_dir, "config.yml")
     config_file = open(config_file_path, "w", encoding="UTF-8")

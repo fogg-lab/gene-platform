@@ -4,8 +4,9 @@ import string
 from redis import Redis
 from rq import Queue
 from flask import current_app
+from flask_login import current_user
 from app.db.db import get_db
-from app.job_runner import run_job
+from app.job_runner.job_runner import run_job
 
 class Job:
     """Models class for user jobs"""
@@ -19,19 +20,20 @@ class Job:
         self.job_type = job_type
 
     @staticmethod
-    def get_job_path(job_id):
+    def get_dir(job_id):
         """
-        Return absolute path to the job directory.
-        Create the directory if it doesn't exist
+        Return absolute path to the directory for a job associated with a user.
+        Create the directory if it doesn't exist.
         """
-        user_jobs_path = current_app.config["USER_JOBS_PATH"]
-        job_path = os.path.join(user_jobs_path, job_id)
-        os.makedirs(job_path, exist_ok=True)
-        return job_path
+        if Job.get(job_id) is not None:
+            user_jobs_path = current_app.config["USER_JOBS_PATH"]
+            job_dir = os.path.join(user_jobs_path, job_id)
+            os.makedirs(job_dir, exist_ok=True)
+            return job_dir
 
     @staticmethod
     def submit_job(job_id):
-        """Update job status to 'ready' and queue the job"""
+        """Update status of user job to 'ready' and queue it for processing."""
         db = get_db()
         db.execute(
             "UPDATE job SET status = 'ready' WHERE id = ?",
@@ -51,20 +53,24 @@ class Job:
 
     @staticmethod
     def __notify_job_started(job_id):
-        """Update job status to 'started'"""
+        """Update job status to 'Started'"""
         db = get_db()
         db.execute(
-            "UPDATE job SET status = 'started' WHERE id = ?",
+            "UPDATE job SET status = 'Started' WHERE id = ?",
             (job_id,)
         )
         db.commit()
 
     @staticmethod
-    def __notify_job_completed(job_id):
-        """Update job status to 'completed'"""
+    def __notify_job_completed(job_id, status_msg):
+        """Update job status to 'Completed'"""
         db = get_db()
+        if len(status_msg) > 0:
+            status_msg = f"Completed: {status_msg}"
+        else:
+            status_msg = "Completed"
         db.execute(
-            "UPDATE job SET status = 'completed' WHERE job_id = ?",
+            f"UPDATE job SET status = '{status_msg}' WHERE job_id = ?",
             (job_id,)
         )
         db.commit()
@@ -73,34 +79,35 @@ class Job:
     def __start_job(job_id, job_type):
         """Start job"""
         # Get job directory
-        job_dir = Job.get_job_path(job_id)
+        job_dir = Job.get_dir(job_id)
         # Notify job started
         Job.__notify_job_started(job_id)
-        # Run job script
-        run_job.start(job_dir, job_type)
+        # Run job
+        status_msg = run_job(job_dir, job_type)
         # Notify job completed
-        Job.__notify_job_completed(job_id)
+        Job.__notify_job_completed(job_id, status_msg)
 
     @staticmethod
     def get(job_id):
-        """Retrieve job by id from database"""
+        """Retrieve user job by id from database"""
         if job_id is None:
             return None
         db = get_db()
+        user_id = current_user.user_id
         job = db.execute(
-            "SELECT * FROM job WHERE id = ?", (job_id,)
+            "SELECT * FROM job WHERE id = ? AND user_id = ?", (job_id, user_id)
         ).fetchone()
-        if not job:
-            return None
-        job = Job(
-            job_id=job[0],
-            user_id=job[1],
-            job_type=job[2],
-            status=job[3],
-            created_at=job[4],
-            updated_at=job[5]
-        )
-        return job
+        if job is not None:
+            return Job(
+                job_id=job[0],
+                user_id=job[1],
+                job_type=job[2],
+                status=job[3],
+                created_at=job[4],
+                updated_at=job[5]
+            )
+        else:
+            raise Exception("Job not found")
 
     @staticmethod
     def get_user_jobs(user_id):
