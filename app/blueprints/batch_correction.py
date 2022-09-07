@@ -3,7 +3,8 @@ import time
 from flask import (Blueprint, render_template, request, session, jsonify,
                    send_from_directory)
 from app.models.job import Job
-from app.job_runner import prepare_job
+from app.job_runner.job_runner import add_input_file, list_input_files
+from app import helper
 
 batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 
@@ -12,9 +13,10 @@ batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 def batchcorrection():
     """batch correction input form"""
 
-    common.ensure_session_dir()
+    job_id = request.form.get("job_id")
+    job_dir = Job.get_dir(job_id)
 
-    cur_uploads, all_uploads = common.list_input_files(job_id)
+    cur_uploads, all_uploads = list_input_files(job_dir)
 
     return render_template("batchcorrection.html", cur_uploads=cur_uploads,
                            all_uploads=all_uploads, title="Batch Correction")
@@ -28,20 +30,24 @@ def batchupload():
     file contents are in request.data (a bytes object)
     """
 
+    job_id = request.form.get("job_id")
+    job_dir = Job.get_dir(job_id)
+
     result = {}
 
     user_filename = request.args.get("user_filename")
     standard_filename = request.headers.get('X_FILENAME')
 
+    """ OLD CODE:
     if standard_filename not in ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]:
         result["error"] = "Unrecognized file."
         return jsonify(result)
-
-    common.save_job_input_file(request.data, standard_filename, user_filename)
-
     if standard_filename == "coldata.tsv":
         result["error_status"] = check_batch_correction_coldata()
+    """
 
+    result = add_input_file(request.data, job_dir, standard_filename,
+                            user_filename, "batch_correction")
     return jsonify(result)
 
 
@@ -49,28 +55,29 @@ def batchupload():
 def submit_batch_correction():
     """Submit a batch correction job"""
 
-    user_dir = common.Job.get_dir(job_id)
+    job_id = request.form.get("job_id")
+    job_dir = Job.get_dir(job_id)
 
     datatype = request.form.get("data_type")
     reference_level = request.form.get("reference_level")
     contrast_level = request.form.get("contrast_level")
-    userdir = session["user_session_dir"]
 
+    """OLD CODE:
     # Validate input files before calling batch correction
     error_msg = bc_prep.check_bc_input_files(user_dir)
     if error_msg:
         return error_msg
 
     # Ensure that counts and coldata have the same samples in the same order
-    counts_colnames = common.get_tsv_rows("counts.tsv")[0]
+    counts_colnames = helper.get_tsv_rows("counts.tsv")[0]
     error_msg = helpers.check_coldata_matches_counts(
-        counts_colnames, common.get_tsv_rows("coldata.tsv"))
+        counts_colnames, helper.get_tsv_rows("coldata.tsv"))
     if error_msg:
         return error_msg
 
     # Ensure factor levels are present in coldata
     error_msg = helpers.check_factor_levels(reference_level, contrast_level,
-                                            common.get_tsv_rows("coldata.tsv"))
+                                            helper.get_tsv_rows("coldata.tsv"))
     if error_msg:
         return error_msg
 
@@ -88,7 +95,7 @@ def submit_batch_correction():
         is_output = os.path.exists(expected_bc_counts_path)
         if not is_output:
             time.sleep(0.25)
-
+    """
     return "Batch correction complete."
 
 

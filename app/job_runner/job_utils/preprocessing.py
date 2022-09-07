@@ -1,9 +1,24 @@
+"""
+Functions for preparing and running preprocessing.
+Used by the job runner module.
+"""
 import json
 import os
+import subprocess
 from zipfile import ZipFile
 import pandas as pd
+import csv
+import time
+import yaml
+from flask import current_app
 
 INPUT_FNAMES = ["config.yml"]
+
+
+def update_job(directory):
+    """Job has a new input file - perform input validation."""
+    pass
+
 
 def start_job(directory):
     """Run a preprocessing job"""

@@ -1,12 +1,23 @@
+"""
+Functions for preparing and running batch correction.
+Used by the job runner module.
+"""
 import os
 import subprocess
 import pandas as pd
 import numpy as np
+import csv
+import time
+import yaml
+from flask import current_app
+from app import helper
 
-STANDARD_FNAMES = ["counts.tsv", "coldata.tsv", "config.yml"]
-BC_SCRIPT = "Rscript ../../rscripts/batch_correction.r"
+INPUT_FNAMES = ["counts.tsv", "coldata.tsv", "config.yml"]
 
-coldata_cols = ["sample_name", "condition", "batch"]
+
+def update_job(directory):
+    """Job has a new input file - perform input validation."""
+    pass
 
 
 def start_job(directory):
@@ -34,8 +45,9 @@ def call_batch_correction(directory, data_type, reference_level, contrast_level)
         [i for i in counts_cols if i.lower() != "entrez_gene_id"], sep='\t')
     counts.rename(columns=lambda x: "symbol" if "symbol" in x.lower() else x, inplace=True)
 
+    coldata_cols = ["sample_name", "condition", "batch"]
     coldata = pd.read_csv(coldata_path, usecols = coldata_cols, sep='\t')
-    coldata.columns= coldata.columns.str.lower()
+    coldata.columns = coldata.columns.str.lower()
 
     # Remove samples with levels other than the reference/contrast levels
     factor_levels = [reference_level, contrast_level]
@@ -58,8 +70,9 @@ def call_batch_correction(directory, data_type, reference_level, contrast_level)
     coldata.to_csv(coldata_in_path, sep='\t', index=False)
 
     # Call the batch correction R script
+    bc_script = os.path.join(current_app.config["RSCRIPTS_PATH"], "batch_correction.r")
     subprocess.Popen(
-        [f"{BC_SCRIPT} {counts_in_path} {coldata_in_path} {directory} {data_type}"],
+        [f"{bc_script} {counts_in_path} {coldata_in_path} {directory} {data_type}"],
         shell=True
     )
 
@@ -98,11 +111,12 @@ def check_batch_correction_coldata(directory):
         string
     """
 
-    coldata = job_helper.get_tsv_rows("coldata.tsv", directory)
+    coldata_path = os.path.join(directory, "coldata.tsv")
+    coldata = helper.get_tsv_rows(coldata_path)
     status_msg = ensure_batches(coldata)
 
     if status_msg:
-        helpers.delete_user_file("coldata.tsv",  common.Job.get_dir(job_id))
+        os.remove(coldata_path)
 
     return status_msg
 

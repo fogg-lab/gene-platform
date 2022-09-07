@@ -50,10 +50,10 @@ function submissionConfirmed() {
   analysisReq.open("POST", "/submit");
   analysisReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-  data_type = get_data_type();
-  data_type_req_query = "data_type=" + data_type;
+  job_id = getJobID();
+  req_query = "job_id=" + job_id;
 
-  analysisReq.send(data_type_req_query);
+  analysisReq.send(req_query);
   showRuntime();
 }
 

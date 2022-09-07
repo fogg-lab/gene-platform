@@ -27,21 +27,15 @@ load_RSE_objects <- function(RSE_objects_dest_dir, projects) {
     return(rses)
 }
 
-###############################################################################
+#############
 # Main script
-###############################################################################
+#############
 
-# Parse command line arguments
+# Arguments
 args = commandArgs(trailingOnly = TRUE)
-
-user_dir <- args[1]
-data_dir <- file.path(user_dir, "../../../app/gdc_data/")
-
-# Read in the project names
-projects <- vector(mode='list', length=length(args)-1)
-for(i in seq_along(args[-1])) {
-    projects[[i]] <- toupper(args[[i+1]])
-}
+data_dir <- args[1]
+output_dir <- args[2]
+projects <- toupper(args[c(-1,-2)])
 
 # Data paths
 project_paths <- unlist(map(projects, function(prj) file.path(data_dir, prj)))

@@ -1,11 +1,14 @@
+"""The job runner module is used to prepare and run jobs."""
+
 import os
+import shutil
 from redis import Redis
-from app.exceptions import JobNotFoundError
+from app.exceptions import InvalidJobType, InvalidInputFile
 from app.job_runner.job_utils import (analysis, batch_correction, correlation,
                                       normalization, preprocessing,
                                       expression_data_validation)
 
-JOB_TYPE_UTIL_MODULES = {
+JOB_UTIL_MODULES = {
     "analysis": analysis,
     "batch_correction": batch_correction,
     "correlation": correlation,
@@ -14,35 +17,24 @@ JOB_TYPE_UTIL_MODULES = {
     "expression_data_validation": expression_data_validation
 }
 
-JOB_TYPE_INPUT_FNAMES = {
-    "analysis": analysis.INPUT_FNAMES,
-    "batch_correction": batch_correction.INPUT_FNAMES,
-    "correlation": correlation.INPUT_FNAMES,
-    "normalization": normalization.INPUT_FNAMES,
-    "preprocessing": preprocessing.INPUT_FNAMES
-}
-
 def run_job(job_dir, job_type):
     """Run a job, return status message"""
-    status_msg = ""
-    if job_type in JOB_TYPE_UTIL_MODULES:
-        status_msg = JOB_TYPE_UTIL_MODULES[job_type].start_job(job_dir)
-    else:
-        raise Exception("Invalid job type")
+    if job_type not in JOB_UTIL_MODULES:
+        raise InvalidJobType(f"Failed to run job: Job type '{job_type}' is invalid."
+                             f"Must be one of {JOB_UTIL_MODULES}")
+    status_msg = JOB_UTIL_MODULES[job_type].start_job(job_dir)
     return status_msg
 
-def get_job_log_update(job_dir):
-    """
-    returns the contents of the log file in user session directory
-    the log file contains terminal output from the analysis script
-    """
+def get_job_log_update(job_dir, last_log_update_line_number):
+    """Returns the contents of the log file for a job"""
     log_file_path = os.path.join(job_dir, ".log")
     log_content = ""
     if os.path.isfile(log_file_path):
         with open(log_file_path, "r", encoding="utf-8") as log_file:
-            log_content = log_file.read()[-1000:]
-        with open(log_file_path, "r+", encoding="utf-8") as log_file:
-            log_file.truncate(0)
+            # Limit to 100000 characters
+            full_log_content = log_file.read()[-100000:]
+            if len(full_log_content) > last_log_update_line_number:
+                log_content = full_log_content[last_log_update_line_number:]
     return log_content
 
 def add_input_file(file_contents, job_dir, standard_fname, user_fname, job_type):
@@ -55,8 +47,15 @@ def add_input_file(file_contents, job_dir, standard_fname, user_fname, job_type)
     Returns:
         status: dict
     """
-    if job_type not in JOB_TYPE_UTIL_MODULES:
-        raise Exception("Invalid job type")
+    if job_type not in JOB_UTIL_MODULES:
+        raise InvalidJobType(
+            f"Failed to add input file: Job type '{job_type}' is not valid. "
+            f"Job type must be one of {JOB_UTIL_MODULES}")
+    if standard_fname not in JOB_UTIL_MODULES[job_type].INPUT_FNAMES:
+        raise InvalidInputFile(
+            "Failed to add input file: "
+            f"Filename '{standard_fname}' is invalid for job type: {job_type}. "
+            f"Input file must be one of {JOB_UTIL_MODULES[job_type].INPUT_FNAMES}")
     save_path = os.path.join(job_dir, "input", standard_fname)
     if os.path.exists(save_path):
         os.remove(save_path)
@@ -65,7 +64,7 @@ def add_input_file(file_contents, job_dir, standard_fname, user_fname, job_type)
         for line in lines:
             user_file.write(f"{line.decode('UTF-8')}\n")
     # Perform input validation
-    status = JOB_TYPE_UTIL_MODULES[job_type].update_job(save_path)
+    status = JOB_UTIL_MODULES[job_type].update_job(save_path)
     if "ERROR" in status:
         os.remove(save_path)
     else:
@@ -79,12 +78,27 @@ def list_input_files(job_dir):
     redis_db = Redis()
     job_id = get_job_id_from_dir(job_dir)
     input_files = {}
-    if redis_db.exists(job_id):
-        input_files = redis_db.hgetall(f"{job_id}_input_files")
-    else:
-        raise JobNotFoundError("Job not found, so input files cannot be listed")
-
+    redis_hash_name = f"{job_id}_input_files"
+    if redis_db.exists(redis_hash_name):
+        input_files = redis_db.hgetall(redis_hash_name)
     return input_files
 
+def validate_submission(job_dir, job_type):
+    """Validate input files for submission and return status"""
+    status = JOB_UTIL_MODULES[job_type].validate_submission(job_dir)
+    return status
+
 def get_job_id_from_dir(job_dir):
+    """Get job id from job directory, which is the basename of the directory"""
     return job_dir.rstrip("/").split("/")[-1]
+
+def remove_job(job_dir):
+    """Remove job directory and associated redis data"""
+    redis_db = Redis()
+    job_id = get_job_id_from_dir(job_dir)
+    redis_hash_name = f"{job_id}_input_files"
+    if redis_db.exists(redis_hash_name):
+        all_keyval_pairs = redis_db.hgetall(redis_hash_name)
+        all_keys = list(all_keyval_pairs.keys())
+        redis_db.hdel(redis_hash_name, *all_keys)
+    shutil.rmtree(job_dir)

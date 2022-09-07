@@ -14,14 +14,15 @@ suppressMessages(suppressWarnings(library(ggrepel)))
 args = commandArgs(trailingOnly = TRUE)
 
 # Get paths
-user_directory <- args[1]
-counts_filepath <- file.path(user_directory, "counts.tsv")
-coldata_filepath <- file.path(user_directory, "coldata.tsv")
-config_filepath <- file.path(user_directory, "config.yml")
-filter_filepath <- file.path(user_directory, "filter.txt")
+input_dir <- args[1]
+output_dir <- args[2]
+counts_filepath <- file.path(input_dir, "counts.tsv")
+coldata_filepath <- file.path(input_dir, "coldata.tsv")
+config_filepath <- file.path(input_dir, "config.yml")
+filter_filepath <- file.path(input_dir, "filter.txt")
 
 mean_difference = function(fit, name){
-  mean_diff_rna_seq_path <- file.path(user_directory, name)
+  mean_diff_rna_seq_path <- file.path(output_dir, name)
   differential_expression = data.frame(fit)
   colnames(differential_expression) <- c("symbol", "baseMean", "log2FoldChange", "l2fc_se", "test_stat", "pval", "padj")
   options(ggrepel.max.overlaps = Inf)
@@ -42,7 +43,7 @@ mean_difference = function(fit, name){
 }
 
 volcano_plot = function(fit, name){
-  rna_volcano_path <- file.path(user_directory, name)
+  rna_volcano_path <- file.path(output_dir, name)
   de <- fit
 
   de$differential_expression <- "Not sig."
@@ -118,14 +119,14 @@ colnames(dge_res_df) <- c("symbol", "base_avg", "l2fc", "l2fc_se", "test_stat", 
 
 write("Analysis complete, writing output files", stderr())
 
-write_tsv(dge_res_df, file.path(user_directory,"output.tsv"))
+write_tsv(dge_res_df, file.path(output_dir,"output.tsv"))
 volcano_plot(dge_res_df, "volcano_rnaseq_unfiltered.png")
 mean_difference(dge_res_df, "mean_difference_rnaseq_unfiltered.png")
 
 if (file.info(filter_filepath)$size != 0) {
     filter_list <- scan(filter_filepath, what="character")
     filtered_df <- dge_res_df[dge_res_df$symbol %in% filter_list,]
-    write_tsv(filtered_df, file.path(user_directory, "filter_output.tsv"))
+    write_tsv(filtered_df, file.path(output_dir, "filter_output.tsv"))
     volcano_plot(filtered_df, "volcano_rnaseq_filtered.png")
     mean_difference(filtered_df, "mean_difference_rnaseq_filtered.png")
 }

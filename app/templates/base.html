@@ -49,6 +49,21 @@
             {% endif %}
             <a href="javascript:void(0);" class="icon" onclick="toggleHamburger()">&#9776;</a>
 		</div>
+        {% if job_id is not defined %}
+            {% set job_id = "" %}
+        {% endif %}
+
+        <input type="hidden" id="jobID" name="jobID" value={{ job_id }}>
+        <script>
+            function getJobID() {
+                let jobIDElement = document.getElementById("jobID");
+                let jobID = "";
+                if (jobIDElement) {
+                    jobID = jobIDElement.value;
+                }
+                return jobID;
+            }
+        </script>
         {% block content %}{% endblock %}
         <script>
             function toggleHamburger() {

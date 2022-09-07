@@ -11,7 +11,7 @@ args = commandArgs(trailingOnly = TRUE)
 # Paths
 countspath = args[1]
 coldatapath = args[2]
-user_directory = args[3]
+output_dir = args[3]
 data_type = args[4]
 
 # Read in the sample data and counts
@@ -38,4 +38,4 @@ if (data_type == "rnaseq") {
 # Add symbol column and write the dataframe to a file
 bc_rma_expr <- data.frame(bc_rma_expr)
 result <- bind_cols(symbols, bc_rma_expr)
-write_tsv(result, file.path(user_directory, "counts_bc.tsv"))
+write_tsv(result, file.path(output_dir, "counts_bc.tsv"))

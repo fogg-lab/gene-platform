@@ -4,12 +4,11 @@ suppressMessages(suppressWarnings(library(AnnotationDbi)))
 suppressMessages(suppressWarnings(library(limma)))
 suppressMessages(suppressWarnings(library(tidyverse)))
 
+# Arguments
 args = commandArgs(trailingOnly = TRUE)
-user_dir <- args[1]
-gses <- vector(mode='list', length=length(args)-1)
-for(i in seq_along(args[-c(1)])) {
-    gses[[i]] <- tolower(args[[i+1]])
-}
+data_dir <- args[1]
+output_dir <- args[2]
+gses <- toupper(args[c(-1,-2)])
 
 saveExpression <- function(expr, series, platform) {
     output_file = paste0(user_dir, "/", series, "_counts_unmapped.tsv")

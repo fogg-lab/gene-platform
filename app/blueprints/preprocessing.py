@@ -2,9 +2,9 @@ import os
 import subprocess
 import time
 from flask import (Blueprint, render_template, request, send_from_directory,
-                   current_app)
+                   current_app, redirect, url_for)
 from app.models.job import Job
-from app.job_runner.job_runner import post_input_file
+from app.job_runner import job_runner
 
 preprocessing_bp = Blueprint('preprocessing_bp', __name__)
 
@@ -29,6 +29,12 @@ def preprocessing():
 @preprocessing_bp.route("/submit-preprocessing", methods=["POST"])
 def submit_preprocessing():
     """Submit preprocessing job"""
+
+    job_id = request.args.get("job_id")
+    if not job_id:
+        return redirect(url_for("preprocessing_bp.preprocessing"))
+    job_dir = Job.get_dir(job_id)
+
     data_source = request.form.get("source")
     dsets = request.form.get("dsets")
     valid_dsets, _ = get_valid_invalid_dsets(dsets, data_source)
@@ -37,8 +43,6 @@ def submit_preprocessing():
     for dset in valid_dsets:
         dsets += f"{dset} "
     dsets = dsets.strip()
-
-    user_dir = common.Job.get_dir(job_id)
 
     src = "geo" if "geo" in data_source.lower() else "gdc"
 
@@ -63,7 +67,7 @@ def submit_preprocessing():
         if file.endswith("processed.tsv"):
             os.remove(os.path.join(user_dir, file))
 
-    log = os.path.join(user_dir, ".log")
+    log = os.path.join(job_dir, ".log")
 
     rscripts_path = current_app.config["RSCRIPTS_PATH"]
     if "gdc" in data_source.lower():

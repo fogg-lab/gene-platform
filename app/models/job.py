@@ -10,7 +10,7 @@ from app.job_runner.job_runner import run_job
 from app.exceptions import JobNotFoundError
 
 class Job:
-    """Models class for user jobs"""
+    """Models class for preparing and queueing user jobs to run in the background."""
 
     def __init__(self, job_id, job_type, user_id, status, created_at, updated_at):
         self.job_id = job_id
@@ -46,18 +46,15 @@ class Job:
         Return absolute path to the directory for a job associated with a user.
         Create the directory if it doesn't exist.
         """
-        job_found = False
         try:
             Job.get(job_id)
-            job_found = True
         except JobNotFoundError as exc:
             raise JobNotFoundError(
                 "User job not found, so no directory was returned.") from exc
-        if job_found:
-            user_jobs_path = current_app.config["USER_JOBS_PATH"]
-            job_dir = os.path.join(user_jobs_path, job_id)
-            os.makedirs(job_dir, exist_ok=True)
-            return job_dir
+        user_jobs_path = current_app.config["USER_JOBS_PATH"]
+        job_dir = os.path.join(user_jobs_path, job_id)
+        os.makedirs(job_dir, exist_ok=True)
+        return job_dir
 
     @staticmethod
     def get_user_jobs():
@@ -67,8 +64,6 @@ class Job:
         jobs = db.execute(
             "SELECT * FROM job WHERE user_id = ?", (user_id,)
         ).fetchall()
-        if not jobs:
-            return None
         jobs = [Job(
             job_id=job[0],
             user_id=job[1],
@@ -82,14 +77,8 @@ class Job:
     @staticmethod
     def submit_job(job_id):
         """Update status of user job to 'ready' and queue it for processing."""
-        job_found = False
         try:
             Job.get(job_id)
-            job_found = True
-        except JobNotFoundError as exc:
-            raise JobNotFoundError(
-                "User job not found, so it could not be submitted.") from exc
-        if job_found:
             db = get_db()
             db.execute(
                 "UPDATE job SET status = 'ready' WHERE id = ?",
@@ -106,6 +95,9 @@ class Job:
                 Job.__start_job,
                 args = (job_id, job_type)
             )
+        except JobNotFoundError as exc:
+            raise JobNotFoundError(
+                "User job not found, so it could not be submitted.") from exc
 
     @staticmethod
     def create(job_type, status="pending"):

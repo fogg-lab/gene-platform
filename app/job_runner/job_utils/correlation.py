@@ -1,10 +1,24 @@
+"""
+Functions for preparing and running RNASeq correlation.
+Used by the job runner module.
+"""
 import os
 import subprocess
 import pandas as pd
 import numpy as np
+import csv
+import time
+import yaml
+from flask import current_app
 
 CORR_SCRIPT = "Rscript ../../rscripts/correlation.r"
-STANDARD_FNAMES = ["counts.tsv", "config.yml"]
+INPUT_FNAMES = ["counts.tsv", "config.yml"]
+
+
+def update_job(directory):
+    """Job has a new input file - perform input validation."""
+    pass
+
 
 def start_job(directory):
     """Run an RNASeq correlation job"""

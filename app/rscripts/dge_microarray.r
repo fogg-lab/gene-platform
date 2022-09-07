@@ -1,9 +1,3 @@
-# Ai: this program analyse the microarray part of the gene expression analysis.
-# Input: microarray files (coldata (.tsv), countdata(.tsv), config parameters(.yml)).
-# Optional Input: filter_gene.txt
-# Output: gene expression analysis for unfiltered +/- filtered genes (.tsv)
-# and 2 plots - mean variance trend and volcano plot (.png)
-
 suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(limma)))
 suppressMessages(suppressWarnings(library(yaml)))
@@ -11,15 +5,16 @@ suppressMessages(suppressWarnings(library(ggrepel)))
 
 args = commandArgs(trailingOnly = TRUE)
 
-# Get paths
-user_directory <- args[1]
-counts_filepath <- file.path(user_directory, "counts.tsv")
-coldata_filepath <- file.path(user_directory, "coldata.tsv")
-config_filepath <- file.path(user_directory, "config.yml")
-filter_filepath <- file.path(user_directory, "filter.txt")
+# Paths
+input_dir <- args[1]
+output_dir <- args[2]
+counts_filepath <- file.path(input_dir, "counts.tsv")
+coldata_filepath <- file.path(input_dir, "coldata.tsv")
+config_filepath <- file.path(input_dir, "config.yml")
+filter_filepath <- file.path(input_dir, "filter.txt")
 
 mean_variance_trend = function(fit, filename){
-  micro_array_mean_variance_trend_path <- file.path(user_directory, filename)
+  micro_array_mean_variance_trend_path <- file.path(output_dir, filename)
   options(bitmapType='cairo')
   png(micro_array_mean_variance_trend_path)
   plot<- plotSA(fit, xlab="Average log-expression", ylab="log2(sigma)", zero.weights=FALSE, pch=16, cex=0.2)
@@ -27,7 +22,7 @@ mean_variance_trend = function(fit, filename){
 }
 
 volcano_plot = function(fit, filename){
-  micro_array_volcano_path <- file.path(user_directory, filename)
+  micro_array_volcano_path <- file.path(output_dir, filename)
   de <- fit
 
   de$differential_expression <- "Not sig."
@@ -94,14 +89,14 @@ fit_de_res_df <- topTable(bayes_fit, coef = paste0("condition", contrast_level),
 
 colnames(fit_de_res_df) <- c("symbol", "l2fc", "base_avg", "test_stat", "pval", "padj", "B")
 
-write_tsv(fit_de_res_df, file.path(user_directory,"output.tsv"))
+write_tsv(fit_de_res_df, file.path(output_dir, "output.tsv"))
 volcano_plot(fit_de_res_df, "plot_volcano_microarray_unfiltered.png")
 
 if (file.info(filter_filepath)$size != 0) {
 
     filter_list <- scan(filter_filepath, what="character")
     filtered_df <- fit_de_res_df[fit_de_res_df$symbol %in% filter_list,]
-    write_tsv(filtered_df, file.path(user_directory, "filter_output.tsv"))
+    write_tsv(filtered_df, file.path(output_dir, "filter_output.tsv"))
     volcano_plot(filtered_df, "plot_volcano_microarray_filtered.png")
 
     #rerun a part of the analysis to make the mean_variance_trend for the filtered gene list

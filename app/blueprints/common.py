@@ -27,11 +27,12 @@ def cancelupload():
     return f"{filename} upload cancelled"
 
 
-@common_bp.route("/get-console-output")
+@common_bp.route("/get-progress")
 def get_console_output():
-    """Returns the contents of the log file for a job."""
+    """Returns status and updated log of a running job."""
 
     job_id = request.args.get("job_id")
+    last_log_update_line_number = request.args.get("last_log_update_line_number")
 
     job_dir = Job.get_dir(job_id)
     log_path = os.path.join(job_dir, ".log")
@@ -39,6 +40,6 @@ def get_console_output():
     if not os.path.isfile(log_path):
         return ("", 204)
 
-    log_content = get_job_log_update(job_dir)
+    log_content = get_job_log_update(job_dir, last_log_update_line_number)
 
     return Response(log_content, mimetype='text/plain')

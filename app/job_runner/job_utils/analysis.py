@@ -1,7 +1,17 @@
+"""
+Functions for preparing and running analysis.
+Used by the job runner module.
+"""
 import os
+import subprocess
+import csv
+import time
 import yaml
+from flask import current_app
 
-STANDARD_FNAMES = ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]
+INPUT_FNAMES = ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]
+MICROARRAY_SCRIPT = "dge_microarray.r"
+RNASEQ_SCRIPT = "dge_rnaseq.r"
 
 def update_job(directory):
     """Job has a new input file - perform input validation."""
@@ -141,3 +151,58 @@ def check_dge_analysis_parameters(config_parameters):
             status_msg += "use_qual_weights must be either True or False.\n"
 
     return status_msg
+
+
+def call_analysis(data_type, job_dir):
+    """
+    calls microarray or rnaseq analysis depending on data type
+    sends the session path as an argument, redirects output to a log file
+    """
+
+    input_dir = os.path.join(job_dir, "input")
+    output_dir = os.path.join(job_dir, "output")
+
+    log_path = os.path.join(job_dir, ".log")
+
+    rscripts_path = current_app.config["RSCRIPTS_PATH"]
+    if data_type == "microarray":
+        script_dir = os.path.join(rscripts_path, MICROARRAY_SCRIPT)
+    else:
+        script_dir = os.path.join(rscripts_path, RNASEQ_SCRIPT)
+
+    subprocess.Popen([f"{script_dir} {input_dir} {output_dir} 1> {log_path} 2>& 1"],
+                     shell=True)
+
+
+def wait_for_output():
+    """waits until output shows up in users session directory"""
+
+    user_dir = common.Job.get_dir(job_id)
+
+    unfiltered_output_path = os.path.join(user_dir, "output.tsv")
+    filt_output_path = os.path.join(user_dir, "filter_output.tsv")
+    filter_path = os.path.join(user_dir, "filter.txt")
+
+    is_output = False
+    while not is_output:
+        is_output = os.path.exists(unfiltered_output_path)
+        if is_output and os.path.exists(filter_path):
+            is_output = os.path.exists(filt_output_path)
+
+        if not is_output:
+            time.sleep(0.5)
+
+""" OLD CODE in submit():
+# remove old output
+for old_output_file in ["filter_output.tsv", "output.tsv"]:
+    if os.path.isfile(old_output_file):
+        os.remove(old_output_file)
+
+for filename in os.listdir(session["user_session_dir"]):
+    if filename.endswith(".png"):
+        helpers.delete_user_file(filename, common.Job.get_dir(job_id))
+
+call_analysis(data_type)
+
+wait_for_output()
+"""
