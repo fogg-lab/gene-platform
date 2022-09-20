@@ -4,13 +4,8 @@ Used by the job runner module.
 """
 import json
 import os
-import subprocess
 from zipfile import ZipFile
 import pandas as pd
-import csv
-import time
-import yaml
-from flask import current_app
 
 INPUT_FNAMES = ["config.yml"]
 

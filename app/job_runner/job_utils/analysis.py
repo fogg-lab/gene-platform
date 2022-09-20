@@ -4,9 +4,7 @@ Used by the job runner module.
 """
 import os
 import subprocess
-import csv
 import time
-import yaml
 from flask import current_app
 
 INPUT_FNAMES = ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]
@@ -36,128 +34,60 @@ def get_analysis_confirmation_msg(config_params):
     return analysis_formula
 
 
-def check_analysis_config(config_path):
-    """
-    Validates analysis config parameters
-    Args:
-        path (string): Absolute path to config file.
-    Returns:
-        str: Error message if invalid, empty string if valid
-    """
-
-    config_params = dict()
-
-    if os.path.exists(config_path):
-        config_file = open(config_path, encoding="UTF-8")
-        config_params = yaml.load(config_file, Loader=yaml.FullLoader)
-        config_file.close()
-
-    status_msg = check_dge_analysis_parameter_names(config_params)
-    if len(status_msg) == 0:
-        status_msg = check_dge_analysis_parameters(config_params)
-
-    if len(status_msg) > 0:
-        os.remove(config_path)
-
-    return status_msg
-
-
-def check_dge_analysis_parameter_names(config_parameters):
-    """
-    Ensures config parameters contain the required parameters,
-    and that there are no unrecognized parameters
-
-    Returns an empty string if valid
-    Returns error message if invalid
-    """
-
-    all_parameters = {"min_expr", "min_prop", "padj_thresh", "adj_method",
-                      "contrast_level", "reference_level", "use_qual_weights"}
-
-    config_error_status = ""
-    unknown_params = []
-    params_missing_value = []
-    missing_params = []
-
-    for parameter_name, parameter_value in config_parameters.items():
-        if parameter_name in all_parameters and parameter_value in [None, ""]:
-            params_missing_value.append(parameter_name)
-
-        if parameter_name not in all_parameters:
-            unknown_params.append(parameter_name)
-        else:
-            all_parameters.remove(parameter_name)
-
-    # if any parameters are missing, list them
-    if all_parameters is not None:
-        for missing_parameter in all_parameters:
-            if missing_parameter != "use_qual_weights":
-                missing_params.append(missing_parameter)
-
-    for param in params_missing_value:
-        config_error_status += f"Missing value for parameter: {param}\n"
-    for param in unknown_params:
-        config_error_status += f"Unknown parameter: {param}\n"
-    for param in missing_params:
-        config_error_status += f"Missing parameter: {param}\n"
-
-    return config_error_status
-
-
-def check_dge_analysis_parameters(config_parameters):
+def validate_config(cfg):
     """
     Ensures config parameters are valid
     args:
-        config_parameters (dict): Parameters for DGE analysis.
+        cfg (dict): Parameters for DGE analysis.
     Returns:
-        string: Error message if invalid, empty string if valid
+        dict: status - list of warnings under "warnings" key, errors under "errors" key
     """
 
-    status_msg = ""
+    status = dict(warnings=[], errors=[])
 
-    if type(config_parameters["min_expr"]) not in [int, float]:
-        status_msg += '"min_expr" must be a number\n'
-    elif config_parameters["min_expr"] < 0:
-        status_msg += '"min_expr" must be a non-negative\n'
+    def in_cfg(key):
+        key_in_cfg = key in cfg
+        if not key_in_cfg:
+            status["errors"].append(f"Missing parameter: {key}")
+        return key_in_cfg
 
-    if type(config_parameters["min_prop"]) not in [int, float]:
-        status_msg += '"min_prop" must be a number\n'
-    elif not 0 <= config_parameters["min_prop"] <= 1:
-        status_msg += '"min_prop" must be between 0 and 1\n'
+    def is_numeric(key):
+        value = cfg[key]
+        try:
+            float(value)
+            return True
+        except ValueError:
+            status["errors"].append(f"Parameter {key} must be numeric.")
+            return False
 
-    if type(config_parameters["padj_thresh"]) not in [int, float]:
-        status_msg += '"padj_thresh" must be a number\n'
-    elif not 0 <= config_parameters["padj_thresh"] <= 1:
-        status_msg += '"padj_thresh" must be between 0 and 1\n'
+    def in_range(key, min_value, max_value):
+        value = cfg[key]
+        in_range = min_value <= value <= max_value
+        if not in_range:
+            status["errors"].append(f"Parameter {key} must be between "
+                                    f"{min_value} and {max_value}.")
+        return in_range
+
+    if in_cfg("min_expr"):
+        is_numeric("min_expr")
+    if in_cfg("min_prop"):
+        is_numeric("min_prop")
+        in_range("min_prop", 0, 1)
+    if in_cfg("padj_thresh"):
+        is_numeric("padj_thresh")
+        in_range("padj_thresh", 0, 1)
 
     adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"]
-    if not isinstance(config_parameters["adj_method"], str):
-        status_msg += '"adj_method" must be a string"\n'
-    elif config_parameters["adj_method"] not in adj_methods:
-        status_msg += f"Unknown adjustment method: '{config_parameters['adj_method']}'\n"
-        status_msg += f"Valid adj_methods: {adj_methods}\n"
+    if in_cfg("adj_method") and cfg["adj_method"] not in adj_methods:
+        status["errors"].append(f"Parameter adj_method must be one of {adj_methods}.")
+    if cfg["reference_level"] == cfg["contrast_level"]:
+        status["errors"].append("Reference level and contrast level must be different.")
 
-    if not isinstance(config_parameters["contrast_level"], str):
-        status_msg += "contrast_level must be a string\n"
-
-    if not isinstance(config_parameters["reference_level"], str):
-        status_msg += "reference_level must be a string"
-
-    if config_parameters["reference_level"] == config_parameters["contrast_level"]:
-        status_msg += 'Reference_level and contrast_level cannot be the same.\n'
-
-    if "use_qual_weights" in config_parameters:
-        if not isinstance(config_parameters["use_qual_weights"], bool):
-            status_msg += "use_qual_weights must be either True or False.\n"
-
-    return status_msg
+    return status
 
 
 def call_analysis(data_type, job_dir):
-    """
-    calls microarray or rnaseq analysis depending on data type
-    sends the session path as an argument, redirects output to a log file
-    """
+    """calls microarray or rnaseq analysis depending on data type"""
 
     input_dir = os.path.join(job_dir, "input")
     output_dir = os.path.join(job_dir, "output")

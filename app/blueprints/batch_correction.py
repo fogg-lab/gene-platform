@@ -1,10 +1,8 @@
 import os
-import time
-from flask import (Blueprint, render_template, request, session, jsonify,
+from flask import (Blueprint, render_template, request, jsonify,
                    send_from_directory)
 from app.models.job import Job
 from app.job_runner.job_runner import add_input_file, list_input_files
-from app import helper
 
 batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 
@@ -103,6 +101,8 @@ def submit_batch_correction():
 def get_batch_correction_counts():
     """Returns batch correction results to the client"""
 
-    rel_user_dir = common.Job.get_dir(job_id)
+    job_id = request.form.get("job_id")
+    job_dir = Job.get_dir(job_id)
+
     abs_user_dir = os.path.abspath(rel_user_dir)
     return send_from_directory(abs_user_dir, "counts_bc.tsv")

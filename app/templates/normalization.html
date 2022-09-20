@@ -15,7 +15,7 @@
 				</tr>
 				<tr>
 					<td>
-						<form class="filedrag" id="upload_counts" action="/normalization_upload" method="POST" enctype="multipart/form-data">
+						<form class="filedrag" id="upload_counts" action="/normalization-upload" method="POST" enctype="multipart/form-data">
 							<div class="upload_div" id="counts_upload_div">
 								<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
 								<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
@@ -31,7 +31,7 @@
 						</form>
 					</td>
 					<td>
-						<form class="filedrag" id="upload_coldata" action="/normalization_upload" method="POST" enctype="multipart/form-data">
+						<form class="filedrag" id="upload_coldata" action="/normalization-upload" method="POST" enctype="multipart/form-data">
 							<div class="upload_div" id="coldata_upload_div">
 								<input type="file" class="fileselect" id="fileselect_coldata" name="fileselect[]" style="display:none">
 								<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
@@ -78,7 +78,7 @@
 		</button>
 	</div>
 	<script>
-		var UPLOAD_ENDPOINT = "\\normalization_upload";
+		var UPLOAD_ENDPOINT = "/normalization-upload";
 
 		// hide progress bar divs and cancel buttons for files which have not been uploaded
 		if (document.getElementById("progress_of_counts") == null) {

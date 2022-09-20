@@ -54,7 +54,7 @@ def get_correlation_plot():
         return img_data
 
 
-@correlation_bp.route("/submit_rnaseq_correlation", methods=["POST"])
+@correlation_bp.route("/submit-rnaseq-correlation", methods=["POST"])
 def submit_rnaseq_correlation():
     """Submit job to get rnaseq sample correlation plots"""
 

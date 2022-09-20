@@ -21,7 +21,7 @@ def normalization():
                            all_uploads=all_uploads, title="Normalization")
 
 
-@normalization_bp.route("/normalization_upload", methods=["POST"])
+@normalization_bp.route("/normalization-upload", methods=["POST"])
 def normalization_upload():
     """
     handles uploading counts and coldata files for normalization

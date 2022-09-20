@@ -3,6 +3,7 @@
 import os
 import shutil
 from redis import Redis
+import yaml
 from app.exceptions import InvalidJobType, InvalidInputFile
 from app.job_runner.job_utils import (analysis, batch_correction, correlation,
                                       normalization, preprocessing,
@@ -16,6 +17,25 @@ JOB_UTIL_MODULES = {
     "preprocessing": preprocessing,
     "expression_data_validation": expression_data_validation
 }
+
+
+def configure_job(job_dir, job_type, config):
+    """
+    Validate and save a config file for a job then return status message
+    Args:
+        job_dir (str): path to job directory
+        job_type (str): type of job (ie, "analysis")
+        config (dict): config parameters
+    """
+
+    status = JOB_UTIL_MODULES[job_type].validate_config(config)
+    if len(status["errors"]) == 0:
+        # save config parameters to config.yml file
+        config_path = os.path.join(job_dir, "input", "config.yml")
+        with open(config_path, "w", encoding="utf-8") as cfg_file:
+            yaml.dump(config, cfg_file)
+
+    return status
 
 def run_job(job_dir, job_type):
     """Run a job, return status message"""

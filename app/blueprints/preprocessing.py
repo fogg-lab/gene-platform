@@ -10,19 +10,22 @@ preprocessing_bp = Blueprint('preprocessing_bp', __name__)
 
 PREP_GDC_SCRIPT = "prep_gdc.r"
 PREP_GEO_SCRIPT = "prep_geo.r"
-
+JOB_TYPE = "preprocessing"
 
 @preprocessing_bp.route("/preprocessing")
 def preprocessing():
     """Load preprocessing page"""
 
-    common.ensure_session_dir()
+    job_id = request.args.get("job_id")
 
-    cur_uploads, all_uploads = common.list_input_files(job_id)
+    if not job_id:
+        job_id = Job.create(JOB_TYPE)
+    job_dir = Job.get_dir(job_id)
+    uploads = job_runner.list_input_files(job_dir)
 
     return render_template(
         "preprocessing.html",
-        cur_uploads=cur_uploads, all_uploads=all_uploads, title="Preprocessing"
+        all_uploads=uploads, title="Preprocessing"
     )
 
 
