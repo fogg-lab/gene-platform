@@ -6,8 +6,9 @@ from rq import Queue
 from flask import current_app
 from flask_login import current_user
 from app.db.db import get_db
-from app.job_runner.job_runner import run_job
-from app.exceptions import JobNotFoundError
+from app.job_utils import (AnalysisRunner, BatchCorrectionRunner, CorrelationRunner,
+                           NormalizationRunner, PreprocessingRunner)
+from app.exceptions import JobNotFound, InvalidJobType
 
 class Job:
     """Models class for preparing and queueing user jobs to run in the background."""
@@ -31,7 +32,7 @@ class Job:
                 "SELECT * FROM job WHERE id = ? AND user_id = ?", (job_id, user_id)
             ).fetchone()
         if job is None:
-            raise JobNotFoundError
+            return None
         return Job(
             job_id=job[0],
             user_id=job[1],
@@ -41,15 +42,22 @@ class Job:
             updated_at=job[5])
 
     @staticmethod
-    def get_dir(job_id):
+    def _get_runner(job_id, job_type):
+        """Retrieve job runner for a job"""
+        job_dir = Job._get_dir(job_id)
+        job_runner = JobRunner(job_id, job_type, job_dir)
+        return job_runner
+
+    @staticmethod
+    def _get_dir(job_id):
         """
         Return absolute path to the directory for a job associated with a user.
         Create the directory if it doesn't exist.
         """
         try:
             Job.get(job_id)
-        except JobNotFoundError as exc:
-            raise JobNotFoundError(
+        except JobNotFound as exc:
+            raise JobNotFound(
                 "User job not found, so no directory was returned.") from exc
         user_jobs_path = current_app.config["USER_JOBS_PATH"]
         job_dir = os.path.join(user_jobs_path, job_id)
@@ -75,7 +83,7 @@ class Job:
         return jobs
 
     @staticmethod
-    def submit_job(job_id):
+    def submit(job_id):
         """Update status of user job to 'ready' and queue it for processing."""
         try:
             Job.get(job_id)
@@ -95,8 +103,8 @@ class Job:
                 Job.__start_job,
                 args = (job_id, job_type)
             )
-        except JobNotFoundError as exc:
-            raise JobNotFoundError(
+        except JobNotFound as exc:
+            raise JobNotFound(
                 "User job not found, so it could not be submitted.") from exc
 
     @staticmethod
@@ -120,8 +128,8 @@ class Job:
         try:
             Job.get(job_id)
             job_found = True
-        except JobNotFoundError as exc:
-            raise JobNotFoundError(
+        except JobNotFound as exc:
+            raise JobNotFound(
                 "User job not found, so it could not be deleted.") from exc
         if job_found:
             db = get_db()
@@ -131,10 +139,18 @@ class Job:
             db.commit()
 
     @staticmethod
+    def delete_input_file(job_id, filename):
+        """Remove input file from job directory"""
+        job_dir = Job._get_dir(job_id)
+        input_file_path = os.path.join(job_dir, filename)
+        if os.path.isfile(input_file_path):
+            os.remove(input_file_path)
+
+    @staticmethod
     def __start_job(job_id, job_type):
         """Start job"""
         # Get job directory
-        job_dir = Job.get_dir(job_id)
+        job_dir = Job._get_dir(job_id)
         # Notify job started
         Job.__notify_job_started(job_id)
         # Run job

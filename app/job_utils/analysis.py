@@ -7,22 +7,29 @@ import subprocess
 import time
 from flask import current_app
 
-INPUT_FNAMES = ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]
+
+class AnalysisRunner(JobRunner):
+    def __init__(self, job_id, job_dir):
+        super().__init__()
+        self.job_type = "analysis"
+        self._input_filenames = ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]
+
+
+    def update_job(self):
+        """Job has a new input file - perform input validation."""
+        pass
+
+
+    def start_job(self):
+        """Run an analysis job."""
+        pass
+
+
 MICROARRAY_SCRIPT = "dge_microarray.r"
 RNASEQ_SCRIPT = "dge_rnaseq.r"
 
-def update_job(directory):
-    """Job has a new input file - perform input validation."""
-    pass
-
-
-def start_job(directory):
-    """Run an analysis job."""
-    pass
-
-
 def get_analysis_confirmation_msg(config_params):
-    """get analysis formula from the config parameters"""
+    """Get analysis formula from the config parameters"""
 
     contrast_level = config_params["contrast_level"]
     reference_level = config_params["reference_level"]

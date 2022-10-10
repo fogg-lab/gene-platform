@@ -4,7 +4,7 @@ import base64
 import fitz
 from flask import Blueprint, render_template, request, session, jsonify
 from app.models.job import Job
-from app.job_runner.job_runner import add_input_file, list_input_files
+from app.job_utils.job_runner import add_input_file, list_input_files
 
 correlation_bp = Blueprint('correlation_bp', __name__)
 

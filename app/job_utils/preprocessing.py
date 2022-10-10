@@ -7,7 +7,7 @@ import os
 from zipfile import ZipFile
 import pandas as pd
 
-INPUT_FNAMES = ["config.yml"]
+self._input_filenames = ["config.yml"]
 
 
 def update_job(directory):

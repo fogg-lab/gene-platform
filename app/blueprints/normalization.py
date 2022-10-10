@@ -3,7 +3,7 @@ import subprocess
 import time
 from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
 from app.models.job import Job
-from app.job_runner.job_runner import add_input_file, list_input_files
+from app.job_utils.job_runner import add_input_file, list_input_files
 
 normalization_bp = Blueprint('normalization_bp', __name__, template_folder='templates',
                              static_folder='../../static')

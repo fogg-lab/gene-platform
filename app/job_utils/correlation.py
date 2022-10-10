@@ -12,7 +12,7 @@ import yaml
 from flask import current_app
 
 CORR_SCRIPT = "Rscript ../../rscripts/correlation.r"
-INPUT_FNAMES = ["counts.tsv", "config.yml"]
+self._input_filenames = ["counts.tsv", "config.yml"]
 
 
 def update_job(directory):

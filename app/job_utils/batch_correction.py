@@ -9,7 +9,7 @@ import numpy as np
 from flask import current_app
 from app import helper
 
-INPUT_FNAMES = ["counts.tsv", "coldata.tsv", "config.yml"]
+self._input_filenames = ["counts.tsv", "coldata.tsv", "config.yml"]
 
 
 def update_job(directory):

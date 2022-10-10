@@ -1,7 +1,5 @@
-import os
 from flask import Blueprint, render_template, request, Response
 from app.models.job import Job
-from app.job_runner.job_runner import get_job_log_update
 
 common_bp = Blueprint('common_bp', __name__)
 
@@ -19,10 +17,7 @@ def cancelupload():
     filename = request.form.get("filename")
     job_id = request.form.get("job_id")
 
-    job_dir = Job.get_dir(job_id)
-    file_path = os.path.join(job_dir, filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    Job.delete_input_file(job_id, filename)
 
     return f"{filename} upload cancelled"
 
@@ -34,12 +29,11 @@ def get_console_output():
     job_id = request.args.get("job_id")
     last_log_update_line_number = request.args.get("last_log_update_line_number")
 
-    job_dir = Job.get_dir(job_id)
-    log_path = os.path.join(job_dir, ".log")
+    job = Job.get(job_id)
 
-    if not os.path.isfile(log_path):
-        return ("", 204)
+    if job is None:
+        return Response("Job not found", status=404)
 
-    log_content = get_job_log_update(job_dir, last_log_update_line_number)
+    log_content = job.get_log_update(last_log_update_line_number)
 
     return Response(log_content, mimetype='text/plain')

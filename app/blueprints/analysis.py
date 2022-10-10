@@ -3,7 +3,7 @@ import csv
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    Response, jsonify, send_from_directory)
 from app.models.job import Job
-from app.job_runner import job_runner
+from app.job_utils import job_runner
 from app import helper
 
 analysis_bp = Blueprint('analysis_bp', __name__)
@@ -70,9 +70,9 @@ def submit():
 
     if not job_id:
         return redirect(url_for("analysis_bp.setup"))
-    result = Job.submit_job(job_id)
+    status_msg = Job.submit(job_id)
 
-    return result
+    return status_msg
 
 
 @analysis_bp.route("/confirm-analysis-submission", methods=["POST"])
