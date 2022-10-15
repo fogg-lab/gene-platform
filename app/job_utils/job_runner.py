@@ -2,7 +2,7 @@ import os
 import shutil
 from redis import Redis
 import yaml
-from app.exceptions import InvalidInputFile
+from app.exceptions import InvalidJobInputFile
 
 class JobRunner:
     """Base class to prepare and run user jobs."""
@@ -53,7 +53,7 @@ class JobRunner:
             status: dict
         """
         if standard_fname not in self._input_filenames:
-            raise InvalidInputFile(
+            raise InvalidJobInputFile(
                 "Failed to add input file: "
                 f"Filename '{standard_fname}' is invalid for job type: {self._job_type}. "
                 f"Input file must be one of {self._input_filenames}")

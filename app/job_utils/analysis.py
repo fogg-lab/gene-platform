@@ -1,16 +1,15 @@
-"""
-Functions for preparing and running analysis.
-Used by the job runner module.
-"""
+"""Class for preparing and running an analysis job."""
 import os
 import subprocess
 import time
 from flask import current_app
 
+from app.job_utils.job_runner import JobRunner
+
 
 class AnalysisRunner(JobRunner):
     def __init__(self, job_id, job_dir):
-        super().__init__()
+        super().__init__(job_id, job_dir)
         self.job_type = "analysis"
         self._input_filenames = ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]
 

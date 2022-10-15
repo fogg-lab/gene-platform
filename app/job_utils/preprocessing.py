@@ -1,151 +1,155 @@
-"""
-Functions for preparing and running preprocessing.
-Used by the job runner module.
-"""
+"""Class for preparing and running a preprocessing job."""
 import json
 import os
 from zipfile import ZipFile
 import pandas as pd
+from pathlib import Path
 
-self._input_filenames = ["config.yml"]
-
-
-def update_job(directory):
-    """Job has a new input file - perform input validation."""
-    pass
+from app.job_utils.job_runner import JobRunner
 
 
-def start_job(directory):
-    """Run a preprocessing job"""
-    pass
+class PreprocessingRunner(JobRunner):
+    def __init__(self, job_id, job_dir):
+        super().__init__(job_id, job_dir)
+        self.job_type = "preprocessing"
+        self._input_filenames = ["config.yml"]
 
+    def update_job(self, directory):
+        """Job has a new input file - perform input validation."""
+        pass
 
-def get_valid_geo_accessions(accessions):
-    """
-    Returns a list of valid GEO accessions from given list of accessions
-    Args:
-        accessions (list[str]): List of GEO accessions
-    Returns:
-        list: List of valid GEO accessions
-    """
+    def start_job(self, directory):
+        """Run a preprocessing job"""
+        pass
 
-    valid_accessions = list(get_series_probesets(accessions).keys())
+    def _get_unmapped_counts_paths(self):
+        """Returns a list of paths to unmapped expression matrices"""
+        counts_paths = []
 
-    return valid_accessions
+        data_dir = os.path.join(self._job_dir, "data")
 
+        for fname in os.listdir(data_dir):
+            if "_counts_unmapped.tsv" in fname:
+                counts_paths.append(os.path.join(data_dir, fname))
 
-def get_valid_gdc_projects(project_names):
-    """Returns a list of valid GDC projects from project_names"""
+        return counts_paths
 
-    with open("json/gdc_projects.json", encoding="utf-8") as gdc_projects_json:
-        gdc_projects = json.load(gdc_projects_json)
+    @staticmethod
+    def get_valid_geo_accessions(accessions):
+        """
+        Returns a list of valid GEO accessions from given list of accessions
+        Args:
+            accessions (list[str]): List of GEO accessions
+        Returns:
+            list: List of valid GEO accessions
+        """
 
-    valid_projects = []
-    for project_name in project_names:
-        if "-" not in project_name:
-            continue
-        proj_name_lower = project_name.lower()
-        proj_base, proj_ext = proj_name_lower.split("-", 1)
-        if proj_base in gdc_projects and proj_ext in gdc_projects[proj_base]:
-            valid_projects.append(project_name)
+        valid_accessions = list(PreprocessingRunner.get_series_probesets(accessions).keys())
 
-    return valid_projects
+        return valid_accessions
 
+    @staticmethod
+    def get_valid_gdc_projects(project_names):
+        """Returns a list of valid GDC projects from project_names"""
 
-def get_series_probesets(accessions):
-    """Returns a dict of accessions with their respective probesets"""
+        with open("json/gdc_projects.json", encoding="utf-8") as gdc_projects_json:
+            gdc_projects = json.load(gdc_projects_json)
 
-    with open("json/series_platforms.json", encoding="utf-8") as series_platforms_json:
-        series_platforms = json.load(series_platforms_json)
+        valid_projects = []
+        for project_name in project_names:
+            if "-" not in project_name:
+                continue
+            proj_name_lower = project_name.lower()
+            proj_base, proj_ext = proj_name_lower.split("-", 1)
+            if proj_base in gdc_projects and proj_ext in gdc_projects[proj_base]:
+                valid_projects.append(project_name)
 
-    with open("json/platform_probesets.json", encoding="utf-8") as platform_probesets_json:
-        platform_probesets = json.load(platform_probesets_json)
+        return valid_projects
 
-    supported_probesets = set()
-    for probemap_fname in os.listdir("probe_maps"):
-        fname_base = probemap_fname.split(".")[0]
-        probeset = fname_base.split("_", 1)[1]
-        supported_probesets.add(probeset)
+    @staticmethod
+    def get_series_probesets(accessions):
+        """Returns a dict of accessions with their respective probesets"""
 
-    series_probesets = dict()
+        with open("json/series_platforms.json", encoding="utf-8") as series_platforms_json:
+            series_platforms = json.load(series_platforms_json)
 
-    for accession in accessions:
-        accession = accession.lower()
-        if accession in series_platforms.keys():
-            platform = series_platforms[accession]
+        with open("json/platform_probesets.json", encoding="utf-8") as platform_probesets_json:
+            platform_probesets = json.load(platform_probesets_json)
+
+        supported_probesets = set()
+        for probemap_fname in [Path(f) for f in os.listdir("probe_maps")]:
+            fname_base = probemap_fname.stem
+            probeset = fname_base.split("_", 1)[1]
+            supported_probesets.add(probeset)
+
+        series_probesets = dict()
+
+        for accession in accessions:
+            accession = accession.lower()
+            if accession in series_platforms.keys():
+                platform = series_platforms[accession]
+            else:
+                continue
+            if (platform in platform_probesets.keys() and
+                    platform_probesets[platform] in supported_probesets):
+                series_probesets[accession] = platform_probesets[platform]
+            for probeset in platform_probesets.values():
+                if platform in probeset and probeset in supported_probesets:
+                    series_probesets[accession] = probeset
+
+        return series_probesets
+
+    @staticmethod
+    def map_probes(counts_path, species):
+        """Maps probes to gene symbols"""
+
+        counts_fname = counts_path.split("/")[-1]
+        accession_id = counts_fname.split("_")[0].lower()
+        counts_df = pd.read_csv(counts_path, sep="\t")
+
+        probeset = PreprocessingRunner.get_series_probesets([accession_id])[accession_id]
+        if not probeset:
+            return ""
+        counts_df.rename(columns={"probe": probeset}, inplace=True)
+        probeset_map_path = f"probe_maps/{species}_{probeset}.tsv"
+        if not os.path.exists(probeset_map_path):
+            print(f"No probe map found: {probeset_map_path}")
         else:
-            continue
-        if (platform in platform_probesets.keys() and
-                platform_probesets[platform] in supported_probesets):
-            series_probesets[accession] = platform_probesets[platform]
-        for probeset in platform_probesets.values():
-            if platform in probeset and probeset in supported_probesets:
-                series_probesets[accession] = probeset
+            print(f"Probe map found: {probeset_map_path}")
+        probe_map = pd.read_csv(probeset_map_path, sep="\t",
+                                dtype={"hgnc_symbol": object, probeset: object})
 
-    return series_probesets
+        counts_df[probeset] = counts_df[probeset].apply(lambda x: str(x).rstrip("_at"))
+        probe_map[probeset] = probe_map[probeset].apply(lambda x: str(x).rstrip("_at"))
 
+        counts_df = pd.merge(counts_df, probe_map, on=probeset, how="outer")
 
-def get_unmapped_counts_paths(data_dir):
-    """Returns a list of paths to unmapped expression matrices"""
-    counts_paths = []
+        cols = list(counts_df.columns)
+        cols = [cols[-1]] + cols[1:-1]
+        counts_df = counts_df[cols]
+        counts_df.dropna(inplace=True)
 
-    for fname in os.listdir(data_dir):
-        if "_counts_unmapped.tsv" in fname:
-            counts_paths.append(os.path.join(data_dir, fname))
-
-    return counts_paths
+        return counts_df
 
 
-def map_probes(counts_path, species):
-    """Maps probes to gene symbols"""
+    def prep_geo_counts(self):
+        """Prepares unmapped expression matrices from GEO"""
 
-    counts_fname = counts_path.split("/")[-1]
-    accession_id = counts_fname.split("_")[0].lower()
-    counts_df = pd.read_csv(counts_path, sep="\t")
+        counts_paths = self._get_unmapped_counts_paths()
+        counts_unmapped = set()
+        for counts_path in counts_paths:
+            counts_df = PreprocessingRunner.map_probes(counts_path, "hsapiens")
+            if not isinstance(counts_df, pd.DataFrame) or len(counts_df) == 0:
+                counts_unmapped.add(counts_path)
+                continue
+            new_counts_path = counts_path.replace("_unmapped.tsv", "_processed.tsv")
+            counts_df.to_csv(new_counts_path, sep="\t", index=False)
 
-    probeset = get_series_probesets([accession_id])[accession_id]
-    if not probeset:
-        return ""
-    counts_df.rename(columns={"probe": probeset}, inplace=True)
-    probeset_map_path = f"probe_maps/{species}_{probeset}.tsv"
-    if not os.path.exists(probeset_map_path):
-        print(f"No probe map found: {probeset_map_path}")
-    else:
-        print(f"Probe map found: {probeset_map_path}")
-    probe_map = pd.read_csv(probeset_map_path, sep="\t",
-                            dtype={"hgnc_symbol": object, probeset: object})
+        # Cleanup unmapped counts
+        for counts_path in counts_paths:
+            os.remove(counts_path)
 
-    counts_df[probeset] = counts_df[probeset].apply(lambda x: str(x).rstrip("_at"))
-    probe_map[probeset] = probe_map[probeset].apply(lambda x: str(x).rstrip("_at"))
-
-    counts_df = pd.merge(counts_df, probe_map, on=probeset, how="outer")
-
-    cols = list(counts_df.columns)
-    cols = [cols[-1]] + cols[1:-1]
-    counts_df = counts_df[cols]
-    counts_df.dropna(inplace=True)
-
-    return counts_df
-
-
-def prep_geo_counts(data_dir):
-    """Prepares unmapped expression matrices from GEO"""
-
-    counts_paths = get_unmapped_counts_paths(data_dir)
-    counts_unmapped = set()
-    for counts_path in counts_paths:
-        counts_df = map_probes(counts_path, "hsapiens")
-        if not isinstance(counts_df, pd.DataFrame) or len(counts_df) == 0:
-            counts_unmapped.add(counts_path)
-            continue
-        new_counts_path = counts_path.replace("_unmapped.tsv", "_processed.tsv")
-        counts_df.to_csv(new_counts_path, sep="\t", index=False)
-
-    # Cleanup unmapped counts
-    for counts_path in counts_paths:
-        os.remove(counts_path)
-
-    return counts_unmapped
+        return counts_unmapped
 
 
 def zip_preprocessed_data(data_dir):

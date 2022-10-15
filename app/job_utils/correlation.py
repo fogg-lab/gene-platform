@@ -1,51 +1,52 @@
-"""
-Functions for preparing and running RNASeq correlation.
-Used by the job runner module.
-"""
+"""Class for preparing and running an RNASeq correlation job."""
 import os
 import subprocess
 import pandas as pd
 import numpy as np
-import csv
-import time
-import yaml
-from flask import current_app
 
-CORR_SCRIPT = "Rscript ../../rscripts/correlation.r"
-self._input_filenames = ["counts.tsv", "config.yml"]
+from app.job_utils.job_runner import JobRunner
 
 
-def update_job(directory):
-    """Job has a new input file - perform input validation."""
-    pass
+class CorrelationRunner(JobRunner):
+    def __init__(self, job_id, job_dir):
+        super().__init__(job_id, job_dir)
+        self.job_type = "correlation"
+        self._input_filenames = ["counts.tsv", "config.yml"]
+        self._corr_script = "Rscript ../../rscripts/correlation.r"
+
+    def update_job(self):
+        """Job has a new input file - perform input validation."""
+        pass
 
 
-def start_job(directory):
-    """Run an RNASeq correlation job"""
-    pass
+    def start_job(self):
+        """Run an RNASeq correlation job"""
+        pass
 
 
-def call_corr(user_dir, corr_method):
-    """Prepare data for correlation and call R script to generate plots"""
+    def call_corr(self, user_dir, corr_method):
+        """Prepare data for correlation and call R script to generate plots"""
 
-    counts_path = os.path.join(user_dir, "counts.tsv")
+        counts_path = os.path.join(user_dir, "counts.tsv")
 
-    if not os.path.isfile(counts_path):
-        return "Error: Counts file not found"
+        if not os.path.isfile(counts_path):
+            return "Error: Counts file not found"
 
-    counts_cols = list(pd.read_csv(counts_path, nrows = 1, sep="\t"))
-    counts = pd.read_csv(counts_path,
-        usecols = [i for i in counts_cols if i.lower() != "entrez_gene_id"], sep='\t')
+        counts_cols = list(pd.read_csv(counts_path, nrows = 1, sep="\t"))
+        counts = pd.read_csv(counts_path,
+            usecols = [i for i in counts_cols if i.lower() != "entrez_gene_id"], sep='\t')
 
-    counts = counts.select_dtypes(include=np.number)
+        counts = counts.select_dtypes(include=np.number)
 
-    counts.to_csv(os.path.join(user_dir, "counts_corr-in.tsv"), sep='\t', index=False)
+        counts.to_csv(os.path.join(user_dir, "counts_corr-in.tsv"), sep='\t', index=False)
 
-    counts_in_path = os.path.join(user_dir, 'counts_corr-in.tsv')
+        counts_in_path = os.path.join(user_dir, 'counts_corr-in.tsv')
 
-    if corr_method != "pearson":
-        subprocess.Popen([f"{CORR_SCRIPT} {counts_in_path} {user_dir} spearman"], shell=True)
-    if corr_method != "spearman":
-        subprocess.Popen([f"{CORR_SCRIPT} {counts_in_path} {user_dir} pearson"], shell=True)
+        if corr_method != "pearson":
+            subprocess.Popen([f"{self._corr_script} {counts_in_path} {user_dir} spearman"],
+                             shell=True)
+        if corr_method != "spearman":
+            subprocess.Popen([f"{self._corr_script} {counts_in_path} {user_dir} pearson"],
+                             shell=True)
 
-    return ""
+        return ""

@@ -234,8 +234,7 @@ def get_analysis_request_parameters(form, data_type):
 
     # if analysis type is microarray, consider use_qual_weights
     if data_type != "rnaseq":
-        # form.get("use_qual_weights") will initially be either 'None' or 'on'
-        # it needs to be a boolean True or False
+        # convert 'None'|'on' to True|False
         if form.get("use_qual_weights") is None:
             request_parameters["use_qual_weights"] = False
         else:
