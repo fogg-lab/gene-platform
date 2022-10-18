@@ -2,6 +2,8 @@
 
 ## Gene Expression Explorer (GENE) Platform: A web app for exploring gene expression data and running differential expression analyses.
 
+### Main site (currently you must sign in with your OSU account): https://geneplatform.oregonstate.edu
+
 ## Installation
 The web server runs on Linux, including the Windows Subsystem for Linux (WSL).
 
