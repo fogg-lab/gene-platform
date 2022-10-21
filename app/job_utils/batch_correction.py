@@ -1,21 +1,22 @@
-"""Class for preparing and running a batch correction job."""
 import os
 import subprocess
+from pathlib import Path
 import pandas as pd
 import numpy as np
 from flask import current_app
-from pathlib import Path
 
 from app import helper
 from app.job_utils.job_runner import JobRunner
 
 
 class BatchCorrectionRunner(JobRunner):
+    """Class for preparing and running a batch correction job."""
     def __init__(self, job_id, job_dir):
         super().__init__(job_id, job_dir)
         self.job_type = "analysis"
         self._input_filenames = ["counts.tsv", "coldata.tsv", "config.yml"]
-        self._bc_script = "batch_correction.r"
+
+    BC_SCRIPT = "batch_correction.r"
 
     def update_job(self):
         """Job has a new input file - perform input validation."""
@@ -70,9 +71,9 @@ class BatchCorrectionRunner(JobRunner):
         coldata.to_csv(coldata_in_path, sep='\t', index=False)
 
         # Call the batch correction R script
-        bc_script = os.path.join(current_app.config["RSCRIPTS_PATH"], self._bc_script)
+        script = os.path.join(current_app.config["RSCRIPTS_PATH"], BatchCorrectionRunner.BC_SCRIPT)
         subprocess.Popen(
-            [f"{bc_script} {counts_in_path} {coldata_in_path} {directory} {data_type}"],
+            [f"{script} {counts_in_path} {coldata_in_path} {directory} {data_type}"],
             shell=True
         )
 
@@ -104,9 +105,9 @@ class BatchCorrectionRunner(JobRunner):
 
     def check_batch_correction_coldata(self):
         """
-        Ensures coldata has batches
+        Ensures coldata has batches.
         Returns:
-            string
+            string: Empty string if coldata has batches, error message otherwise.
         """
 
         input_dir = os.path.join(self._job_dir, "input")
@@ -119,11 +120,14 @@ class BatchCorrectionRunner(JobRunner):
 
         return status_msg
 
-    @static_method
+    @staticmethod
     def _ensure_batches(coldata_rows):
         """
-        ensure that all samples have a batch number
-        if all samples have a batch number, returns empty string
+        Ensures all samples have a batch number.
+        Args:
+            coldata_rows (list): List of sample rows from a coldata file.
+        Returns:
+            string: Empty string if all samples have a batch number, error message otherwise.
         """
 
         # check header row to make sure there is a batch column

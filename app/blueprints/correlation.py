@@ -4,18 +4,19 @@ import base64
 import fitz
 from flask import Blueprint, render_template, request, session, jsonify
 from app.models.job import Job
-from app.job_utils.job_runner import add_input_file, list_input_files
 
 correlation_bp = Blueprint('correlation_bp', __name__)
 
+JOB_TYPE = "correlation"
 
 @correlation_bp.route("/rnaseq-correlation")
 def rnaseq_correlation():
     """RNAseq sample correlation page"""
 
-    job_id = request.args.get("job_id")
-    job_dir = Job.get_dir(job_id)
-    uploads = list_input_files(job_dir)
+    if not job_id:
+        job_id = Job.create(JOB_TYPE)
+
+    uploads = Job.list_input_files(job_dir)
 
     return render_template("rnaseq_correlation.html", cur_uploads=uploads,
                            title="RNAseq Sample Correlation")
@@ -75,9 +76,9 @@ def submit_rnaseq_correlation():
             file_path = os.path.join(job_output_dir, fname)
             os.remove(file_path)
 
-    status_msg = correlation_prep.call_corr(user_dir, corr_method)
-    if not status_msg:
-        status_msg = "Done computing sample correlations."
+    correlation_prep.call_corr(user_dir, corr_method)
+
+    status_msg = "Done computing sample correlations."
 
     is_output = False
     while not is_output:

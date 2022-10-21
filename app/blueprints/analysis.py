@@ -3,14 +3,9 @@ import csv
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    Response, jsonify, send_from_directory)
 from app.models.job import Job
-from app.job_utils import job_runner
 from app import helper
 
 analysis_bp = Blueprint('analysis_bp', __name__)
-
-RNASEQ_SCRIPT = "dge_rnaseq.r"
-MICROARRAY_SCRIPT = "dge_microarray.r"
-JOB_TYPE = "analysis"
 
 @analysis_bp.route("/setup")
 def setup():
@@ -19,9 +14,9 @@ def setup():
     job_id = request.args.get("job_id")
 
     if not job_id:
-        job_id = Job.create(JOB_TYPE)
-    job_dir = Job.get_dir(job_id)
-    uploads = job_runner.list_input_files(job_dir)
+        job_id = Job.create("analysis")
+
+    uploads = Job.list_input_files(job_id)
 
     return render_template("uploads_form.html", cur_uploads=uploads,
                            title="DGE Analysis")
