@@ -9,7 +9,8 @@ sudo singularity build --sandbox dev_container/ image.sif
 ### Install VSCode server in the sandbox container
 sudo singularity exec --writable dev_container/ bash -c \
 "curl -fsSL https://code-server.dev/install.sh | sh; \
-python3 -m pip install jupyterlab;"
+ln -s /usr/local/bin/pip /usr/bin/pip3.8; \
+pip install jupyterlab;"
 
 ###############################################################################
 # Using the development container
@@ -21,9 +22,9 @@ python3 -m pip install jupyterlab;"
 #   sudo singularity run --bind $PWD:/root --writable dev_container/
 # 
 # Example - Start the VSCode server in the container:
-#   singularity run dev_container/ 
+#   singularity run dev_container/
 #   code-server --auth none
 # Start the Jupyter server in the container:
-#   singularity run dev_container/ 
+#   singularity run dev_container/
 #   jupyter-lab
 ###############################################################################
