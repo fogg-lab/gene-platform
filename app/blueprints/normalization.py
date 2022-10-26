@@ -2,8 +2,8 @@ import os
 import subprocess
 import time
 from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
-from app.models.job import Job
-from app.job_utils.job_runner import add_input_file, list_input_files
+from app.models.task import Task
+from app.task_utils.task_runner import add_input_file, list_input_files
 
 normalization_bp = Blueprint('normalization_bp', __name__, template_folder='templates',
                              static_folder='../../static')
@@ -15,7 +15,7 @@ NORMALIZATION_SCRIPT = "Rscript ../../../rscripts/normalize.r"
 def normalization():
     """normalization input form"""
 
-    cur_uploads, all_uploads = common.list_input_files(job_id)
+    cur_uploads, all_uploads = common.list_input_files(task_id)
 
     return render_template("normalization.html", cur_uploads=cur_uploads,
                            all_uploads=all_uploads, title="Normalization")
@@ -38,14 +38,14 @@ def normalization_upload():
         result["error"] = "Unrecognized file."
         return jsonify(result)
 
-    common.save_job_input_file(request.data, standard_filename, user_filename)
+    common.save_task_input_file(request.data, standard_filename, user_filename)
 
     return jsonify(result)
 
 
 @normalization_bp.route("/submit-normalization", methods=["POST"])
 def submit_normalization():
-    """Submit a normalization job"""
+    """Submit a normalization task"""
 
     method = request.form.get("method")
     user_dir = session["user_session_dir"]
@@ -72,6 +72,6 @@ def submit_normalization():
 def get_normalized_counts():
     """Return the normalized counts file to the client"""
 
-    rel_user_dir = common.Job.get_dir(job_id)
+    rel_user_dir = common.Task.get_dir(task_id)
     abs_user_dir = os.path.abspath(rel_user_dir)
     return send_from_directory(abs_user_dir, "counts_normalized.tsv")

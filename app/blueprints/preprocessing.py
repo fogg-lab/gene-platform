@@ -1,26 +1,26 @@
 from pathlib import Path
 from flask import Blueprint, render_template, request, send_from_directory, redirect, url_for
-from app.models.job import Job
-from app.exceptions import InvalidJobOutput
+from app.models.task import Task
+from app.exceptions import InvalidTaskOutput
 
 preprocessing_bp = Blueprint('preprocessing_bp', __name__)
 
 PREP_GDC_SCRIPT = "prep_gdc.r"
 PREP_GEO_SCRIPT = "prep_geo.r"
-JOB_TYPE = "preprocessing"
+TASK_TYPE = "preprocessing"
 
 
 @preprocessing_bp.route("/preprocessing")
 def preprocessing():
     """Load preprocessing page"""
 
-    job_id = request.args.get("job_id")
+    task_id = request.args.get("task_id")
 
-    job = Job.get(job_id)
-    if job is None:
-        job = Job.create(JOB_TYPE)
+    task = Task.get(task_id)
+    if task is None:
+        task = Task.create(TASK_TYPE)
 
-    uploads = job.list_input_files()
+    uploads = task.list_input_files()
 
     return render_template(
         "preprocessing.html",
@@ -30,15 +30,15 @@ def preprocessing():
 
 @preprocessing_bp.route("/submit-preprocessing", methods=["POST"])
 def submit_preprocessing():
-    """Submit preprocessing job"""
+    """Submit preprocessing task"""
 
-    job_id = request.args.get("job_id")
-    job = Job.get(job_id)
+    task_id = request.args.get("task_id")
+    task = Task.get(task_id)
 
-    if job is None:
+    if task is None:
         return redirect(url_for("preprocessing_bp.preprocessing"))
 
-    status_msg = job.submit()
+    status_msg = task.submit()
 
     return status_msg
 
@@ -49,17 +49,17 @@ def confirm_preprocessing_submission():
 
     data_source = request.form.get("source")
     dsets = request.form.get("dsets")
-    job_id = request.args.get("job_id")
+    task_id = request.args.get("task_id")
 
-    job = Job.get(job_id)
+    task = Task.get(task_id)
 
-    if job is None:
+    if task is None:
         return redirect(url_for("preprocessing_bp.preprocessing"))
 
     config = dict(data_source=data_source, dsets=dsets)
 
-    # Configure job and get confirmation message
-    confirmation_message = job.configure(config)
+    # Configure task and get confirmation message
+    confirmation_message = task.configure(config)
 
     return confirmation_message
 
@@ -68,16 +68,16 @@ def confirm_preprocessing_submission():
 def get_preprocessed_data():
     """Return preprocessed data for user to download"""
 
-    job_id = request.args.get("job_id")
+    task_id = request.args.get("task_id")
 
-    job = Job.get(job_id)
+    task = Task.get(task_id)
 
-    if job is None:
+    if task is None:
         return redirect(url_for("preprocessing_bp.preprocessing"))
 
-    processed_data = Job.get_output()
+    processed_data = Task.get_output()
     if len(processed_data) != 1 or not processed_data[0].endswith(".zip"):
-        raise InvalidJobOutput("The final output for a preprocessing job must be "
+        raise InvalidTaskOutput("The final output for a preprocessing task must be "
                                "a single zip file.")
 
     processed_zip_path = Path(processed_data[0])

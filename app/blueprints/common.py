@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, Response
-from app.models.job import Job
+from app.models.task import Task
 
 common_bp = Blueprint('common_bp', __name__)
 
@@ -12,28 +12,28 @@ def index():
 
 @common_bp.route("/cancel-upload", methods=["POST"])
 def cancelupload():
-    """Remove uploaded file in job directory"""
+    """Remove uploaded file in task directory"""
 
     filename = request.form.get("filename")
-    job_id = request.form.get("job_id")
+    task_id = request.form.get("task_id")
 
-    Job.delete_input_file(job_id, filename)
+    Task.delete_input_file(task_id, filename)
 
     return f"{filename} upload cancelled"
 
 
 @common_bp.route("/get-progress")
 def get_console_output():
-    """Returns status and updated log of a running job."""
+    """Returns status and updated log of a running task."""
 
-    job_id = request.args.get("job_id")
+    task_id = request.args.get("task_id")
     last_log_update_line_number = request.args.get("last_log_update_line_number")
 
-    job = Job.get(job_id)
+    task = Task.get(task_id)
 
-    if job is None:
-        return Response("Job not found", status=404)
+    if task is None:
+        return Response("Task not found", status=404)
 
-    log_content = job.get_log_update(last_log_update_line_number)
+    log_content = task.get_log_update(last_log_update_line_number)
 
     return Response(log_content, mimetype='text/plain')

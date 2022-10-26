@@ -28,11 +28,11 @@ ALLOWED_EMAIL_DOMAINS = os.environ.get("ALLOWED_EMAIL_DOMAINS", "*").replace(" "
 
 # ENABLE_GUEST_LOGIN allows the user to continue without logging in
 # In this case, the user's session is temporary, uses cookies
-# GUEST_SESSION_LIFESPAN specifies how long (in hours) guest user jobs are kept on the server
-# Once a job's lifespan is over, the files associated with the job are queued for deletion
+# GUEST_SESSION_LIFESPAN specifies how long (in hours) guest user tasks are kept on the server
+# Once a task's lifespan is over, the files associated with the task are queued for deletion
 ENABLE_GUEST_LOGIN = os.environ.get("ENABLE_GUEST_LOGIN", True)
 GUEST_SESSION_LIFESPAN = timedelta(hours=os.environ.get("GUEST_SESSION_LIFESPAN", 3))
-GUEST_JOB_LIMIT = os.environ.get("GUEST_JOB_LIMIT", 5)
+GUEST_TASK_LIMIT = os.environ.get("GUEST_TASK_LIMIT", 5)
 
 SECRET_KEY = os.getenv("SESSION_SECRET_KEY", None)
 if SECRET_KEY is None:
@@ -43,21 +43,21 @@ if SECRET_KEY is None:
 SESSION_PERMANENT = True
 SESSION_TYPE = "filesystem"
 SESSION_COOKIE_NAME = "my_session"
-PERMANENT_SESSION_LIFETIME = timedelta(hours=GUEST_SESSION_LIFESPAN)
+PERMANENT_SESSION_LIFETIME = GUEST_SESSION_LIFESPAN
 DEBUG = os.environ.get("DEBUG", False)
 
-# USER_JOB_LIMIT specifies the max number of most recent jobs that are kept for each user
-# USER_JOB_LIFESPAN specifies how long (in hours) user jobs are kept on the server
-# Once a job's lifespan is over, the files associated with the job are queued for deletion
+# USER_TASK_LIMIT specifies the max number of most recent tasks that are kept for each user
+# USER_TASK_LIFESPAN specifies how long (in hours) user tasks are kept on the server
+# Once a task's lifespan is over, the files associated with the task are queued for deletion
 # Applies to users that sign in with username/password, Google, or with profile login
-USER_JOB_LIMIT = os.environ.get("USER_JOB_LIMIT", 10)
-USER_JOB_LIFESPAN = timedelta(hours=os.environ.get("USER_JOB_LIFESPAN", 168))
+USER_TASK_LIMIT = os.environ.get("USER_TASK_LIMIT", 10)
+USER_TASK_LIFESPAN = timedelta(hours=os.environ.get("USER_TASK_LIFESPAN", 168))
 
 SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS", False)
 SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///user.sqlite3")
 
 APP_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 GDC_DATA_PATH = os.path.join(APP_ROOT_PATH,"data/gdc_data")
-USER_JOBS_PATH = os.path.join(APP_ROOT_PATH, "data/user_jobs")
+USER_TASKS_PATH = os.path.join(APP_ROOT_PATH, "data/user_tasks")
 RSCRIPTS_PATH = os.path.join(APP_ROOT_PATH, "rscripts")
-JOB_SCRIPTS_PATH = os.path.join(APP_ROOT_PATH, "job_scripts")
+TASK_SCRIPTS_PATH = os.path.join(APP_ROOT_PATH, "task_scripts")

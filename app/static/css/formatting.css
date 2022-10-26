@@ -261,13 +261,13 @@ pre {
 	margin-top: 2%;
 }
 
-#job_log {
+#task_log {
 	height: 38em;
 	width: 55em;
 	pointer-events: all;
 }
 
-#cancel_job_button {
+#cancel_task_button {
 	position: absolute;
 	top: 80%;
 	left: 50%;

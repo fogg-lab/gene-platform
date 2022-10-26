@@ -6,24 +6,24 @@ import numpy as np
 from flask import current_app
 
 from app import helper
-from app.job_utils.job_runner import JobRunner
+from app.task_utils.task_runner import TaskRunner
 
 
-class BatchCorrectionRunner(JobRunner):
-    """Class for preparing and running a batch correction job."""
-    def __init__(self, job_id, job_dir):
-        super().__init__(job_id, job_dir)
-        self.job_type = "analysis"
+class BatchCorrectionRunner(TaskRunner):
+    """Class for preparing and running a batch correction task."""
+    def __init__(self, task_id, task_dir):
+        super().__init__(task_id, task_dir)
+        self.task_type = "analysis"
         self._input_filenames = ["counts.tsv", "coldata.tsv", "config.yml"]
 
     BC_SCRIPT = "batch_correction.r"
 
-    def update_job(self):
-        """Job has a new input file - perform input validation."""
+    def update_task(self):
+        """Task has a new input file - perform input validation."""
         pass
 
-    def start_job(self):
-        """"Run a batch correction job"""
+    def start_task(self):
+        """"Run a batch correction task"""
         pass
 
     def _call_batch_correction(self, directory, data_type, reference_level, contrast_level):
@@ -86,7 +86,7 @@ class BatchCorrectionRunner(JobRunner):
             string: Empty string if input files are present, error message otherwise.
         """
 
-        input_dir = Path(self._job_dir) / "input"
+        input_dir = Path(self._task_dir) / "input"
 
         counts_path = os.path.join(input_dir, "counts.tsv")
         coldata_path = os.path.join(input_dir, "coldata.tsv")
@@ -110,7 +110,7 @@ class BatchCorrectionRunner(JobRunner):
             string: Empty string if coldata has batches, error message otherwise.
         """
 
-        input_dir = os.path.join(self._job_dir, "input")
+        input_dir = os.path.join(self._task_dir, "input")
         coldata_path = os.path.join(input_dir, "coldata.tsv")
         coldata_rows = helper.get_tsv_rows(coldata_path)
         status_msg = BatchCorrectionRunner._ensure_batches(coldata_rows)

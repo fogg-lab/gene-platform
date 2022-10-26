@@ -1,32 +1,32 @@
-"""Class for preparing and running a preprocessing job."""
+"""Class for preparing and running a preprocessing task."""
 import json
 import os
 from zipfile import ZipFile
 import pandas as pd
 from pathlib import Path
 
-from app.job_utils.job_runner import JobRunner
+from app.task_utils.task_runner import TaskRunner
 
 
-class PreprocessingRunner(JobRunner):
-    def __init__(self, job_id, job_dir):
-        super().__init__(job_id, job_dir)
-        self.job_type = "preprocessing"
+class PreprocessingRunner(TaskRunner):
+    def __init__(self, task_id, task_dir):
+        super().__init__(task_id, task_dir)
+        self.task_type = "preprocessing"
         self._input_filenames = ["config.yml"]
 
-    def update_job(self):
-        """Job has a new input file - perform input validation."""
+    def update_task(self):
+        """Task has a new input file - perform input validation."""
         pass
 
-    def start_job(self):
-        """Run a preprocessing job"""
+    def start_task(self):
+        """Run a preprocessing task"""
         pass
 
     def _get_unmapped_counts_paths(self):
         """Returns a list of paths to unmapped expression matrices"""
         counts_paths = []
 
-        data_dir = os.path.join(self._job_dir, "data")
+        data_dir = os.path.join(self._task_dir, "data")
 
         for fname in os.listdir(data_dir):
             if "_counts_unmapped.tsv" in fname:

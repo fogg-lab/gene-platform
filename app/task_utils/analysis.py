@@ -2,26 +2,26 @@ import os
 import subprocess
 from flask import current_app
 
-from app.job_utils.job_runner import JobRunner
+from app.task_utils.task_runner import TaskRunner
 
 
-class AnalysisRunner(JobRunner):
-    """Class for preparing and running an analysis job."""
+class AnalysisRunner(TaskRunner):
+    """Class for preparing and running an analysis task."""
 
-    def __init__(self, job_id, job_dir):
-        super().__init__(job_id, job_dir)
-        self.job_type = "analysis"
+    def __init__(self, task_id, task_dir):
+        super().__init__(task_id, task_dir)
+        self.task_type = "analysis"
         self._input_filenames = ["counts.tsv", "coldata.tsv", "filter.txt", "config.yml"]
 
     MICROARRAY_SCRIPT = "dge_microarray.r"
     RNASEQ_SCRIPT = "dge_rnaseq.r"
 
-    def update_job(self):
-        """Job has a new input file - perform input validation."""
+    def update_task(self):
+        """Task has a new input file - perform input validation."""
         pass
 
-    def start_job(self):
-        """Run an analysis job."""
+    def start_task(self):
+        """Run an analysis task."""
         pass
 
     @staticmethod
@@ -77,18 +77,18 @@ class AnalysisRunner(JobRunner):
         return status
 
     @staticmethod
-    def call_analysis(data_type, job_dir):
+    def call_analysis(data_type, task_dir):
         """
         Calls DGE analysis script
         Args:
             data_type (str): "microarray" or "rnaseq"
-            job_dir (str): Path to job directory
+            task_dir (str): Path to task directory
         """
 
-        input_dir = os.path.join(job_dir, "input")
-        output_dir = os.path.join(job_dir, "output")
+        input_dir = os.path.join(task_dir, "input")
+        output_dir = os.path.join(task_dir, "output")
 
-        log_path = os.path.join(job_dir, ".log")
+        log_path = os.path.join(task_dir, ".log")
 
         rscripts_path = current_app.config["RSCRIPTS_PATH"]
         if data_type == "microarray":

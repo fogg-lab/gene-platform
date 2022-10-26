@@ -4,24 +4,24 @@ import pandas as pd
 import numpy as np
 from flask import current_app
 
-from app.job_utils.job_runner import JobRunner
+from app.task_utils.task_runner import TaskRunner
 
 
-class CorrelationRunner(JobRunner):
-    """Class for preparing and running an RNASeq correlation job."""
-    def __init__(self, job_id, job_dir):
-        super().__init__(job_id, job_dir)
-        self.job_type = "correlation"
+class CorrelationRunner(TaskRunner):
+    """Class for preparing and running an RNASeq correlation task."""
+    def __init__(self, task_id, task_dir):
+        super().__init__(task_id, task_dir)
+        self.task_type = "correlation"
         self._input_filenames = ["counts.tsv", "config.yml"]
 
     CORR_SCRIPT = "correlation.r"
 
-    def update_job(self):
-        """Job has a new input file - perform input validation."""
+    def update_task(self):
+        """Task has a new input file - perform input validation."""
         pass
 
-    def start_job(self):
-        """Run an RNASeq correlation job"""
+    def start_task(self):
+        """Run an RNASeq correlation task"""
         pass
 
     def call_corr(self, user_dir, corr_method):

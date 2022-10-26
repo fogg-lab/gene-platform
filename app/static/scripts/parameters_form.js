@@ -1,5 +1,5 @@
 document.getElementById("data_type").onchange = show_hide_parameters;
-job_cancelled = false;
+task_cancelled = false;
 counter = 0
 
 
@@ -38,7 +38,7 @@ function analysisReqListener() {
   status_msg = this.responseText;
   console.log(status_msg);
   // analysis is complete - load the results page
-  if (!job_cancelled) {
+  if (!task_cancelled) {
     window.location.href = "/display";
   }
 }
@@ -50,8 +50,8 @@ function submissionConfirmed() {
   analysisReq.open("POST", "/submit");
   analysisReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-  job_id = getJobID();
-  req_query = "job_id=" + job_id;
+  task_id = getTaskID();
+  req_query = "task_id=" + task_id;
 
   analysisReq.send(req_query);
   showRuntime();
