@@ -1,6 +1,8 @@
 import os
 import shutil
 from abc import ABC, abstractmethod
+from typing import List
+from glob import glob
 from redis import Redis
 import yaml
 
@@ -16,16 +18,51 @@ class TaskRunner(ABC):
         self._input_filenames = None
 
     @abstractmethod
-    def update_task(self):
+    def update_task(self) -> dict:
         pass
 
     @abstractmethod
-    def start_task(self):
+    def execute_task(self) -> dict:
         pass
 
     @abstractmethod
-    def validate_config(self, config):
+    def validate_config(self, config) -> dict:
         pass
+
+    @abstractmethod
+    def validate_task(self) -> dict:
+        pass
+
+    def get_output_filepath(self, standard_filename) -> str:
+        """
+        Gets the filepath of an output file for a task.
+        Args:
+            standard_filename (str): The standard filename of the output file.
+        Returns:
+            str: The filepath of the output file, or empty string if file not found.
+        """
+        out_path = os.path.join(self._task_dir, "output", standard_filename)
+
+        if not os.path.isfile(out_path):
+            out_path = ""
+
+        return out_path
+
+    def get_all_output_filepaths(self) -> List[str]:
+        """
+        Gets the filepaths of all output files for a task.
+        Returns:
+            List[str]: List of filepaths.
+        """
+        out_paths = [out_path for out_path in glob(os.path.join(self._task_dir, "output", "*"))]
+        out_paths = [fp for fp in out_paths if os.path.isfile(fp) and not fp.endswith(".zip")]
+        return out_paths
+
+    def get_config(self):
+        """Returns the config parameters for the task as a dict."""
+        config_path = os.path.join(self._task_dir, "input", "config.yml")
+        with open(config_path, "r", encoding="utf-8") as cfg_file:
+            return yaml.safe_load(cfg_file)
 
     def save_config(self, config):
         # save config parameters to config.yml file
@@ -71,7 +108,7 @@ class TaskRunner(ABC):
         """
         List base filenames of all input files for a task.
         Returns:
-            list[str]: List of base filenames.
+            List[str]: List of base filenames.
         """
         redis_db = Redis()
         input_files = {}

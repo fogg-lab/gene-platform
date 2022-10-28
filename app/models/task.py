@@ -1,17 +1,21 @@
 import os
 import random
 import string
+from typing import List
+from zipfile import ZipFile
 from redis import Redis
 from rq import Queue
 from flask import current_app
 from flask_login import current_user
+
 from app.db.db import get_db
 from app.task_utils.analysis import AnalysisRunner
 from app.task_utils.batch_correction import BatchCorrectionRunner
+from app.task_utils.preprocessing import PreprocessingRunner
 from app.task_utils.correlation import CorrelationRunner
 from app.task_utils.normalization import NormalizationRunner
-from app.task_utils.preprocessing import PreprocessingRunner
-from app.exceptions import TaskNotFound
+from app.exceptions import TaskNotFound, InvalidTaskType
+
 
 class Task:
     """Models class for preparing and queueing user tasks to run in the background."""
@@ -45,6 +49,22 @@ class Task:
             updated_at=task[5])
 
     @staticmethod
+    def get_log_update(task_id, last_log_offset=0, full_log=False):
+        """
+        Returns the contents of the log file for a task
+        Args:
+            task_id (str): 16-character alphanumeric task id
+            last_log_offset (int): Length of full log at the last log update. Defaults to 0.
+            full_log (bool): Whether to return the full log (instead of offset). Defaults to False.
+        """
+        if last_log_offset == 0:
+            full_log = True
+        task_runner = Task._get_runner(task_id)
+        log_update = task_runner.get_log_update(last_log_offset, full_log)
+
+        return log_update
+
+    @staticmethod
     def _get_runner(task_id):
         """Retrieve runner for a task by id"""
         task_dir = Task._get_dir(task_id)
@@ -59,6 +79,8 @@ class Task:
             return NormalizationRunner(task_id, task_dir)
         elif task_type == "preprocessing":
             return PreprocessingRunner(task_id, task_dir)
+        else:
+            raise InvalidTaskType(f"Unrecognized task type: {task_type}")
 
     @staticmethod
     def _get_dir(task_id):
@@ -118,7 +140,7 @@ class Task:
             # queue task
             q = Queue(connection=Redis())
             q.enqueue(
-                Task.__start_task,
+                Task.__execute_task,
                 args = (task_id, task_type)
             )
         except TaskNotFound as exc:
@@ -145,20 +167,19 @@ class Task:
 
     @staticmethod
     def delete(task_id):
-        """Delete task from db"""
-        task_found = False
+        """Delete task from db and remove task directory"""
         try:
-            Task.get(task_id)
-            task_found = True
+            runner = Task._get_runner(task_id)
         except TaskNotFound as exc:
-            raise TaskNotFound(
-                "User task not found, so it could not be deleted.") from exc
-        if task_found:
-            db = get_db()
-            db.execute(
-                "DELETE FROM task WHERE id = ?", (task_id,)
-            )
-            db.commit()
+            raise TaskNotFound("User task not found, so it could not be deleted.") from exc
+
+        runner.remove_task()
+
+        db = get_db()
+        db.execute(
+            "DELETE FROM task WHERE id = ?", (task_id,)
+        )
+        db.commit()
 
     @staticmethod
     def delete_input_file(task_id, filename):
@@ -187,6 +208,19 @@ class Task:
         return input_file_basenames
 
     @staticmethod
+    def get_config(task_id):
+        """
+        Get task configuration.
+        Args:
+            task_id (str): The task id.
+        Returns:
+            dict: The configuration parameters for the task.
+        """
+        runner = Task._get_runner(task_id)
+        config = runner.get_config()
+        return config
+
+    @staticmethod
     def add_input_file(task_id, file_contents, standard_filename, user_filename):
         """
         Saves uploaded file for a task and perform input validation
@@ -206,29 +240,46 @@ class Task:
         else:
             redis_db = Redis()
             redis_db.hset(f"{task_id}_input_files", standard_filename, user_filename)
+        return status
 
     @staticmethod
-    def configure(task_id, config):
+    def configure(task_id, config) -> dict:
         """
         Save configuration for a task.
         Args:
             task_id (str): The task id.
             config (dict): The configuration to save.
+        Returns:
+            dict: status
         """
         runner = Task._get_runner(task_id)
         status = runner.validate_config(config)
-        if len(status["errors"]) == 0:
+        if len(status.get("errors", [])) == 0:
             runner.save_config(config)
+        return status
 
     @staticmethod
-    def __start_task(task_id):
+    def validate_task(task_id):
+        """
+        Validate task input files, including the config file.
+        Args:
+            task_id (str): The task id.
+        Returns:
+            dict: status
+        """
+        runner = Task._get_runner(task_id)
+        status = runner.validate_task()
+        return status
+
+    @staticmethod
+    def __execute_task(task_id):
         """Begin execution of a task."""
         # Get task runner
         runner = Task._get_runner
         # Notify task started
         Task.__notify_task_started(task_id)
         # Run task
-        status_msg = runner.start_task()
+        status_msg = runner.execute_task()
         # Notify task completed
         Task.__notify_task_completed(task_id, status_msg)
 
@@ -255,3 +306,55 @@ class Task:
             (task_id,)
         )
         db.commit()
+
+    @staticmethod
+    def create_task_zip(task_id):
+        """Creates a zip file of task output given a task id"""
+
+        task_dir = Task._get_dir(task_id)
+        task_type = Task._get_type(task_id)
+
+        output_dir = os.path.join(task_dir, "output")
+
+        task_result_names = {
+            "correlation": "correlation_plots",
+            "batch_correction": "batch_corrected_counts",
+            "normalization": "normalized_counts",
+            "preprocessing": "preprocessed_data",
+            "analysis": "analysis_results"
+        }
+
+        zip_name = os.path.join(output_dir, task_result_names.get(task_type, "results"))
+
+        with ZipFile(zip_name, "w") as zip_file:
+            for file in os.listdir(output_dir):
+                zip_file.write(file)
+
+        return zip_name
+
+    @staticmethod
+    def get_output_filepath(task_id, standard_filename) -> str:
+        """
+        Get the path to a task output file.
+        Args:
+            task_id (str): The task id.
+            standard_filename (str): The filename expected by the task runner.
+        Returns:
+            str: The path to the output file.
+        """
+        runner = Task._get_runner(task_id)
+        output_filepath = runner.get_output_filepath(standard_filename)
+        return output_filepath
+
+    @staticmethod
+    def get_all_output_filepaths(task_id) -> List[str]:
+        """
+        Get the paths to all task output files.
+        Args:
+            task_id (str): The task id.
+        Returns:
+            list[str]: The paths to the output files.
+        """
+        runner = Task._get_runner(task_id)
+        output_filepaths = runner.get_all_output_filepaths()
+        return output_filepaths

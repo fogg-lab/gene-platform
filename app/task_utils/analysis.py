@@ -18,14 +18,13 @@ class AnalysisRunner(TaskRunner):
 
     def update_task(self):
         """Task has a new input file - perform input validation."""
-        pass
+        return dict(status="", warnings=[], errors=[])
 
-    def start_task(self):
+    def execute_task(self):
         """Run an analysis task."""
-        pass
+        return dict(status="", warnings=[], errors=[])
 
-    @staticmethod
-    def validate_config(cfg):
+    def validate_config(self, config):
         """
         Ensures config parameters are valid
         args:
@@ -37,47 +36,48 @@ class AnalysisRunner(TaskRunner):
         status = dict(warnings=[], errors=[])
 
         def in_cfg(key):
-            key_in_cfg = key in cfg
+            key_in_cfg = key in config
             if not key_in_cfg:
                 status["errors"].append(f"Missing parameter: {key}")
             return key_in_cfg
 
-        def is_numeric(key):
-            value = cfg[key]
+        def verify_is_numeric(key):
+            value = config[key]
             try:
                 float(value)
-                return True
             except ValueError:
                 status["errors"].append(f"Parameter {key} must be numeric.")
-                return False
 
-        def in_range(key, min_value, max_value):
-            value = cfg[key]
+        def verify_in_range(key, min_value, max_value):
+            value = config[key]
             in_range = min_value <= value <= max_value
             if not in_range:
                 status["errors"].append(f"Parameter {key} must be between "
                                         f"{min_value} and {max_value}.")
-            return in_range
 
         if in_cfg("min_expr"):
-            is_numeric("min_expr")
+            verify_is_numeric("min_expr")
         if in_cfg("min_prop"):
-            is_numeric("min_prop")
-            in_range("min_prop", 0, 1)
+            verify_is_numeric("min_prop")
+            verify_in_range("min_prop", 0, 1)
         if in_cfg("padj_thresh"):
-            is_numeric("padj_thresh")
-            in_range("padj_thresh", 0, 1)
+            verify_is_numeric("padj_thresh")
+            verify_in_range("padj_thresh", 0, 1)
 
         adj_methods = ["holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"]
-        if in_cfg("adj_method") and cfg["adj_method"] not in adj_methods:
+        if in_cfg("adj_method") and config["adj_method"] not in adj_methods:
             status["errors"].append(f"Parameter adj_method must be one of {adj_methods}.")
-        if cfg["reference_level"] == cfg["contrast_level"]:
+        if config["reference_level"] == config["contrast_level"]:
             status["errors"].append("Reference level and contrast level must be different.")
 
         return status
 
+    def validate_task(self) -> dict:
+        """Validates all input files for the task"""
+        return dict(status="", warnings=[], errors=[])
+
     @staticmethod
-    def call_analysis(data_type, task_dir):
+    def _call_analysis(data_type, task_dir):
         """
         Calls DGE analysis script
         Args:

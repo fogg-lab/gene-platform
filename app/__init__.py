@@ -34,7 +34,7 @@ def init_app():
 
     with app.app_context():
         # Register Blueprints
-        app.register_blueprint(main_bp)
+        app.register_blueprint(common_bp)
         app.register_blueprint(auth_bp)
         app.register_blueprint(analysis_bp)
         app.register_blueprint(batch_correction_bp)

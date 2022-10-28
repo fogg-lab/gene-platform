@@ -18,13 +18,21 @@ class CorrelationRunner(TaskRunner):
 
     def update_task(self):
         """Task has a new input file - perform input validation."""
-        pass
+        return dict(status="", warnings=[], errors=[])
 
-    def start_task(self):
+    def execute_task(self):
         """Run an RNASeq correlation task"""
-        pass
+        return dict(status="", warnings=[], errors=[])
 
-    def call_corr(self, user_dir, corr_method):
+    def validate_config(self, config) -> dict:
+        """Ensures config parameters are valid for the task"""
+        return dict(status="", warnings=[], errors=[])
+
+    def validate_task(self) -> dict:
+        """Validates all input files for the task"""
+        return dict(status="", warnings=[], errors=[])
+
+    def _call_corr(self, user_dir, corr_method):
         """
         Prepare data for correlation and call R script to generate plots.
         Args:

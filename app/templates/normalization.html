@@ -21,7 +21,7 @@
 								<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
 							</div>
 							<div class="progress_div" id="progress_of_counts_div">
-							{% if cur_uploads["counts.tsv"] -%}
+							{% if uploaded_input_files["counts.tsv"] -%}
 								<div class="success" id="progress_of_counts">
 									Uploaded counts
 								</div>
@@ -37,7 +37,7 @@
 								<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
 							</div>
 							<div class="progress_div" id="progress_of_coldata_div">
-							{% if cur_uploads["coldata.tsv"] -%}
+							{% if uploaded_input_files["coldata.tsv"] -%}
 								<div class="success" id="progress_of_coldata">
 									Uploaded coldata
 								</div>

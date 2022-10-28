@@ -1,8 +1,7 @@
-"""This module contains helper functions for the app"""
+"""This module contains helper functions for tasks and flask blueprints."""
 
 import os
 import csv
-import yaml
 
 
 def get_tsv_rows(filepath):
@@ -22,28 +21,3 @@ def get_tsv_rows(filepath):
             rows = list(csv.reader(tsv_file, delimiter="\t"))
 
     return rows
-
-
-def dict_to_yaml(dictionary):
-    """
-    Converts a dictionary to bytes object ready to be written to a YML file.
-    Args:
-        dictionary (dict): Dictionary to convert.
-    Returns:
-        bytes: String ready to be written to a YML file.
-    """
-
-    return bytes(yaml.dump(dictionary), "utf-8")
-
-
-def yaml_to_dict(yaml_filepath):
-    """
-    Converts a YAML file to a dictionary.
-    Args:
-        yaml_filepath (string): Path to a YAML file.
-    Returns:
-        dict: Dictionary representation of the YAML file.
-    """
-
-    with open(yaml_filepath, "r", encoding="UTF-8") as yaml_file:
-        return yaml.safe_load(yaml_file)

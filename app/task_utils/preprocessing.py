@@ -1,14 +1,14 @@
-"""Class for preparing and running a preprocessing task."""
 import json
 import os
+from pathlib import Path
 from zipfile import ZipFile
 import pandas as pd
-from pathlib import Path
 
 from app.task_utils.task_runner import TaskRunner
 
 
 class PreprocessingRunner(TaskRunner):
+    """Class for preparing and running a preprocessing task."""
     def __init__(self, task_id, task_dir):
         super().__init__(task_id, task_dir)
         self.task_type = "preprocessing"
@@ -16,11 +16,19 @@ class PreprocessingRunner(TaskRunner):
 
     def update_task(self):
         """Task has a new input file - perform input validation."""
-        pass
+        return dict(status="", warnings=[], errors=[])
 
-    def start_task(self):
+    def execute_task(self):
         """Run a preprocessing task"""
-        pass
+        return dict(status="", warnings=[], errors=[])
+
+    def validate_config(self, config) -> dict:
+        """Ensures config parameters are valid for the task"""
+        return dict(status="", warnings=[], errors=[])
+
+    def validate_task(self) -> dict:
+        """Validates all input files for the task"""
+        return dict(status="", warnings=[], errors=[])
 
     def _get_unmapped_counts_paths(self):
         """Returns a list of paths to unmapped expression matrices"""

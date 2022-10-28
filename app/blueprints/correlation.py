@@ -3,7 +3,9 @@ import time
 import base64
 import fitz
 from flask import Blueprint, render_template, request, session, jsonify
+
 from app.models.task import Task
+from app.blueprints.common import require_valid_task_id
 
 correlation_bp = Blueprint('correlation_bp', __name__)
 
@@ -18,7 +20,7 @@ def rnaseq_correlation():
 
     uploads = Task.list_input_files(task_dir)
 
-    return render_template("rnaseq_correlation.html", cur_uploads=uploads,
+    return render_template("rnaseq_correlation.html", uploaded_input_files=uploads,
                            title="RNAseq Sample Correlation")
 
 

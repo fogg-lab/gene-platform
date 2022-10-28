@@ -1,4 +1,6 @@
+from functools import wraps
 from flask import Blueprint, render_template, request, Response
+
 from app.models.task import Task
 
 common_bp = Blueprint('common_bp', __name__)
@@ -37,3 +39,19 @@ def get_console_output():
     log_content = task.get_log_update(last_log_update_line_number)
 
     return Response(log_content, mimetype='text/plain')
+
+
+def require_valid_task_id(task_route):
+    """Decorator to check if task_id is present in request args and is valid"""
+    @wraps(task_route)
+
+    def check_task_id(*args, **kwargs):
+        task_id = request.args.get("task_id")
+
+        if Task.get(task_id) is None:
+            err_msg = f"Invalid task ID: {task_id}" if task_id else "No task ID provided"
+            return 404, err_msg
+
+        return task_route(*args, **kwargs)
+
+    return check_task_id

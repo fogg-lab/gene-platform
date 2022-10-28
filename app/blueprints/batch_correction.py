@@ -1,8 +1,8 @@
 import os
-from flask import (Blueprint, render_template, request, jsonify,
-                   send_from_directory)
+from flask import Blueprint, render_template, request, jsonify, send_from_directory
+
 from app.models.task import Task
-from app.task_utils.task_runner import add_input_file, list_input_files
+from app.blueprints.common import require_valid_task_id
 
 batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 
@@ -11,13 +11,15 @@ batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 def batchcorrection():
     """batch correction input form"""
 
-    task_id = request.form.get("task_id")
-    task_dir = Task.get_dir(task_id)
+    task_id = request.args.get("task_id")
 
-    cur_uploads, all_uploads = list_input_files(task_dir)
+    if Task.get(task_id) is None:
+        task = Task.create("preprocessing")
 
-    return render_template("batchcorrection.html", cur_uploads=cur_uploads,
-                           all_uploads=all_uploads, title="Batch Correction")
+    uploads = Task.list_input_files(task_id)
+
+    return render_template("batchcorrection.html", uploaded_input_files=uploads, 
+                           title="Batch Correction")
 
 
 @batch_correction_bp.route("/batch-upload", methods=["POST"])
