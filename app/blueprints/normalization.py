@@ -1,7 +1,4 @@
-import os
-import subprocess
-import time
-from flask import Blueprint, render_template, request, session, jsonify, send_from_directory
+from flask import Blueprint, render_template, request, jsonify, send_from_directory
 
 from app.models.task import Task
 from app.blueprints.common import require_valid_task_id
@@ -75,6 +72,7 @@ def submit_normalization():
             #time.sleep(0.25)
 
     #return status_msg
+    return ""
 
 
 @require_valid_task_id
@@ -85,3 +83,4 @@ def get_normalized_counts():
     #rel_user_dir = common.Task.get_dir(task_id)
     #abs_user_dir = os.path.abspath(rel_user_dir)
     #return send_from_directory(abs_user_dir, "counts_normalized.tsv")
+    return 404, "Not implemented"

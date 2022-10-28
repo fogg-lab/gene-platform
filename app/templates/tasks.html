@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<table>
+    <tr>
+      <th>Task Type</th>
+      <th>Status</th>
+      <th>Created At</th>
+      <th>Updated At</th>
+      <th>Results</th>
+    </tr>
+    {% for row in user_tasks %}
+    <tr>
+      <td>{{ row['job_type']|tojson|safe }}</td>
+      <td>{{ row['status'] }}</td>
+      <td>{{ row['created_at'] }}</td>
+      <td>{{ row['updated_at'] }}</td>
+    </tr>
+{% endfor %}
+
+{% endblock %}

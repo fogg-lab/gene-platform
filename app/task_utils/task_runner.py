@@ -70,17 +70,26 @@ class TaskRunner(ABC):
         with open(config_path, "w", encoding="utf-8") as cfg_file:
             yaml.dump(config, cfg_file)
 
-    def get_log_update(self, last_log_update_line_number):
-        """Returns the contents of the log file for a task"""
+    def get_log_update(self, last_log_offset, full_log=False):
+        """Returns the contents of the log file for a task since the last update"""
         log_file_path = os.path.join(self._task_dir, ".log")
         log_content = ""
         if os.path.isfile(log_file_path):
             with open(log_file_path, "r", encoding="utf-8") as log_file:
-                # Limit to 100000 characters
-                full_log_content = log_file.read()[-100000:]
-                if len(full_log_content) > last_log_update_line_number:
-                    log_content = full_log_content[last_log_update_line_number:]
-        return log_content
+                full_log_content = log_file.read()
+                full_log_length = len(full_log_content)
+
+                if full_log_length > last_log_offset and not full_log:
+                    # Limit returned log content to 100000 characters
+                    offset = max(0, full_log_length - 100000)
+                    offset = max(last_log_offset, offset)
+                    log_content = full_log_content[offset:]
+                else:
+                    log_content = full_log_content[-100000:]
+
+                last_log_offset = full_log_length
+
+        return log_content, last_log_offset
 
     def add_input_file(self, file_contents, standard_fname):
         """Saves uploaded file for a task and returns the save path."""

@@ -1,4 +1,6 @@
 # http://flask.pocoo.org/docs/1.0/tutorial/database/
+import os.path
+from pathlib import Path
 import sqlite3
 
 from flask import Flask, current_app, g
@@ -10,8 +12,10 @@ def get_db():
     If one does not exist, create one.
     """
     if "db" not in g:
+        db_dir_path = Path(os.path.abspath(__file__)).parent
+        db_path = db_dir_path / "userdata.db"
         g.db = sqlite3.connect(
-            "sqlite_db", detect_types=sqlite3.PARSE_DECLTYPES
+            db_path, detect_types=sqlite3.PARSE_DECLTYPES
         )
         g.db.row_factory = sqlite3.Row
 
