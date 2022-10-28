@@ -107,7 +107,7 @@ class Task:
     @staticmethod
     def get_user_tasks():
         """Retrieve all tasks for the current user"""
-        user_id = current_user.user_id
+        user_id = current_user.id
         db = get_db()
         tasks = db.execute(
             "SELECT * FROM task WHERE user_id = ?", (user_id,)

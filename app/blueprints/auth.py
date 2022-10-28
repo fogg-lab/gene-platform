@@ -21,11 +21,17 @@ client = WebApplicationClient(client_id)
 @auth_bp.before_app_request
 def before_request():
     """Check if user is logged in on each page load"""
-    is_login_endpoint = request.endpoint in ["auth_bp.login", "auth_bp.callback"]
-    if not current_user.is_authenticated and not is_login_endpoint:
-        print("redirecting...")
-        return redirect("/login")
-
+    if os.getenv("ENABLE_GOOGLE_AUTH"):
+        is_login_endpoint = request.endpoint in ["auth_bp.login", "auth_bp.callback"]
+        if not current_user.is_authenticated and not is_login_endpoint:
+            print("redirecting...")
+            return redirect("/login")
+    else:
+        # Log the user in as a guest
+        if not User.get("guest1"):
+            User.create("guest1", "John Doe", "email@domain.com")
+        user = User.get("guest1")
+        login_user(user)
 
 @auth_bp.route("/login")
 def login():
