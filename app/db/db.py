@@ -2,8 +2,7 @@
 import os.path
 from pathlib import Path
 import sqlite3
-
-from flask import Flask, current_app, g
+from flask import Flask, g
 app = Flask(__name__)
 
 def get_db():
@@ -11,10 +10,17 @@ def get_db():
     Return a database connection.
     If one does not exist, create one.
     """
-    if "db" not in g:
-        return None
 
-    return g.db
+    expected_db_filepath = Path(os.path.abspath(__file__)).parent / "userdata.db"
+
+    if "db" in g:
+        return g.db
+    elif os.path.isfile(expected_db_filepath):
+        g.db = sqlite3.connect(
+            expected_db_filepath, detect_types=sqlite3.PARSE_DECLTYPES
+        )
+        g.db.row_factory = sqlite3.Row
+        return g.db
 
 def close_db(e=None):
     """Close the database connection."""
@@ -36,14 +42,21 @@ def init_db():
         with open(schema_path, 'r') as sql_file:
             sql_script = sql_file.read()
 
+        user_table_sql, task_table_sql = sql_script.split("/* table separator */")
+
         g.db = sqlite3.connect(
             db_path, detect_types=sqlite3.PARSE_DECLTYPES
         )
         g.db.row_factory = sqlite3.Row
 
         cursor = g.db.cursor()
-        cursor.executescript(sql_script)
+
+        print(task_table_sql)
+        cursor.execute(user_table_sql)
         g.db.commit()
+        cursor = g.db.cursor()
+        cursor.execute(task_table_sql)
+
         g.db.close()
 
 
