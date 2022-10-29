@@ -21,7 +21,7 @@ def require_valid_task_id(task_route):
 
         if Task.get(task_id) is None:
             err_msg = f"Invalid task ID: {task_id}" if task_id else "No task ID provided"
-            return 404, err_msg
+            return err_msg, 204
 
         return task_route(*args, **kwargs)
 
@@ -75,6 +75,6 @@ def tasks():
 
 
 @require_valid_task_id
-@common_bp.route("/get-task-output")
+@common_bp.route("/download-task-output", methods=["POST"])
 def get_task_output():
     task_id = request.args.get("task_id")

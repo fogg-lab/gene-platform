@@ -7,7 +7,7 @@ CREATE TABLE user (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-/* table separator */
+-- separator --
 
 CREATE TABLE task (
   id TEXT NOT NULL,
@@ -15,11 +15,18 @@ CREATE TABLE task (
   task_type TEXT NOT NULL,
   status TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  /*updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,*/
-  PRIMARY KEY (id)
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
   FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-/* todo: fix commented out line (for updated_at) to work with sqlite accepted syntax
-    (see: https://stackoverflow.com/questions/6578439/on-update-current-timestamp-with-sqlite)
-*/
+-- separator --
+
+CREATE TRIGGER [UpdateLastTime]
+    AFTER UPDATE
+    ON task
+    FOR EACH ROW
+    WHEN NEW.updated_at < OLD.updated_at    --- this avoid infinite loop
+BEGIN
+    UPDATE task SET updated_at=CURRENT_TIMESTAMP WHERE id=OLD.id;
+END;

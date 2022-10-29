@@ -83,4 +83,4 @@ def get_normalized_counts():
     #rel_user_dir = common.Task.get_dir(task_id)
     #abs_user_dir = os.path.abspath(rel_user_dir)
     #return send_from_directory(abs_user_dir, "counts_normalized.tsv")
-    return 404, "Not implemented"
+    return "Not implemented", 404

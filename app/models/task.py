@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import random
 import string
@@ -20,33 +21,27 @@ from app.exceptions import TaskNotFound, InvalidTaskType
 class Task:
     """Models class for preparing and queueing user tasks to run in the background."""
 
-    def __init__(self, task_id, task_type, user_id, status, created_at, updated_at):
+    def __init__(self, task_id, user_id, task_type, status, created_at, updated_at):
         self.task_id = task_id
         self.user_id = user_id
+        self.task_type = task_type
         self.status = status
         self.created_at = created_at
         self.updated_at = updated_at
-        self.task_type = task_type
 
     @staticmethod
-    def get(task_id):
+    def get(task_id: str) -> Task:
         """Retrieve user task by id from database"""
         task = None
-        if task_id is not None and len(task_id == 16):
+        if not isinstance(task_id, str):
+            raise TypeError("task_id must be a string")
+        if len(task_id) == 16:
             db = get_db()
-            user_id = current_user.user_id
+            user_id = current_user.id
             task = db.execute(
                 "SELECT * FROM task WHERE id = ? AND user_id = ?", (task_id, user_id)
             ).fetchone()
-        if task is None:
-            return None
-        return Task(
-            task_id=task[0],
-            user_id=task[1],
-            task_type=task[2],
-            status=task[3],
-            created_at=task[4],
-            updated_at=task[5])
+        return None if task is None else Task(*task)
 
     @staticmethod
     def get_log_update(task_id, last_log_offset=0, full_log=False):
@@ -157,7 +152,7 @@ class Task:
         db = get_db()
         new_task_id = ''.join(random.choice(string.ascii_lowercase + string.digits)
                              for _ in range(16))
-        user_id = current_user.user_id
+        user_id = current_user.id
         db.execute(
             "INSERT INTO task (id, user_id, task_type, status) VALUES (?, ?, ?, ?)",
             (new_task_id, user_id, task_type, status)

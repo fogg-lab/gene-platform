@@ -21,3 +21,26 @@ def get_tsv_rows(filepath):
             rows = list(csv.reader(tsv_file, delimiter="\t"))
 
     return rows
+
+def format_msg_list_html(msg_list, tag="p"):
+    """
+    Formats a list of status messages into HTML for display in the browser.
+    Args:
+        msg_list (list[str]): List of status messages.
+        tag (str): HTML tag to use for each message (li or p). Defaults to p.
+    Returns:
+        str: HTML-formatted status messages.
+    """
+
+    if tag not in ("li", "p"):
+        raise ValueError("tag must be li or p")
+
+    if msg_list is None or len(msg_list) == 0:
+        return ""
+
+    opening_tag = f"<{tag}>"
+    closing_tag = f"</{tag}>"
+
+    msg_html = "".join([f"{opening_tag}{msg}{closing_tag}" for msg in msg_list])
+
+    return msg_html

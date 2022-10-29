@@ -47,6 +47,11 @@
             {% else %}
                 <a href="/rnaseq-correlation">RNAseq Correlation</a>
             {% endif %}
+            {% if request.endpoint == 'common_bp.tasks' %}
+                <a class="active" href="#">View Tasks</a>
+                {% else %}
+                <a href="/tasks">View Tasks</a>
+            {% endif %}
             <a href="javascript:void(0);" class="icon" onclick="toggleHamburger()">&#9776;</a>
 		</div>
         {% if task_id is not defined %}

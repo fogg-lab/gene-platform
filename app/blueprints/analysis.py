@@ -108,9 +108,9 @@ def display_output():
 
     unfiltered_output = helper.get_tsv_rows(unfiltered_output_path)
     if unfiltered_output is None:
-        return 404, "Analysis output file not found."
+        return "Analysis output file not found.", 204
     elif len(unfiltered_output) == 0:
-        return 404, "Analysis output file is empty."
+        return "Analysis output file is empty.", 204
     else:
         unfiltered_output = unfiltered_output[:1]
 
@@ -157,7 +157,7 @@ def get_plot(filename):
 
     plot_filepath = Task.get_output_filepath(task_id, filename)
     if plot_filepath == "":
-        return 404, f"Plot '{filename}' not found."
+        return f"Plot '{filename}' not found.", 204
 
     plot_dir = Path(plot_filepath).parent
 
@@ -179,7 +179,7 @@ def get_unfiltered_tsv():
     unfiltered_output_path = Task.get_output_filepath(task_id, "output.tsv")
 
     if unfiltered_output_path == "":
-        return 404, "Analysis output file not found."
+        return "Analysis output file not found.", 204
 
     with open(unfiltered_output_path, encoding="UTF-8") as unfiltered_output:
         return Response(
@@ -198,7 +198,7 @@ def get_filtered_tsv():
     filtered_output_path = Task.get_output_filepath(task_id, "filter_output.tsv")
 
     if filtered_output_path == "":
-        return 404, "Filtered analysis output file not found."
+        return "Filtered analysis output file not found.", 204
 
     with open(filtered_output_path, encoding="UTF-8") as filtered_output:
         return Response(

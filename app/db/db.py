@@ -42,7 +42,7 @@ def init_db():
         with open(schema_path, 'r') as sql_file:
             sql_script = sql_file.read()
 
-        user_table_sql, task_table_sql = sql_script.split("/* table separator */")
+        user_table_sql, task_table_sql, task_update_trigger = sql_script.split("-- separator --")
 
         g.db = sqlite3.connect(
             db_path, detect_types=sqlite3.PARSE_DECLTYPES
@@ -51,11 +51,16 @@ def init_db():
 
         cursor = g.db.cursor()
 
-        print(task_table_sql)
         cursor.execute(user_table_sql)
         g.db.commit()
+
         cursor = g.db.cursor()
         cursor.execute(task_table_sql)
+        g.db.commit()
+
+        cursor = g.db.cursor()
+        cursor.execute(task_update_trigger)
+        g.db.commit()
 
         g.db.close()
 
