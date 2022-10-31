@@ -131,12 +131,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 							progress.className = "success";
 							progress.innerHTML = displayed_filename;
 						}
-						if (UPLOAD_ENDPOINT == "/normalization-upload") {
-							update_submit_button();
-						}
-						else {
-							update_next_button();
-						}
+						update_next_button();
 					}
 				}
 			};

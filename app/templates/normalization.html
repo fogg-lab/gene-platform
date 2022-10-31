@@ -78,7 +78,7 @@
 		</button>
 	</div>
 	<script>
-		var UPLOAD_ENDPOINT = "/normalization-upload";
+		var UPLOAD_ENDPOINT = "/upload";
 
 		// hide progress bar divs and cancel buttons for files which have not been uploaded
 		if (document.getElementById("progress_of_counts") == null) {
@@ -101,7 +101,7 @@
 		document.getElementById("download-norm-btn").disabled = true;
 
 		// disable submit button if progress counts or coldata not uploaded
-		update_submit_button();
+		update_next_button();
 
 		function cancelReqListener() {
 			// file upload successfully cancelled
@@ -120,12 +120,12 @@
 
 		function cancel_counts() {
 			cancel("counts.tsv");
-			update_submit_button();
+			update_next_button();
 		}
 
 		function cancel_coldata() {
 			cancel("coldata.tsv");
-			update_submit_button();
+			update_next_button();
 		}
 
 		function cancel(filename) {
@@ -155,7 +155,7 @@
 			document.getElementById(upload_div_id).style.display = 'block';
 		}
 
-		function update_submit_button() {
+		function update_next_button() {
 			// hide submit button if progress counts or coldata not uploaded
 			if (
 				document.getElementById("progress_of_counts") == null

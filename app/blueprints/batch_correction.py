@@ -1,5 +1,5 @@
 from pathlib import Path
-from flask import Blueprint, render_template, request, jsonify, send_from_directory
+from flask import Blueprint, render_template, request, send_from_directory
 
 from app.models.task import Task
 from app.helper import format_msg_list_html
@@ -10,7 +10,7 @@ batch_correction_bp = Blueprint("batch_correction_bp", __name__)
 
 @batch_correction_bp.route("/batch-correction")
 def batchcorrection():
-    """batch correction input form"""
+    """Loads the batch correction page."""
 
     task_id = request.args.get("task_id")
 
@@ -24,23 +24,6 @@ def batchcorrection():
 
 
 @require_valid_task_id
-@batch_correction_bp.route("/batch-upload", methods=["POST"])
-def batchupload():
-    """
-    handles uploading counts and coldata files for batch correction
-    one file per request
-    file contents are in request.data (a bytes object)
-    """
-
-    user_filename = request.args.get("user_filename")
-    standard_filename = request.headers.get('X_FILENAME')
-    task_id = request.form.get("task_id")
-
-    result = Task.add_input_file(task_id, request.data, standard_filename, user_filename)
-
-    return jsonify(result)
-
-
 @batch_correction_bp.route("/submit-batch-correction", methods=["POST"])
 def submit_batch_correction():
     """Submit a batch correction task"""
@@ -64,6 +47,7 @@ def submit_batch_correction():
     return task_status
 
 
+@require_valid_task_id
 @batch_correction_bp.route("/get-batch-corrected-counts")
 def get_batch_correction_counts():
     """Returns batch correction results to the client"""

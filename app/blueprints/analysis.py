@@ -1,6 +1,6 @@
 from pathlib import Path
 from flask import (Blueprint, render_template, request, redirect, url_for,
-                   Response, jsonify, send_from_directory)
+                   Response, send_from_directory)
 
 from app.models.task import Task
 from app.blueprints.common import require_valid_task_id
@@ -25,23 +25,9 @@ def setup():
 
 
 @require_valid_task_id
-@analysis_bp.route("/upload", methods=["POST"])
-def upload():
-    """Receive uploaded file for analysis task"""
-
-    user_fname = request.args.get("user_filename")
-    standard_fname = request.headers.get('X_FILENAME')
-    task_id = request.args.get("task_id")
-
-    result = Task.add_input_file(task_id, request.data, standard_fname, user_fname)
-
-    return jsonify(result)
-
-
-@require_valid_task_id
 @analysis_bp.route("/analysis-parameters", methods=["GET"])
 def analysis_parameters():
-    """Loads the analysis parameter form"""
+    """Loads the analysis parameter form."""
 
     task_id = request.args.get("task_id")
 
@@ -54,7 +40,7 @@ def analysis_parameters():
 @require_valid_task_id
 @analysis_bp.route("/confirm-analysis-submission", methods=["POST"])
 def confirm_analysis_submission():
-    """validate input and display formula before submission"""
+    """Validates input and display formula before submission."""
 
     data_type = request.form.get("data_type")
     task_id = request.args.get("task_id")
@@ -85,7 +71,7 @@ def confirm_analysis_submission():
 @require_valid_task_id
 @analysis_bp.route("/submit", methods=["POST"])
 def submit():
-    """Submit input for analysis"""
+    """Submits input for analysis."""
 
     task_id = request.args.get("task_id")
 
@@ -97,9 +83,7 @@ def submit():
 @require_valid_task_id
 @analysis_bp.route("/display")
 def display_output():
-    """
-    display output in a table
-    """
+    """Loads a page that displays output in a table."""
 
     task_id = request.args.get("task_id")
 

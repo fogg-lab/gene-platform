@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import Blueprint, render_template, request, Response
+from flask import Blueprint, render_template, request, jsonify, Response
 
 from app.models.task import Task
 
@@ -28,6 +28,21 @@ def require_valid_task_id(task_route):
     return check_task_id
 
 
+@require_valid_task_id
+@common_bp.route("/upload", methods=["POST"])
+def upload():
+    """Receive an uploaded file for a task."""
+
+    user_fname = request.args.get("user_filename")
+    standard_fname = request.headers.get('X_FILENAME')
+    task_id = request.args.get("task_id")
+
+    result = Task.add_input_file(task_id, request.data, standard_fname, user_fname)
+
+    return jsonify(result)
+
+
+@require_valid_task_id
 @common_bp.route("/cancel-upload", methods=["POST"])
 def cancelupload():
     """Remove uploaded file in task directory"""

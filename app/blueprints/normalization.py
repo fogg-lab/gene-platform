@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, send_from_directory
+from flask import Blueprint, render_template, request, send_from_directory
 
 from app.models.task import Task
 from app.blueprints.common import require_valid_task_id
@@ -25,30 +25,6 @@ def normalization():
 
 
 @require_valid_task_id
-@normalization_bp.route("/normalization-upload", methods=["POST"])
-def normalization_upload():
-    """
-    handles uploading counts and coldata files for normalization
-    one file per request
-    file contents are in request.data (a bytes object)
-    """
-
-    user_filename = request.args.get("user_filename")
-    standard_filename = request.headers.get('X_FILENAME')
-    task_id = request.form.get("task_id")
-
-    result = {}
-
-    if standard_filename not in ("counts.tsv", "coldata.tsv"):
-        result["error"] = "Unrecognized file."
-        return jsonify(result)
-
-    result = Task.add_input_file(task_id, request.data, standard_filename, user_filename)
-
-    return jsonify(result)
-
-
-@require_valid_task_id
 @normalization_bp.route("/submit-normalization", methods=["POST"])
 def submit_normalization():
     """Submit a normalization task"""
@@ -56,23 +32,11 @@ def submit_normalization():
     method = request.form.get("method")
     task_id = request.form.get("task_id")
 
-    #expected_norm_counts_path = os.path.join(user_dir, "counts_normalized.tsv")
+    Task.configure(task_id, {"method": method})
 
-    # Delete any previous normalization results
-    #if os.path.isfile(expected_norm_counts_path):
-        #os.remove(expected_norm_counts_path)
+    status_msg = Task.submit(task_id)
 
-    #subprocess.Popen([f"{NORMALIZATION_SCRIPT} {user_dir} {method}"], shell=True)
-    #status_msg = "Normalization complete."
-
-    #is_output = False
-    #while not is_output:
-        #is_output = os.path.exists(expected_norm_counts_path)
-        #if not is_output:
-            #time.sleep(0.25)
-
-    #return status_msg
-    return ""
+    return status_msg
 
 
 @require_valid_task_id
