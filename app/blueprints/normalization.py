@@ -1,12 +1,10 @@
+from pathlib import Path
 from flask import Blueprint, render_template, request, send_from_directory
 
 from app.models.task import Task
 from app.blueprints.common import require_valid_task_id
 
-normalization_bp = Blueprint('normalization_bp', __name__, template_folder='templates',
-                             static_folder='../../static')
-
-NORMALIZATION_SCRIPT = "Rscript ../../../rscripts/normalize.r"
+normalization_bp = Blueprint('normalization_bp', __name__)
 
 
 @normalization_bp.route("/normalization")
@@ -44,7 +42,14 @@ def submit_normalization():
 def get_normalized_counts():
     """Return the normalized counts file to the client"""
 
-    #rel_user_dir = common.Task.get_dir(task_id)
-    #abs_user_dir = os.path.abspath(rel_user_dir)
-    #return send_from_directory(abs_user_dir, "counts_normalized.tsv")
-    return "Not implemented", 404
+    task_id = request.args.get("task_id")
+
+    filename = "counts_normalized.tsv"
+
+    filepath = Task.get_output_filepath(task_id, "")
+    if filepath == "":
+        return f"'{filename}' not found.", 204
+
+    filedir = Path(filepath).parent
+
+    return send_from_directory(filedir, filename)

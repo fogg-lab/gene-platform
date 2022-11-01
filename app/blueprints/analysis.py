@@ -154,13 +154,15 @@ def reset():
     return redirect(url_for("common_bp.index"))
 
 
+@require_valid_task_id
 @analysis_bp.route("/get-unfiltered-tsv")
 def get_unfiltered_tsv():
     """Download unfiltered output."""
 
     task_id = request.args.get("task_id")
 
-    unfiltered_output_path = Task.get_output_filepath(task_id, "output.tsv")
+    filename = "output.tsv"
+    unfiltered_output_path = Task.get_output_filepath(task_id, filename)
 
     if unfiltered_output_path == "":
         return "Analysis output file not found.", 204
@@ -168,11 +170,12 @@ def get_unfiltered_tsv():
     with open(unfiltered_output_path, encoding="UTF-8") as unfiltered_output:
         return Response(
             unfiltered_output,
-            mimetype='text/csv',
-            headers={'Content-disposition':
-                    'attachment; filename=output.tsv'})
+            mimetype="text/csv",
+            headers={"Content-disposition":
+                    f"attachment; filename={filename}"})
 
 
+@require_valid_task_id
 @analysis_bp.route("/get-filtered-tsv")
 def get_filtered_tsv():
     """Download filtered output."""

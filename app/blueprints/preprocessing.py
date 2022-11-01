@@ -6,9 +6,6 @@ from app.blueprints.common import require_valid_task_id
 
 preprocessing_bp = Blueprint('preprocessing_bp', __name__)
 
-PREP_GDC_SCRIPT = "prep_gdc.r"
-PREP_GEO_SCRIPT = "prep_geo.r"
-
 
 @preprocessing_bp.route("/preprocessing")
 def preprocessing():

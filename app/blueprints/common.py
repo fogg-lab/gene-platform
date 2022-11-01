@@ -1,5 +1,6 @@
 from functools import wraps
-from flask import Blueprint, render_template, request, jsonify, Response
+from pathlib import Path
+from flask import Blueprint, render_template, request, jsonify, Response, send_from_directory
 
 from app.models.task import Task
 
@@ -92,4 +93,16 @@ def tasks():
 @require_valid_task_id
 @common_bp.route("/download-task-output", methods=["POST"])
 def get_task_output():
+    """Return a compressed zip file of the task output to the client."""
+
     task_id = request.args.get("task_id")
+
+    zip_out_path = Task.create_task_zip(task_id)
+
+    if not zip_out_path:
+        return "No output files to download", 204
+
+    out_dir = Path(zip_out_path).parent
+    out_filename = Path(zip_out_path).name
+
+    return send_from_directory(out_dir, out_filename, as_attachment=True)

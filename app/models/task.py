@@ -1,9 +1,11 @@
 from __future__ import annotations
+from genericpath import isfile
 import os
 import random
 import string
 from typing import List
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
+from glob import glob
 from redis import Redis
 from rq import Queue
 from flask import current_app
@@ -303,8 +305,8 @@ class Task:
         db.commit()
 
     @staticmethod
-    def create_task_zip(task_id):
-        """Creates a zip file of task output given a task id"""
+    def create_task_zip(task_id) -> str:
+        """Creates a zip file of task output given a task id and returns the filepath."""
 
         task_dir = Task._get_dir(task_id)
         task_type = Task._get_type(task_id)
@@ -319,13 +321,20 @@ class Task:
             "analysis": "analysis_results"
         }
 
-        zip_name = os.path.join(output_dir, task_result_names.get(task_type, "results"))
+        zip_path = os.path.join(output_dir, task_result_names.get(task_type, "results"))
+        if os.path.isfile(zip_path):
+            os.remove(zip_path)
 
-        with ZipFile(zip_name, "w") as zip_file:
-            for file in os.listdir(output_dir):
-                zip_file.write(file)
+        out_filepaths = [fp for fp in glob(os.path.join(output_dir, "*")) if os.path.isfile(fp)]
 
-        return zip_name
+        if len(out_filepaths) == 0:
+            return ""
+
+        with ZipFile(zip_path, mode="w", compression=ZIP_DEFLATED) as zip_file:
+            for filepath in out_filepaths:
+                zip_file.write(filepath)
+
+        return zip_path
 
     @staticmethod
     def get_output_filepath(task_id, standard_filename) -> str:
