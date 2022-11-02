@@ -33,7 +33,7 @@ From: ubuntu:20.04
     python3.11 -m pip install --upgrade pip
     python3.11 -m pip install --upgrade setuptools
     python3.11 -m pip install Flask[async] Flask-Session Flask-Login Flask-SQLAlchemy pyyaml \
-        numpy pandas PyMuPDF gunicorn oauthlib requests python-dotenv[cli] rq
+        numpy pandas gunicorn oauthlib requests python-dotenv[cli] rq
 
     R -e "install.packages(c('yaml', 'ggpubr', 'tidyverse', 'corrplot', 'corrr', \
         'BiocManager'), repos='https://cloud.r-project.org/')"
