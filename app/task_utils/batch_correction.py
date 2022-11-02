@@ -76,10 +76,10 @@ class BatchCorrectionRunner(TaskRunner):
 
         # Call the batch correction R script
         script = os.path.join(current_app.config["RSCRIPTS_PATH"], BatchCorrectionRunner.BC_SCRIPT)
-        subprocess.Popen(
-            [f"{script} {counts_in_path} {coldata_in_path} {directory} {data_type}"],
-            shell=True
-        )
+        log_path = os.path.join(directory, ".log")
+        command = [script, counts_in_path, coldata_in_path, directory, data_type,
+                   "1>", log_path, "2>&1"]
+        subprocess.check_call(command, shell=True)
 
     def check_bc_input_files(self):
         """
