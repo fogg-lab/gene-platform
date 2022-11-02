@@ -15,13 +15,13 @@ Instructions to set up and start the web app:
 2. Build the container  
   `cd gene-platform`  
   `chmod +x install_packages.sh`  
-  `\# One of the following commands (depends on whether you are using Docker or Singularity):`  
+  `# One of the following commands (depends on whether you are using Docker or Singularity):`  
   `docker build -t gene-platform-image .`  
   `sudo singularity build gene-platform-image.sif singularity.def`  
   *Note*: It can take an hour or longer to build the image.  
 
 3. Run the container  
-  \# One of the following:  
+  `# One of the following:`  
   `singularity run gene-platform-image.sif`  
   `docker run gene-platform-image`
 
