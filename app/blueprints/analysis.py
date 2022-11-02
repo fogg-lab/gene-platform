@@ -5,6 +5,7 @@ from flask import (Blueprint, render_template, request, redirect, url_for,
 from app.models.task import Task
 from app.blueprints.common import require_valid_task_id
 from app import helper
+from icecream import ic
 
 analysis_bp = Blueprint('analysis_bp', __name__)
 
@@ -20,12 +21,12 @@ def setup():
 
     uploads = Task.list_input_files(task_id)
 
-    return render_template("uploads_form.html", uploaded_input_files=uploads,
+    return render_template("uploads_form.html", uploaded_input_files=uploads, task_id=task_id,
                            title="DGE Analysis")
 
 
-@require_valid_task_id
 @analysis_bp.route("/analysis-parameters", methods=["GET"])
+@require_valid_task_id
 def analysis_parameters():
     """Loads the analysis parameter form."""
 
@@ -33,7 +34,7 @@ def analysis_parameters():
 
     config_params = Task.get_config(task_id)
 
-    return render_template("parameters_form.html", params=config_params,
+    return render_template("parameters_form.html", params=config_params, task_id=task_id,
                            title="Analysis parameters")
 
 
@@ -43,7 +44,7 @@ def confirm_analysis_submission():
     """Validates input and display formula before submission."""
 
     data_type = request.form.get("data_type")
-    task_id = request.args.get("task_id")
+    task_id = request.form.get("task_id")
 
     # Generate config file from form parameters
     params = get_analysis_request_parameters(request.form, data_type)
@@ -51,9 +52,16 @@ def confirm_analysis_submission():
     # Add data_type to config
     params["data_type"] = data_type
 
+    ic()
+    ic(data_type)
+    ic(task_id)
+
     status = Task.configure(task_id, params)
 
     # Validate config and input files
+
+    confirmation_message = ""
+
     if status.get("errors"):
         status = Task.validate_task(task_id)
 
@@ -77,7 +85,7 @@ def confirm_analysis_submission():
 def submit():
     """Submits input for analysis."""
 
-    task_id = request.args.get("task_id")
+    task_id = request.form.get("task_id")
 
     status_msg = Task.submit(task_id)
 

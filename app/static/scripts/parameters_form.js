@@ -36,7 +36,7 @@ function show_hide_parameters() {
 
 function submissionConfirmed() {
   var analysisReq = new XMLHttpRequest();
-  analysisReq.addEventListener("load", analysisReqListener);
+  //analysisReq.addEventListener("load", analysisReqListener);
   analysisReq.open("POST", "/submit");
   analysisReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
@@ -45,6 +45,7 @@ function submissionConfirmed() {
   req_query = `task_id=${task_id}&data_type=${data_type}`;
 
   analysisReq.send(req_query);
+  startTaskUpdateRepeater();
   showRuntime();
 }
 
@@ -54,16 +55,14 @@ function submit() {
   submitReq.addEventListener("load", submitReqListener);
   submitReq.open("POST", "/confirm-analysis-submission");
   submitReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  task_id = getTaskID();
   var parameters_req_query = "";
   var parameters = get_parameters();
   for (param of parameters) {
-    parameters_req_query += param[0];
-    parameters_req_query += "=";
-    parameters_req_query += param[1];
-    parameters_req_query += "&";
+    parameters_req_query += `${param[0]}=${param[1]}&`
   }
   data_type = get_data_type();
-  parameters_req_query += "data_type=" + data_type;
+  parameters_req_query += `data_type=${data_type}&task_id=${task_id}`;
   submitReq.send(parameters_req_query);
 }
 

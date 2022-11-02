@@ -11,6 +11,7 @@ from redis import Redis
 from rq import Queue
 from flask import current_app
 from flask_login import current_user
+from icecream import ic
 
 from app.db.db import get_db
 from app.task_utils.task_runner import TaskRunner
@@ -69,7 +70,6 @@ class Task:
             task = cur.execute(
                 "SELECT * FROM task WHERE id = ? AND user_id = ?", (task_id, user_id)
             ).fetchone()
-            print(task is None)
         return None if task is None else Task(*task)
 
 # task_params:  ['abcdefg123456789', 'guest1', 'analysis', 'done', datetime.datetime(2022, 11, 2, 21, 19, 1), datetime.datetime(2022, 11, 2, 21, 19, 1)]
@@ -126,6 +126,10 @@ class Task:
         user_tasks_path = current_app.config["USER_TASKS_PATH"]
         task_dir = os.path.join(user_tasks_path, task_id)
         os.makedirs(task_dir, exist_ok=True)
+        input_dir = os.path.join(task_dir, "input")
+        output_dir = os.path.join(task_dir, "output")
+        os.makedirs(input_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
         return task_dir
 
     @staticmethod
@@ -155,7 +159,7 @@ class Task:
 
     @staticmethod
     @require_task_id_correct_format
-    def submit(task_id) -> None:
+    def submit(task_id) -> str:
         """Update status of user task to 'ready' and queue it for processing."""
         try:
             Task.get(task_id)
@@ -178,8 +182,9 @@ class Task:
         except TaskNotFound as exc:
             raise TaskNotFound("User task not found, so it could not be submitted.") from exc
 
+        return ""
+
     @staticmethod
-    @require_task_id_correct_format
     def create(task_type, status="pending") -> Task:
         """
         Add a task to the database.
@@ -191,7 +196,8 @@ class Task:
         new_task_id = ''.join(random.choice(string.ascii_lowercase + string.digits)
                              for _ in range(16))
         user_id = current_user.id
-        db.execute(
+        cur = db.cursor()
+        cur.execute(
             "INSERT INTO task (id, user_id, task_type, status) VALUES (?, ?, ?, ?)",
             (new_task_id, user_id, task_type, status)
         )
@@ -269,10 +275,13 @@ class Task:
         Returns:
             dict: status
         """
+        ic()
         runner = Task._get_runner(task_id)
         save_path = runner.add_input_file(file_contents, standard_filename)
+        ic(save_path)
         # Perform input validation
-        status = runner.update_task()
+        #status = runner.update_task()
+        status=dict()
         if "errors" in status:
             os.remove(save_path)
         else:

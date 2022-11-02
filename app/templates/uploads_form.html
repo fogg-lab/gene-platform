@@ -17,7 +17,7 @@
 				</tr>
 				<tr>
 					<td>
-						<form class="filedrag" id="upload_counts" action="{{ url_for('analysis_bp.upload') }}" method="POST" enctype="multipart/form-data">
+						<form class="filedrag" id="upload_counts" action="{{ url_for('common_bp.upload') }}" method="POST" enctype="multipart/form-data">
 							<div class="upload_div" id="counts_upload_div">
 								<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
 								<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
@@ -33,7 +33,7 @@
 						</form>
 					</td>
 					<td>
-						<form class="filedrag" id="upload_coldata" action="{{ url_for('analysis_bp.upload') }}" method="POST" enctype="multipart/form-data">
+						<form class="filedrag" id="upload_coldata" action="{{ url_for('common_bp.upload') }}" method="POST" enctype="multipart/form-data">
 							<div class="upload_div" id="coldata_upload_div">
 								<input type="file" class="fileselect" id="fileselect_coldata" name="fileselect[]" style="display:none">
 								<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
@@ -49,7 +49,7 @@
 						</form>
 					</td>
 					<td>
-						<form class="filedrag" id="upload_filter" action="{{ url_for('analysis_bp.upload') }}" method="POST" enctype="multipart/form-data">
+						<form class="filedrag" id="upload_filter" action="{{ url_for('common_bp.upload') }}" method="POST" enctype="multipart/form-data">
 							<div class="upload_div" id="filter_upload_div">
 								<input type="file" class="fileselect" id="fileselect_filter" name="fileselect[]" style="display:none">
 								<p>Drop .txt file<br>here or<label for="fileselect_filter" class="upload_action_button">Browse</label></p>
@@ -65,7 +65,7 @@
 						</form>
 					</td>
 					<td>
-						<form class="filedrag" id="upload_config" action="{{ url_for('analysis_bp.upload') }}" method="POST" enctype="multipart/form-data">
+						<form class="filedrag" id="upload_config" action="{{ url_for('common_bp.upload') }}" method="POST" enctype="multipart/form-data">
 							<div class="upload_div" id="config_upload_div">
 								<input type="file" class="fileselect" id="fileselect_config" name="fileselect[]" style="display:none">
 								<p>Drop .yml file<br>here or<label for="fileselect_config" class="upload_action_button">Browse</label></p>
@@ -93,9 +93,11 @@
 	</div>
 	
 	<div class="bottom-buttons">
-		<button onclick="goto('/analysis-parameters')" class="button" id="next_button" disabled>Next: Parameters</button>
+		<button onclick="goto('/analysis-parameters?task_id={{task_id}}')" class="button" id="next_button" disabled>Next: Parameters</button>
 	</div>
-	
+
+	<input type="hidden" id="task_id" value="{{ task_id }}">
+
 	<script>
 		var UPLOAD_ENDPOINT = "/upload";
 		// hide progress bar divs and cancel buttonsfor files which have not been uploaded

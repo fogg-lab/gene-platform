@@ -1,6 +1,7 @@
 import os
 import subprocess
 from flask import current_app
+from icecream import ic
 
 from app.helper import get_tsv_rows
 from app.task_utils.task_runner import TaskRunner
@@ -54,7 +55,7 @@ class AnalysisRunner(TaskRunner):
 
         def verify_in_range(key, min_value, max_value):
             value = config[key]
-            in_range = min_value <= value <= max_value
+            in_range = min_value <= float(value) <= max_value
             if not in_range:
                 status["errors"].append(f"Parameter {key} must be between "
                                         f"{min_value} and {max_value}.")

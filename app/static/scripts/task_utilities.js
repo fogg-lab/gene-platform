@@ -112,7 +112,7 @@ function getTaskUpdate() {
         taskLogReq.addEventListener("load", taskLogReqListener);
     }
     taskLogReq.addEventListener("load", taskUpdateListener);
-    dest = `get-console-output?task_id=${task_id}`;
+    dest = `get-progress?task_id=${task_id}`;
     taskLogReq.open("GET", dest);
     taskLogReq.send();
 }
@@ -125,6 +125,7 @@ function startTaskUpdateRepeater() {
 
 function getTaskID() {
     task_id = document.getElementById("task_id").value;
+    console.log(task_id)
     return task_id;
 }
 
@@ -175,7 +176,7 @@ function confirmSubmission(confirmation_text) {
     clearInterval(fetch_task_updates);
 
     overlay = getOverlay();
-    
+
     console_log = document.getElementById("console_log");
     console_log.style.display="none";
     overlay.appendChild(dialog_box)

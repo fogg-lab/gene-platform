@@ -137,7 +137,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 			};
 
 			// set form data, including user-supplied filename
-			user_filename_req_query = "?user_filename=" + file.name;
+			user_filename_req_query = "?user_filename=" + file.name + "&task_id=" + document.getElementById("task_id").value;
 
 			// start upload
 			upload_url = window.location.origin + UPLOAD_ENDPOINT + user_filename_req_query
