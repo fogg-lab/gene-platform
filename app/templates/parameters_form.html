@@ -115,6 +115,9 @@
     </div>
   </form>
 
+  <input type="hidden" id="task_id" value="{{ task_id }}">
+  <input type="hidden" id="results_endpoint" value="/display">
+
   <script src="{{ url_for('static',filename='scripts/task_utilities.js') }}"></script>
-  <script src="{{ url_for('static',filename='scripts/analysis-parameters_form.js') }}"></script>
+  <script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>
 {% endblock %}

@@ -45,7 +45,7 @@
 			<option value="both">Pearson and Spearman</option>
 		</select>
 	</form>
-	
+
 	<div class="bottom-buttons">
 		<button onclick="submitRNASeqCorrelation()" class="button" id="next_button" disabled>Submit</button>
 	</div>
@@ -57,6 +57,9 @@
 	<div id="messages" class="bottom-buttons">
 	</div>
 	<br>
+
+	<input type="hidden" id="task_id" value="{{ task_id }}">
+
 	<script>
 		var UPLOAD_ENDPOINT = "/upload";
 		// hide progress bar divs and cancel buttonsfor files which have not been uploaded
