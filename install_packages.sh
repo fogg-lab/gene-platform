@@ -36,8 +36,6 @@ R -e "install.packages(c('yaml', 'ggpubr', 'tidyverse', 'corrplot', 'corrr', \
 R -e "BiocManager::install(c('BiocParallel', 'remotes', 'BioinformaticsFMRP/TCGAbiolinks', \
     'HDF5Array', 'affycoretools', 'affyPLM', 'sva', 'edgeR', 'GEOquery', 'biomaRt'))"
 R -e "install.packages('devtools', repos='https://cloud.r-project.org/')"
-R -e "devtools::install_github('IRkernel/IRkernel')"
-R -e "IRkernel::installspec()"
 R -e "devtools::install_github('zhangyuqing/sva-devel')"
 
 apt-get clean
