@@ -34,16 +34,6 @@ function show_hide_parameters() {
 }
 
 
-function analysisReqListener() {
-  status_msg = this.responseText;
-  console.log(status_msg);
-  // analysis is complete - load the results page
-  if (!task_cancelled) {
-    window.location.href = "/display";
-  }
-}
-
-
 function submissionConfirmed() {
   var analysisReq = new XMLHttpRequest();
   analysisReq.addEventListener("load", analysisReqListener);
@@ -51,7 +41,8 @@ function submissionConfirmed() {
   analysisReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
   task_id = getTaskID();
-  req_query = "task_id=" + task_id;
+  data_type = get_data_type();
+  req_query = `task_id=${task_id}&data_type=${data_type}`;
 
   analysisReq.send(req_query);
   showRuntime();

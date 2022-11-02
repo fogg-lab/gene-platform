@@ -40,7 +40,7 @@ function getPlots() {
             getPlotsReq.addEventListener("load", getSpearmanPlotListener);
         }
         dest = `/get-correlation-plot${getPlotsQuery}`;
-        getPlotsReq.open("GET", dest, true);
-        getPlotsReq.send(null);
+        getPlotsReq.open("GET", dest);
+        getPlotsReq.send();
     }
 }

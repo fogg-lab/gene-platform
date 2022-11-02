@@ -1,5 +1,6 @@
-var timer = {};
-var counter = 0;
+var overlay_timer = {};
+var fetch_task_updates = {};
+var seconds_elapsed = 0;
 no_log_update_count = 0;
 
 
@@ -9,9 +10,10 @@ function cancelTask() {
     overlay_div.style.display = "none";
     cancel_task_button = document.getElementById("cancel_task_button")
     cancel_task_button.remove()
-    clearInterval(timer);
-    timer = {};
-    counter = 0;
+    clearInterval(overlay_timer);
+    clearInterval(fetch_task_updates);
+    overlay_timer = {};
+    seconds_elapsed = 0;
     document.getElementById("time").innerHTML = "";
 }
 
@@ -41,9 +43,10 @@ function taskLogReqListener() {
         }
         else if (no_log_update_count == timeout) {
             taskFailed("Error: No response from server.");
-            clearInterval(timer);
-            timer = {};
-            counter = 0;
+            clearInterval(overlay_timer);
+            clearInterval(fetch_task_updates);
+            overlay_timer = {};
+            seconds_elapsed = 0;
             return;
         }
     }
@@ -86,21 +89,57 @@ function taskLogReqListener() {
 }
 
 
-function requestConsoleOutput() {
-    overlay = document.getElementById("overlay");
-    if (overlay != null && overlay.style.display != "none") {
-        var taskLogReq = new XMLHttpRequest();
-        taskLogReq.addEventListener("load", taskLogReqListener);
-        taskLogReq.open("GET", "/get-console-output");
-        taskLogReq.send();
+function taskUpdateListener() {
+    task_update_text = this.responseText;
+    if ("completed" in toLowerCase(task_update_text)) {
+        clearInterval(overlay_timer);
+        clearInterval(fetch_task_updates);
+        overlay_timer = {};
+        seconds_elapsed = 0;
+        task_id = getTaskID();
+        results_endpoint = getResultsEndpoint();
+        if (results_endpoint != "") {
+            window.location.href = `${results_endpoint}?task_id=${task_id}`;
+        }
     }
 }
 
 
+function getTaskUpdate() {
+    var taskLogReq = new XMLHttpRequest();
+    console_log = document.getElementById("console_log");
+    if (console_log != null && console_log.style.display != "none") {
+        taskLogReq.addEventListener("load", taskLogReqListener);
+    }
+    taskLogReq.addEventListener("load", taskUpdateListener);
+    dest = `get-console-output?task_id=${task_id}`;
+    taskLogReq.open("GET", dest);
+    taskLogReq.send();
+}
+
+
+function startTaskUpdateRepeater() {
+    fetch_task_updates = setInterval(getTaskUpdate, 1000);
+}
+
+
+function getTaskID() {
+    task_id = document.getElementById("task_id").value;
+    return task_id;
+}
+
+
+function getResultsEndpoint() {
+    results_endpoint_elem = document.getElementById("results_endpoint");
+    return ((results_endpoint_elem == null) ? "" : results_endpoint_elem.value);
+}
+
+
 function showRuntime() {
-    clearInterval(timer);
-    timer = {};
-    counter = 0;
+    clearInterval(overlay_timer);
+    clearInterval(fetch_task_updates);
+    overlay_timer = {};
+    seconds_elapsed = 0;
     overlay_div = getOverlay();
     console_log = document.getElementById("console_log");
     console_log.style.display="block";
@@ -111,13 +150,12 @@ function showRuntime() {
     cancel_task_button.onclick = cancelTask;
     overlay_div.appendChild(cancel_task_button);
     cancel_task_button.className = "button";
-    timer = setInterval(function () {
+    overlay_timer = setInterval(function () {
         time_elem = document.getElementById("time")
         if (time_elem != null) {
-            time_elem.innerHTML = "Time elapsed: " + counter + " seconds";
+            time_elem.innerHTML = "Time elapsed: " + seconds_elapsed + " seconds";
         }
-        counter += 1;
-        requestConsoleOutput();
+        seconds_elapsed += 1;
     }, 1000);
 }
 
@@ -133,7 +171,8 @@ function confirmSubmission(confirmation_text) {
     dialog_box.innerHTML += "\n<button id='cancel_btn_id'>Cancel</button>\n";
     dialog_box.style.display="block";
 
-    clearInterval(timer);
+    clearInterval(overlay_timer);
+    clearInterval(fetch_task_updates);
 
     overlay = getOverlay();
     
