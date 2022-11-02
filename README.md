@@ -15,7 +15,7 @@ Instructions to set up and start the web app:
 2. Build the container  
   `cd gene-platform`  
   `chmod +x install_packages.sh`  
-  \# One of the following commands (depends on whether you are using Docker or Singularity):  
+  `\# One of the following commands (depends on whether you are using Docker or Singularity):`  
   `docker build -t gene-platform-image .`  
   `sudo singularity build gene-platform-image.sif singularity.def`  
   *Note*: It can take an hour or longer to build the image.  
@@ -23,7 +23,7 @@ Instructions to set up and start the web app:
 3. Run the container  
   \# One of the following:  
   `singularity run gene-platform-image.sif`  
-  `docker run -p gene-platform-image`
+  `docker run gene-platform-image`
 
 4. Run the web app (replace xxxx with a port number)  
   `gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app`  
