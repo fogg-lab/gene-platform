@@ -16,10 +16,6 @@ class CorrelationRunner(TaskRunner):
 
     CORR_SCRIPT = "correlation.r"
 
-    def update_task(self):
-        """Task has a new input file - perform input validation."""
-        return dict(status="", warnings=[], errors=[])
-
     def execute_task(self):
         """Run an RNASeq correlation task"""
         return dict(status="", warnings=[], errors=[])

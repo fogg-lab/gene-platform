@@ -8,10 +8,6 @@ class NormalizationRunner(TaskRunner):
         self.task_type = "normalization"
         self._input_filenames = ["counts.tsv", "coldata.tsv", "config.yml"]
 
-    def update_task(self):
-        """Task has a new input file - perform input validation."""
-        return dict(status="", warnings=[], errors=[])
-
     def execute_task(self):
         """Run a normalization task"""
         return dict(status="", warnings=[], errors=[])

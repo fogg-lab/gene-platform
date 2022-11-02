@@ -1,18 +1,65 @@
-def check_factor_levels(reference_level, contrast_level, coldata):
+from typing import List
+
+
+def check_coldata_has_required_columns(coldata_rows: List[List[str]], require_batch=False) -> str:
     """
-    Ensures factor levels are present in the coldata file
-    If factor levels are present, returns empty string
-    Otherwise, returns an error message
+    Generates an error message if coldata doesn't have a required column.
     Args:
-        reference_level: string
-        contrast_level: string
-        coldata: 2d array
+        coldata_rows List[List[str]]: Contents of coldata.tsv.
     Returns:
-        string
+        str: Error message if coldata does not have a required column.
+    """
+
+    required_columns = ["sample_name", "condition"]
+    if require_batch:
+        required_columns.append("batch")
+
+    for required_column in required_columns:
+        if required_column not in coldata_rows[0]:
+            return f"coldata file does not have a '{required_column}' column"
+
+    return ""
+
+
+def check_counts_matches_coldata(counts_colnames: List[str], coldata_rows: List[List[str]]) -> str:
+    """
+    Generates an error message if counts doesn't have all samples listed in coldata.
+    Args:
+        counts_colnames (List[str]): List of column names from counts file.
+        coldata_rows (List[List[str]]): Contents of coldata.tsv.
+    Returns:
+        str: Error message if sample names in coldata and counts files don't match.
+    """
+
+    coldata_sample_name_idx = coldata_rows[0].index("sample_name")
+    coldata_sample_names = [row[coldata_sample_name_idx] for row in coldata_rows[1:]]
+
+    samples = []
+
+    coldata_rows.pop(0)
+    for coldata_row in coldata_rows:
+        if coldata_row:
+            samples.append(coldata_row[0])
+
+    for sample in coldata_sample_names:
+        if sample not in counts_colnames:
+            return f"Sample '{sample}' in coldata not found in counts"
+
+
+def check_factor_levels(reference_level: str, contrast_level: str,
+                        coldata_rows: List[List[str]]) -> str:
+    """
+    Generates an error message if factor levels aren't present in the coldata file.
+    Args:
+        reference_level (str): Reference level specified in the config parameters.
+        contrast_level (str): Contrast level specified in the config parameters.
+        coldata_rows (List[List[str]]): Contents of coldata.tsv.
+    Returns:
+        str: Error message if factor levels aren't present in the coldata.
     """
 
     condition_col_index = 0
-    col_header_row = [colname.lower() for colname in coldata[0]]
+    col_header_row = [colname.lower() for colname in coldata_rows[0]]
     if "condition" in col_header_row:
         condition_col_index = col_header_row.index("condition")
     else:
@@ -22,9 +69,9 @@ def check_factor_levels(reference_level, contrast_level, coldata):
     reference_level_found = False
 
     # remove header row from coldata
-    coldata.pop(0)
+    coldata_rows.pop(0)
     err_msg = ""
-    for coldata_row in coldata:
+    for coldata_row in coldata_rows:
         if coldata_row:
             factor_level = coldata_row[condition_col_index]
             if factor_level == contrast_level:
@@ -39,56 +86,3 @@ def check_factor_levels(reference_level, contrast_level, coldata):
         err_msg += f"Unknown reference level '{reference_level}'\n"
 
     return err_msg
-
-
-def check_coldata_matches_counts(counts_colnames, coldata_rows):
-    """
-    Ensure rows in coldata match with the column names for samples in counts
-    Assumes that sample names are listed on first row (header) of counts file
-    Also assumes that sample names are listed in first column of coldata file,
-        starting on second row of coldata file (first row after the header)
-    Returns empty string if coldata and counts sample names match
-    Otherwise, returns an error message
-    Args:
-        counts_colnames: array
-        coldata_rows: 2d array
-    Returns:
-        string
-    """
-
-    samples = []
-
-    coldata_rows.pop(0)
-    for coldata_row in coldata_rows:
-        if coldata_row:
-            samples.append(coldata_row[0])
-
-    if not samples:
-        return "no samples are listed in the coldata file"
-
-    # remove leading elements from counts which are not sample names
-    while counts_colnames and counts_colnames[0] != samples[0]:
-        counts_colnames.pop(0)
-
-    if not counts_colnames:
-        return f"sample '{samples[0]}' from coldata not found in counts file"
-
-    # if counts and coldata match, err_msg will be empty
-    status_msg = ""
-
-    # make sure each sample name matches between counts and coldata
-    while samples and counts_colnames and samples[0] == counts_colnames[0]:
-        samples.pop(0)
-        counts_colnames.pop(0)
-
-    if counts_colnames and not samples:
-        status_msg = f"sample '{counts_colnames[0]}' not found in coldata file"
-
-    elif samples and not counts_colnames:
-        status_msg = f"sample '{samples[0]}' not found in counts file"
-
-    elif samples and counts_colnames and samples[0] != counts_colnames[0]:
-        status_msg = f"sample '{samples[0]}' in coldata file does not match the \
-            corresponding sample name '{counts_colnames[0]}' in counts file"
-
-    return status_msg

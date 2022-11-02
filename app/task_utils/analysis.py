@@ -2,7 +2,11 @@ import os
 import subprocess
 from flask import current_app
 
+from app.helper import get_tsv_rows
 from app.task_utils.task_runner import TaskRunner
+from app.task_utils.expression_data_validation import (check_coldata_has_required_columns,
+                                                       check_counts_matches_coldata,
+                                                       check_factor_levels)
 
 
 class AnalysisRunner(TaskRunner):
@@ -16,13 +20,14 @@ class AnalysisRunner(TaskRunner):
     MICROARRAY_SCRIPT = "dge_microarray.r"
     RNASEQ_SCRIPT = "dge_rnaseq.r"
 
-    def update_task(self):
-        """Task has a new input file - perform input validation."""
-        return dict(status="", warnings=[], errors=[])
-
     def execute_task(self):
         """Run an analysis task."""
-        return dict(status="", warnings=[], errors=[])
+        # get data_type param from config.yml
+        data_type = self.get_config().get("data_type")
+
+        result = AnalysisRunner._call_analysis(data_type, self._task_dir)
+
+        return result
 
     def validate_config(self, config):
         """
@@ -36,13 +41,12 @@ class AnalysisRunner(TaskRunner):
         status = dict(warnings=[], errors=[])
 
         def in_cfg(key):
-            key_in_cfg = key in config
-            if not key_in_cfg:
+            if not key in config:
                 status["errors"].append(f"Missing parameter: {key}")
-            return key_in_cfg
+            return key in config
 
         def verify_is_numeric(key):
-            value = config[key]
+            value = config.get(key)
             try:
                 float(value)
             except ValueError:
@@ -69,12 +73,48 @@ class AnalysisRunner(TaskRunner):
             status["errors"].append(f"Parameter adj_method must be one of {adj_methods}.")
         if config["reference_level"] == config["contrast_level"]:
             status["errors"].append("Reference level and contrast level must be different.")
+        if in_cfg("data_type") and config["data_type"] not in ["microarray", "rnaseq"]:
+            status["errors"].append("Parameter data_type must be 'microarray' or 'rnaseq'.")
+
+        if not status.get("errors"):
+            status["status"] = AnalysisRunner._get_analysis_confirmation_msg(config)
 
         return status
 
     def validate_task(self) -> dict:
         """Validates all input files for the task"""
-        return dict(status="", warnings=[], errors=[])
+
+        status = dict(warnings=[], status="", errors=[])
+
+        required_input_filenames = ("counts.tsv", "coldata.tsv", "config.yml")
+
+        # check that all input files are present
+        for filename in required_input_filenames:
+            if filename not in self._input_filenames:
+                status["errors"].append(f"Missing input file: {filename}")
+                return status
+
+        # check that config.yml is valid
+        config = self.get_config()
+        status = self.validate_config(config)
+
+        if status["errors"]:
+            return status
+
+        # check that counts.tsv and coldata.tsv are valid
+        counts = get_tsv_rows(os.path.join(self._task_dir, "counts.tsv"))
+        coldata = get_tsv_rows(os.path.join(self._task_dir, "coldata.tsv"))
+
+        reference_level, contrast_level = config["reference_level"], config["contrast_level"]
+
+        if coldata_rows_error := check_coldata_has_required_columns(coldata):
+            status["errors"].append(coldata_rows_error)
+        elif coldata_levels_error := check_factor_levels(reference_level, contrast_level, coldata):
+            status["errors"].append(coldata_levels_error)
+        elif counts_coldata_mismatch := check_counts_matches_coldata(counts[0], coldata):
+            status["errors"].append(counts_coldata_mismatch)
+
+        return status
 
     @staticmethod
     def _call_analysis(data_type, task_dir):
@@ -96,8 +136,9 @@ class AnalysisRunner(TaskRunner):
         else:
             script_path = os.path.join(rscripts_path, AnalysisRunner.RNASEQ_SCRIPT)
 
-        subprocess.Popen([f"{script_path} {input_dir} {output_dir} 1> {log_path} 2>& 1"],
-                        shell=True)
+        command = [script_path, input_dir, output_dir, "1>", log_path, "2>&1"]
+
+        subprocess.check_call(command, shell=True)
 
     @staticmethod
     def _get_analysis_confirmation_msg(config_params):

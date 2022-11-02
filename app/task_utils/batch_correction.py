@@ -18,10 +18,6 @@ class BatchCorrectionRunner(TaskRunner):
 
     BC_SCRIPT = "batch_correction.r"
 
-    def update_task(self):
-        """Task has a new input file - perform input validation."""
-        return dict(status="", warnings=[], errors=[])
-
     def execute_task(self):
         """"Run a batch correction task"""
         return dict(status="", warnings=[], errors=[])
@@ -149,6 +145,6 @@ class BatchCorrectionRunner(TaskRunner):
             if coldata_row:
                 if not coldata_row[batch_col_index].isnumeric():
                     sample_name = coldata_row[0]
-                    return f"Sample {sample_name} has no batch number in coldata."
+                    return f"Sample '{sample_name}' has no batch number in coldata."
 
         return ""

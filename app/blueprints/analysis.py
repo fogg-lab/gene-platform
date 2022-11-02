@@ -47,18 +47,22 @@ def confirm_analysis_submission():
 
     # Generate config file from form parameters
     params = get_analysis_request_parameters(request.form, data_type)
+
+    # Add data_type to config
+    params["data_type"] = data_type
+
     status = Task.configure(task_id, params)
 
     # Validate config and input files
-    if len(status.get("errors", [])) == 0:
+    if status.get("errors"):
         status = Task.validate_task(task_id)
 
-    if len(status.get("errors", [])) > 0:
+    if status.get("errors"):
         for error in status["errors"]:
             confirmation_message = f"<p>Error: {error}</p>"
         return confirmation_message
 
-    if len(status.get("warnings", [])):
+    if status.get("warnings"):
         for warning in status["warnings"]:
             confirmation_message += f"<p>Warning: {warning}</p>"
 

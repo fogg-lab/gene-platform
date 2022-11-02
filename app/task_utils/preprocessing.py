@@ -14,10 +14,6 @@ class PreprocessingRunner(TaskRunner):
         self.task_type = "preprocessing"
         self._input_filenames = ["config.yml"]
 
-    def update_task(self):
-        """Task has a new input file - perform input validation."""
-        return dict(status="", warnings=[], errors=[])
-
     def execute_task(self):
         """Run a preprocessing task"""
         return dict(status="", warnings=[], errors=[])

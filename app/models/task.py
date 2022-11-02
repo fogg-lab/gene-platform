@@ -1,17 +1,18 @@
 from __future__ import annotations
-from genericpath import isfile
 import os
 import random
 import string
-from typing import List
+from typing import List, Tuple
 from zipfile import ZipFile, ZIP_DEFLATED
 from glob import glob
+from functools import wraps
 from redis import Redis
 from rq import Queue
 from flask import current_app
 from flask_login import current_user
 
 from app.db.db import get_db
+from app.task_utils.task_runner import TaskRunner
 from app.task_utils.analysis import AnalysisRunner
 from app.task_utils.batch_correction import BatchCorrectionRunner
 from app.task_utils.preprocessing import PreprocessingRunner
@@ -20,10 +21,33 @@ from app.task_utils.normalization import NormalizationRunner
 from app.exceptions import TaskNotFound, InvalidTaskType
 
 
+def require_task_id_correct_format(task_method):
+    """Decorator that raises an exception if task_id is not a 16-char long alphanumeric string."""
+    @wraps(task_method)
+
+    def check_task_id(*args, **kwargs):
+        if "task_id" in kwargs:
+            task_id = kwargs["task_id"]
+        elif len(args) == 0:
+            raise ValueError("task_id not found in function arguments")
+        else:
+            task_id = args[0]
+        if not isinstance(task_id, str):
+            raise TypeError("task_id must be a string")
+        if len(task_id) != 16:
+            raise ValueError("task_id must be 16 characters")
+        if not task_id.isalnum():
+            raise ValueError("task_id must be alphanumeric")
+
+    return check_task_id
+
+
 class Task:
     """Models class for preparing and queueing user tasks to run in the background."""
 
     def __init__(self, task_id, user_id, task_type, status, created_at, updated_at):
+        if not task_id.isalnum() or len(task_id) != 16:
+            raise ValueError("task_id must be 16 characters and alphanumeric")
         self.task_id = task_id
         self.user_id = user_id
         self.task_type = task_type
@@ -31,12 +55,11 @@ class Task:
         self.created_at = created_at
         self.updated_at = updated_at
 
+    @require_task_id_correct_format
     @staticmethod
     def get(task_id: str) -> Task:
         """Retrieve user task by id from database"""
         task = None
-        if not isinstance(task_id, str):
-            raise TypeError("task_id must be a string")
         if len(task_id) == 16:
             db = get_db()
             user_id = current_user.id
@@ -45,8 +68,9 @@ class Task:
             ).fetchone()
         return None if task is None else Task(*task)
 
+    @require_task_id_correct_format
     @staticmethod
-    def get_log_update(task_id, last_log_offset=0, full_log=False):
+    def get_log_update(task_id, last_log_offset=0, full_log=False) -> Tuple[str, int]:
         """
         Returns the contents of the log file for a task
         Args:
@@ -61,8 +85,9 @@ class Task:
 
         return log_update
 
+    @require_task_id_correct_format
     @staticmethod
-    def _get_runner(task_id):
+    def _get_runner(task_id) -> TaskRunner:
         """Retrieve runner for a task by id"""
         task_dir = Task._get_dir(task_id)
         task_type = Task._get_type(task_id)
@@ -79,8 +104,9 @@ class Task:
         else:
             raise InvalidTaskType(f"Unrecognized task type: {task_type}")
 
+    @require_task_id_correct_format
     @staticmethod
-    def _get_dir(task_id):
+    def _get_dir(task_id: str) -> str:
         """
         Return absolute path to the directory for a task associated with a user.
         Create the directory if it doesn't exist.
@@ -95,14 +121,15 @@ class Task:
         os.makedirs(task_dir, exist_ok=True)
         return task_dir
 
+    @require_task_id_correct_format
     @staticmethod
-    def _get_type(task_id):
+    def _get_type(task_id) -> str:
         """Get task type by id"""
         task = Task.get(task_id)
         return task.task_type
 
     @staticmethod
-    def get_user_tasks():
+    def get_user_tasks() -> List[Task]:
         """Retrieve all tasks for the current user"""
         user_id = current_user.id
         db = get_db()
@@ -119,8 +146,9 @@ class Task:
         ) for task in tasks]
         return tasks
 
+    @require_task_id_correct_format
     @staticmethod
-    def submit(task_id):
+    def submit(task_id) -> None:
         """Update status of user task to 'ready' and queue it for processing."""
         try:
             Task.get(task_id)
@@ -143,8 +171,9 @@ class Task:
         except TaskNotFound as exc:
             raise TaskNotFound("User task not found, so it could not be submitted.") from exc
 
+    @require_task_id_correct_format
     @staticmethod
-    def create(task_type, status="pending"):
+    def create(task_type, status="pending") -> Task:
         """
         Add a task to the database.
         Args:
@@ -162,8 +191,9 @@ class Task:
         db.commit()
         return new_task_id
 
+    @require_task_id_correct_format
     @staticmethod
-    def delete(task_id):
+    def delete(task_id) -> None:
         """Delete task from db and remove task directory"""
         try:
             runner = Task._get_runner(task_id)
@@ -178,8 +208,9 @@ class Task:
         )
         db.commit()
 
+    @require_task_id_correct_format
     @staticmethod
-    def delete_input_file(task_id, filename):
+    def delete_input_file(task_id, filename) -> None:
         """
         Remove an input file for a task.
         Args:
@@ -191,21 +222,23 @@ class Task:
         if os.path.isfile(input_file_path):
             os.remove(input_file_path)
 
+    @require_task_id_correct_format
     @staticmethod
-    def list_input_files(task_id):
+    def list_input_files(task_id) -> List[str]:
         """
         List base filenames of all input files for a task.
         Args:
             task_id (str): The task id.
         Returns:
-            list[str]: List of base filenames.
+            List[str]: List of base filenames.
         """
         runner = Task._get_runner(task_id)
         input_file_basenames = runner.list_input_files()
         return input_file_basenames
 
+    @require_task_id_correct_format
     @staticmethod
-    def get_config(task_id):
+    def get_config(task_id) -> dict:
         """
         Get task configuration.
         Args:
@@ -217,8 +250,9 @@ class Task:
         config = runner.get_config()
         return config
 
+    @require_task_id_correct_format
     @staticmethod
-    def add_input_file(task_id, file_contents, standard_filename, user_filename):
+    def add_input_file(task_id, file_contents, standard_filename, user_filename) -> dict:
         """
         Saves uploaded file for a task and perform input validation
         Args:
@@ -239,6 +273,7 @@ class Task:
             redis_db.hset(f"{task_id}_input_files", standard_filename, user_filename)
         return status
 
+    @require_task_id_correct_format
     @staticmethod
     def configure(task_id, config) -> dict:
         """
@@ -255,8 +290,9 @@ class Task:
             runner.save_config(config)
         return status
 
+    @require_task_id_correct_format
     @staticmethod
-    def validate_task(task_id):
+    def validate_task(task_id) -> dict:
         """
         Validate task input files, including the config file.
         Args:
@@ -268,42 +304,40 @@ class Task:
         status = runner.validate_task()
         return status
 
+    @require_task_id_correct_format
     @staticmethod
-    def __execute_task(task_id):
+    def __execute_task(task_id) -> None:
         """Begin execution of a task."""
         # Get task runner
         runner = Task._get_runner
-        # Notify task started
-        Task.__notify_task_started(task_id)
+        # Update task status to started
+        Task._update_task_status(task_id, "started")
         # Run task
         status_msg = runner.execute_task()
-        # Notify task completed
-        Task.__notify_task_completed(task_id, status_msg)
+        status = "completed" if status_msg and "errors" not in status_msg else "failed"
+        Task._update_task_status(task_id, status)
 
+    @require_task_id_correct_format
     @staticmethod
-    def __notify_task_started(task_id):
+    def _update_task_status(task_id, status) -> None:
         """Update task status to 'Started'"""
         db = get_db()
-        db.execute(
-            "UPDATE task SET status = 'Started' WHERE id = ?",
-            (task_id,)
-        )
+        db.execute("UPDATE task SET status = ? WHERE id = ?", (status, task_id))
         db.commit()
 
+    @require_task_id_correct_format
     @staticmethod
-    def __notify_task_completed(task_id, status_msg):
-        """Update task status to 'Completed'"""
+    def get_status(task_id) -> str:
+        """Get status of a task."""
         db = get_db()
-        if len(status_msg) > 0:
-            status_msg = f"Completed: {status_msg}"
-        else:
-            status_msg = "Completed"
-        db.execute(
-            f"UPDATE task SET status = '{status_msg}' WHERE task_id = ?",
+        status = db.execute(
+            "SELECT status FROM task WHERE id = ?",
             (task_id,)
-        )
-        db.commit()
+        ).fetchone()[0]
+        status = "" if status is None else status
+        return status
 
+    @require_task_id_correct_format
     @staticmethod
     def create_task_zip(task_id) -> str:
         """Creates a zip file of task output given a task id and returns the filepath."""
@@ -336,6 +370,7 @@ class Task:
 
         return zip_path
 
+    @require_task_id_correct_format
     @staticmethod
     def get_output_filepath(task_id, standard_filename) -> str:
         """
@@ -350,6 +385,7 @@ class Task:
         output_filepath = runner.get_output_filepath(standard_filename)
         return output_filepath
 
+    @require_task_id_correct_format
     @staticmethod
     def get_all_output_filepaths(task_id) -> List[str]:
         """

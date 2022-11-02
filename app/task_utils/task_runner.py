@@ -18,19 +18,17 @@ class TaskRunner(ABC):
         self._input_filenames = None
 
     @abstractmethod
-    def update_task(self) -> dict:
-        pass
-
-    @abstractmethod
     def execute_task(self) -> dict:
         pass
 
     @abstractmethod
     def validate_config(self, config) -> dict:
+        """Validates config file (implemented in child classes)."""
         pass
 
     @abstractmethod
     def validate_task(self) -> dict:
+        """Validates task input - config and uploaded files (implemented in child classes)."""
         pass
 
     def get_output_filepath(self, standard_filename) -> str:
@@ -65,7 +63,7 @@ class TaskRunner(ABC):
             return yaml.safe_load(cfg_file)
 
     def save_config(self, config):
-        # save config parameters to config.yml file
+        """Saves config parameters to a config.yml file."""
         config_path = os.path.join(self._task_dir, "input", "config.yml")
         with open(config_path, "w", encoding="utf-8") as cfg_file:
             yaml.dump(config, cfg_file)
