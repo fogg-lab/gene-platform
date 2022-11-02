@@ -16,7 +16,7 @@ data_path <- args[1]
 output_dir <- args[2]
 corr_method <- args[3]
 
-output_file <- paste0(output_dir, "/", corr_method, ".pdf")
+output_file <- paste0(output_dir, "/", corr_method, ".png")
 
 # read the data
 cts <- read_tsv(data_path, col_types=cols())
@@ -93,7 +93,7 @@ corrplot2 <- function(data,
     )
 }
 
-pdf(file = output_file, width=plot_size, height=plot_size)
+png(file = output_file, width=plot_size, height=plot_size)
 
 corrplot2(
   data = cts,
