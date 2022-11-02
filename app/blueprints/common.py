@@ -79,7 +79,7 @@ def tasks():
         task_data = {}
         task_data["task_id"] = task.task_id
         task_data['task_type'] = task.task_type
-        task_data['status'] = task.task_type
+        task_data['status'] = task.status
         task_data['created_at'] = task.created_at
         task_data['updated_at'] = task.updated_at
 
@@ -90,12 +90,14 @@ def tasks():
     return render_template("tasks.html", title="Tasks", user_tasks=result)
 
 
-@require_valid_task_id
-@common_bp.route("/download-task-output", methods=["POST"])
-def get_task_output():
+@common_bp.route("/download-task-output/<task_id>")
+def get_task_output(task_id):
     """Return a compressed zip file of the task output to the client."""
 
-    task_id = request.args.get("task_id")
+
+    if Task.get(task_id) is None:
+        err_msg = f"Invalid task ID: {task_id}" if task_id else "No task ID provided"
+        return err_msg, 204
 
     zip_out_path = Task.create_task_zip(task_id)
 
@@ -104,5 +106,8 @@ def get_task_output():
 
     out_dir = Path(zip_out_path).parent
     out_filename = Path(zip_out_path).name
+
+    print(out_dir)
+    print(out_filename)
 
     return send_from_directory(out_dir, out_filename, as_attachment=True)

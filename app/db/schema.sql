@@ -1,4 +1,3 @@
-
 CREATE TABLE user (
   id TEXT PRIMARY KEY,
   name TEXT,
@@ -8,7 +7,6 @@ CREATE TABLE user (
 );
 
 -- separator --
-
 CREATE TABLE task (
   id TEXT NOT NULL,
   user_id TEXT NOT NULL,
@@ -21,7 +19,6 @@ CREATE TABLE task (
 );
 
 -- separator --
-
 CREATE TRIGGER [UpdateLastTime]
     AFTER UPDATE
     ON task
@@ -30,3 +27,10 @@ CREATE TRIGGER [UpdateLastTime]
 BEGIN
     UPDATE task SET updated_at=CURRENT_TIMESTAMP WHERE id=OLD.id;
 END;
+
+-- separator -- 
+INSERT INTO user (id, name, email, is_guest) VALUES('guest1', 'John', 'email@domain.com', 1);
+-- separator --
+INSERT INTO task (id, user_id, task_type, status) VALUES('abcdefg123456789', 'guest1', 'analysis', 'done');
+-- separator --
+INSERT INTO task (id, user_id, task_type, status) VALUES('abcdefg123456769', 'guest1', 'hello', 'inprogress');

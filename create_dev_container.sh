@@ -10,7 +10,8 @@ sudo singularity build --sandbox dev_container/ image.sif
 sudo singularity exec --writable dev_container/ bash -c \
 "curl -fsSL https://code-server.dev/install.sh | sh; \
 ln -s /usr/local/bin/pip /usr/bin/pip3.8; \
-pip install jupyterlab;"
+pip install jupyterlab; \
+pip install icecream;"
 
 ###############################################################################
 # Using the development container

@@ -12,11 +12,25 @@
     </tr>
     {% for row in user_tasks %}
     <tr>
-      <td>{{ row['job_type']|tojson|safe }}</td>
+      <td>{{ row['task_type']|tojson|safe }}</td>
       <td>{{ row['status'] }}</td>
       <td>{{ row['created_at'] }}</td>
       <td>{{ row['updated_at'] }}</td>
+      <td>
+        <form>
+          <a href="{{ url_for('common_bp.get_task_output', task_id=row['task_id']) }}">Download results</a>
+          <!-- <button onclick="goto('{{ url_for('common_bp.get_task_output', task_id=row['task_id']) }}')">Get Results</button> -->
+        </form>
+      </td>
     </tr>
 {% endfor %}
 
 {% endblock %}
+
+<!-- http://localhost:8000/download-task-output?task_id=abcdefg123456789?results=results -->
+<!-- http://localhost:8000/download-task-output?task_id= -->
+<!-- http://localhost:8000/download-task-output? -->
+
+<!-- [<app.models.task.Task object at 0x7f086ea7bb80>, <app.models.task.Task object at 0x7f086ea92a90>] -->
+
+  <!-- <button onclick="goto('/download-task-output?task_id=abcdefg123456789')">Get Results</button> -->

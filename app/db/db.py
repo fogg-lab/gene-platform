@@ -33,7 +33,6 @@ def init_db():
     """Initialize the database."""
 
     g.db = get_db()
-
     if g.db is None:
         db_dir_path = Path(os.path.abspath(__file__)).parent
         db_path = db_dir_path / "userdata.db"
@@ -42,25 +41,14 @@ def init_db():
         with open(schema_path, 'r') as sql_file:
             sql_script = sql_file.read()
 
-        user_table_sql, task_table_sql, task_update_trigger = sql_script.split("-- separator --")
-
         g.db = sqlite3.connect(
             db_path, detect_types=sqlite3.PARSE_DECLTYPES
         )
         g.db.row_factory = sqlite3.Row
-
-        cursor = g.db.cursor()
-
-        cursor.execute(user_table_sql)
-        g.db.commit()
-
-        cursor = g.db.cursor()
-        cursor.execute(task_table_sql)
-        g.db.commit()
-
-        cursor = g.db.cursor()
-        cursor.execute(task_update_trigger)
-        g.db.commit()
+        for sql_statement in sql_script.split("-- separator --"):
+            cursor = g.db.cursor()
+            cursor.execute(sql_statement)
+            g.db.commit()
 
         g.db.close()
 
@@ -74,3 +62,37 @@ def init_app(app):
     """Register database functions with the Flask app."""
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+
+# CREATE TABLE user (
+#   id TEXT PRIMARY KEY,
+#   name TEXT,
+#   email TEXT UNIQUE,
+#   is_guest INTEGER DEFAULT 0,
+#   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+# );
+
+
+
+
+# CREATE TABLE task (
+#   id TEXT NOT NULL,
+#   user_id TEXT NOT NULL,
+#   task_type TEXT NOT NULL,
+#   status TEXT NOT NULL,
+#   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+#   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+#   PRIMARY KEY (id),
+#   FOREIGN KEY (user_id) REFERENCES user(id)
+# );
+
+
+
+
+# CREATE TRIGGER [UpdateLastTime]
+#     AFTER UPDATE
+#     ON task
+#     FOR EACH ROW
+#     WHEN NEW.updated_at < OLD.updated_at    --- this avoid infinite loop
+# BEGIN
+#     UPDATE task SET updated_at=CURRENT_TIMESTAMP WHERE id=OLD.id;
+# END;
