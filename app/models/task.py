@@ -72,9 +72,6 @@ class Task:
             ).fetchone()
         return None if task is None else Task(*task)
 
-# task_params:  ['abcdefg123456789', 'guest1', 'analysis', 'done', datetime.datetime(2022, 11, 2, 21, 19, 1), datetime.datetime(2022, 11, 2, 21, 19, 1)]
-# results: <app.models.task.Task object at 0x7f3db8dd9dc0>
-
     @staticmethod
     @require_task_id_correct_format
     def get_log_update(task_id, last_log_offset=0, full_log=False) -> Tuple[str, int]:
@@ -88,9 +85,9 @@ class Task:
         if last_log_offset == 0:
             full_log = True
         task_runner = Task._get_runner(task_id)
-        log_update = task_runner.get_log_update(last_log_offset, full_log)
+        log_content, last_log_offset = task_runner.get_log_update(last_log_offset, full_log)
 
-        return log_update
+        return log_content, last_log_offset
 
     @staticmethod
     @require_task_id_correct_format
@@ -175,10 +172,8 @@ class Task:
             ).fetchone()[0]
             # queue task
             q = Queue(connection=Redis())
-            q.enqueue(
-                Task.__execute_task,
-                args = (task_id, task_type)
-            )
+            q.enqueue(Task.__execute_task, task_id)
+            ic()
         except TaskNotFound as exc:
             raise TaskNotFound("User task not found, so it could not be submitted.") from exc
 
@@ -275,10 +270,8 @@ class Task:
         Returns:
             dict: status
         """
-        ic()
         runner = Task._get_runner(task_id)
         save_path = runner.add_input_file(file_contents, standard_filename)
-        ic(save_path)
         # Perform input validation
         #status = runner.update_task()
         status=dict()
@@ -321,10 +314,12 @@ class Task:
         return status
 
     @staticmethod
-    @require_task_id_correct_format
+    #@require_task_id_correct_format
     def __execute_task(task_id) -> None:
         """Begin execution of a task."""
         # Get task runner
+        ic()
+        (Path(os.path.abspath(__file__)).parent / "thing.txt").touch()
         runner = Task._get_runner
         # Update task status to started
         Task._update_task_status(task_id, "started")
