@@ -91,7 +91,7 @@ function taskLogReqListener() {
 
 function taskUpdateListener() {
     task_update_text = this.responseText;
-    if ("completed" in toLowerCase(task_update_text)) {
+    if (task_update_text.toLowerCase().includes("completed")) {
         clearInterval(overlay_timer);
         clearInterval(fetch_task_updates);
         overlay_timer = {};
@@ -138,7 +138,6 @@ function getResultsEndpoint() {
 
 function showRuntime() {
     clearInterval(overlay_timer);
-    clearInterval(fetch_task_updates);
     overlay_timer = {};
     seconds_elapsed = 0;
     overlay_div = getOverlay();

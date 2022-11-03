@@ -91,6 +91,6 @@ function get_parameters() {
 
 function get_data_type() {
   datatype_select = document.getElementById("data_type")
-  var selection = datatype_select.options[datatype_select.selectedIndex].text
+  var selection = datatype_select.options[datatype_select.selectedIndex].value
   return selection
 }
