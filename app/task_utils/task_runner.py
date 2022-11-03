@@ -6,6 +6,7 @@ from glob import glob
 from redis import Redis
 import yaml
 from icecream import ic
+from typing import Tuple
 
 from app.exceptions import InvalidTaskInputFile
 
@@ -69,14 +70,13 @@ class TaskRunner(ABC):
         with open(config_path, "w", encoding="utf-8") as cfg_file:
             yaml.dump(config, cfg_file)
 
-    def get_log_update(self, last_log_offset, full_log=False):
+    def get_log_update(self, last_log_offset: int, full_log=False) -> Tuple[str, int]:
         """Returns the contents of the log file for a task since the last update"""
         log_file_path = os.path.join(self._task_dir, ".log")
         log_content = ""
         if os.path.isfile(log_file_path):
             with open(log_file_path, "r", encoding="utf-8") as log_file:
                 full_log_content = log_file.read()
-                ic(full_log_content)
                 full_log_length = len(full_log_content)
 
                 if full_log_length > last_log_offset and not full_log:
@@ -101,12 +101,10 @@ class TaskRunner(ABC):
                 f"Input file must be one of {self._input_filenames}")
 
         save_path = os.path.join(self._task_dir, "input", standard_fname)
-        ic(save_path)
         if os.path.exists(save_path):
             os.remove(save_path)
 
         lines = file_contents.split(b'\n')
-        ic(len(lines))
 
         with open(save_path, "w+", encoding="UTF-8") as user_file:
             for line in lines:
