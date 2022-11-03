@@ -22,8 +22,6 @@ def require_valid_task_id(task_route):
         task_id = request.form.get("task_id")
         if not task_id:
             task_id = request.args.get("task_id")
-        ic()
-        ic(task_id)
 
         if Task.get(task_id) is None:
             err_msg = f"Invalid task ID: {task_id}" if task_id else "No task ID provided"
@@ -42,9 +40,6 @@ def upload():
     user_fname = request.args.get("user_filename")
     standard_fname = request.headers.get('X_FILENAME')
     task_id = request.args.get("task_id")
-
-    ic(user_fname)
-    ic(task_id)
 
     result = Task.add_input_file(task_id, request.data, standard_fname, user_fname)
 
@@ -68,15 +63,12 @@ def cancelupload():
 @common_bp.route("/get-progress")
 def get_console_output():
     """Returns status and updated log of a running task."""
-    ic()
 
     last_log_offset = 0#request.args.get("last_log_offset")
 
     task_id = request.args.get("task_id")
 
-    log_content = Task.get_log_update(task_id, last_log_offset)
-
-    
+    log_content, last_log_offset = Task.get_log_update(task_id, last_log_offset)
 
     return Response(log_content, mimetype='text/plain')
 

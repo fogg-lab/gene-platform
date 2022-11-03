@@ -52,10 +52,6 @@ def confirm_analysis_submission():
     # Add data_type to config
     params["data_type"] = data_type
 
-    ic()
-    ic(data_type)
-    ic(task_id)
-
     status = Task.configure(task_id, params)
 
     # Validate config and input files
