@@ -1,7 +1,8 @@
 import os
 import subprocess
 from flask import current_app
-from icecream import ic
+from redis import Redis
+from rq import Queue
 
 from app.helper import get_tsv_rows
 from app.task_utils.task_runner import TaskRunner
@@ -137,9 +138,9 @@ class AnalysisRunner(TaskRunner):
         else:
             script_path = os.path.join(rscripts_path, AnalysisRunner.RNASEQ_SCRIPT)
 
-        command = [script_path, input_dir, output_dir, "1>", log_path, "2>&1"]
-
-        subprocess.check_call(command, shell=True)
+        q = Queue(connection=Redis())
+        cmd = f"Rscript {script_path} {input_dir} {output_dir} 1> {log_path} 2>&1"
+        q.enqueue(subprocess.check_call, args=(cmd,), kwargs={"shell": True})
 
     @staticmethod
     def _get_analysis_confirmation_msg(config_params):

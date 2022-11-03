@@ -8,10 +8,8 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from glob import glob
 from functools import wraps
 from redis import Redis
-from rq import Queue
 from flask import current_app
 from flask_login import current_user
-from icecream import ic
 
 from app.db.db import get_db
 from app.task_utils.task_runner import TaskRunner
@@ -170,10 +168,7 @@ class Task:
                 "SELECT task_type FROM task WHERE id = ?",
                 (task_id,)
             ).fetchone()[0]
-            # queue task
-            q = Queue(connection=Redis())
-            q.enqueue(Task.__execute_task, task_id)
-            ic()
+            Task.__execute_task(task_id)
         except TaskNotFound as exc:
             raise TaskNotFound("User task not found, so it could not be submitted.") from exc
 
@@ -314,13 +309,11 @@ class Task:
         return status
 
     @staticmethod
-    #@require_task_id_correct_format
+    @require_task_id_correct_format
     def __execute_task(task_id) -> None:
         """Begin execution of a task."""
         # Get task runner
-        ic()
-        (Path(os.path.abspath(__file__)).parent / "thing.txt").touch()
-        runner = Task._get_runner
+        runner = Task._get_runner(task_id)
         # Update task status to started
         Task._update_task_status(task_id, "started")
         # Run task
