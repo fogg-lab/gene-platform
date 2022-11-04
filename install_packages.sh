@@ -4,6 +4,7 @@ set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 apt -y update
+apt -y upgrade
 
 export TZ=Etc/UTC
 export LC_ALL=C.UTF-8
