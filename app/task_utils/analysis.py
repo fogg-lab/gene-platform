@@ -26,7 +26,6 @@ class AnalysisRunner(TaskRunner):
         """Queue an analysis job."""
         # get data_type param from config.yml
         data_type = self.get_config().get("data_type")
-
         input_dir = os.path.join(self._task_dir, "input")
         output_dir = os.path.join(self._task_dir, "output")
 

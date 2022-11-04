@@ -1,3 +1,4 @@
+import subprocess
 import sqlite3
 from icecream import install
 from flask import Flask
@@ -12,6 +13,9 @@ def init_app():
     """Initialize the app."""
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_pyfile("config.py")
+
+    redis_port = app.config["REDIS_PORT"]
+    subprocess.Popen(["redis-server", "--port", str(redis_port)], shell=True)
 
     sess = Session()
     sess.init_app(app)

@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+REDIS_PORT = os.environ.get("REDIS_PORT", 6379)
+
 ### Authentication ###
 
 # ENABLE_GOOGLE_AUTH enables "Sign in with Google" authentication
