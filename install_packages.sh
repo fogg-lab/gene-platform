@@ -5,6 +5,9 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 apt -y update
 
+export TZ=Etc/UTC
+export LC_ALL=C.UTF-8
+
 apt install -y dirmngr gnupg apt-transport-https ca-certificates \
     software-properties-common libxml2-dev libssl-dev libcurl4-openssl-dev \
     cmake git libfontconfig1-dev xclip libharfbuzz-dev libfribidi-dev \
