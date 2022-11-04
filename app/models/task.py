@@ -3,7 +3,7 @@ import os
 import random
 import string
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from zipfile import ZipFile, ZIP_DEFLATED
 from glob import glob
 from functools import wraps
@@ -231,7 +231,7 @@ class Task:
 
     @staticmethod
     @require_task_id_correct_format
-    def list_input_files(task_id) -> List[str]:
+    def list_input_files(task_id) -> Dict[str, str]:
         """
         List base filenames of all input files for a task.
         Args:

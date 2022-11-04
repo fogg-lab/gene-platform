@@ -1,7 +1,7 @@
 import os
 import shutil
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from glob import glob
 from redis import Redis
 import yaml
@@ -136,18 +136,18 @@ class TaskRunner(ABC):
 
         return save_path
 
-    def list_input_files(self):
+    def list_input_files(self) -> Dict[str, str]:
         """
         List base filenames of all input files for a task.
         Returns:
-            List[str]: List of base filenames.
+            Dict[str, str]: Dictionary of input filenames and their user-specified names.
         """
         redis_db = Redis()
         input_files = {}
         redis_hash_name = f"{self._task_id}_input_files"
         if redis_db.exists(redis_hash_name):
             input_files = redis_db.hgetall(redis_hash_name)
-        return input_files
+        return {k.decode(): v.decode() for k, v in input_files.items()}
 
     def remove_task(self):
         """Remove task directory and associated redis data"""

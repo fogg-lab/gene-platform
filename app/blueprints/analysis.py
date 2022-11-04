@@ -92,11 +92,8 @@ def display_output():
 
     # check here if output.tsv exists and errors.txt doesn't
     unfiltered_output_path = Task.get_output_filepath(task_id, "output.tsv")
-    ic()
-    ic(unfiltered_output_path)
 
     unfiltered_output = helper.get_tsv_rows(unfiltered_output_path)
-    ic(len(unfiltered_output))
     if unfiltered_output is None:
         return "Analysis output file not found.", 204
     elif len(unfiltered_output) == 0:
@@ -109,15 +106,10 @@ def display_output():
         filtered_data = None    # no filter_output.tsv file
     else:
         filtered_output = helper.get_tsv_rows(filter_output_path)
-        ic(len(filtered_output))
         filtered_data = filtered_output[1:]
 
-    ic(unfiltered_output[0])
-    ic(len(unfiltered_data))
-    ic(len(filtered_data))
-
     return render_template("results.html", cols = unfiltered_output[0],
-         data=unfiltered_data, filtered_data=filtered_data)
+         data=unfiltered_data, filtered_data=filtered_data, task_id=task_id)
 
 
 @require_valid_task_id
