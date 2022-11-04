@@ -6,7 +6,7 @@
             <td><a href="/display" class="button">Previous: Display Results</a></td>
         </tr>
     </table>
-    <h2 align="center">Data Visualization</h2>
+    <h3 align="center">Data Visualization</h3>
     <div align="center">
         <select class="data_type">
             <option>Select</option>
@@ -18,31 +18,31 @@
     </div>
     <div align="center">
         <div class="volcano IMG">
-            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_volcano) }}" download="filename">
-                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_volcano) }}" alt="Volcano Plot"
-                    style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_volcano, task_id=task_id) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_volcano, task_id=task_id) }}" alt="Volcano Plot"
+                    style="width: 30%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
             </a>
         </div>
         <div class="f_volcano IMG">
-            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_volcano) }}" download="filename">
-                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_volcano) }}" alt="Filtered Volcano Plot"
-                    style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_volcano, task_id=task_id) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_volcano, task_id=task_id) }}" alt="Filtered Volcano Plot"
+                    style="width: 30%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
             </a>
         </div>
         <div class="v_trend IMG">
-            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_mean_variance) }}" download="filename">
-                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_mean_variance) }}" alt="Mean Variance Trend"
-                    style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_mean_variance, task_id=task_id) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_mean_variance, task_id=task_id) }}" alt="Mean Variance Trend"
+                    style="width: 30%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
             </a>
         </div>
         <div class="f_v_trend IMG">
-            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_mean_variance) }}" download="filename">
-                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_mean_variance) }}" alt="Filtered Mean Variance Trend"
-                    style="width: 60%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_mean_variance, task_id=task_id) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_mean_variance, task_id=task_id) }}" alt="Filtered Mean Variance Trend"
+                    style="width: 30%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
             </a>
         </div>
     </div>
-    <h2 align="center">Description</h2>
+    <h3 align="center">Description</h3>
     <div class="desc">
         <p>Up: l2fc > 0.6 and p-value < 0.0e</p>
         <p>Down: l2fc < -0.6 and p-value < 0.05</p>

@@ -30,7 +30,3 @@ END;
 
 -- separator -- 
 INSERT INTO user (id, name, email, is_guest) VALUES('guest1', 'John', 'email@domain.com', 1);
--- separator --
-INSERT INTO task (id, user_id, task_type, status) VALUES('abcdefg123456789', 'guest1', 'analysis', 'done');
--- separator --
-INSERT INTO task (id, user_id, task_type, status) VALUES('abcdefg123456769', 'guest1', 'hello', 'inprogress');

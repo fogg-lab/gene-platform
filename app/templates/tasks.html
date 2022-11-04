@@ -12,7 +12,7 @@
     </tr>
     {% for row in user_tasks %}
     <tr>
-      <td>{{ row['task_type']|tojson|safe }}</td>
+      <td>{{ row['task_type'] }}</td>
       <td>{{ row['status'] }}</td>
       <td>{{ row['created_at'] }}</td>
       <td>{{ row['updated_at'] }}</td>

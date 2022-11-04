@@ -120,9 +120,10 @@ def plots():
     task_id = request.args.get("task_id")
 
     task_output_filepaths = Task.get_all_output_filepaths(task_id)
-    plot_filenames = [Path(fp).name for fp in task_output_filepaths if Path(fp).suffix == ".png"]
+    out_plots = [Path(fp).name for fp in task_output_filepaths if Path(fp).suffix == ".png"]
 
-    for filename in plot_filenames:
+    plot_filenames = {}
+    for filename in out_plots:
         if "mean" in filename and "unfiltered" in filename:
             plot_filenames["unfiltered_mean_variance"] = filename
         elif "mean" in filename:
@@ -132,7 +133,7 @@ def plots():
         elif "filt" in filename:
             plot_filenames["filtered_volcano"] = filename
 
-    return render_template("plots.html", plot_filenames=plot_filenames)
+    return render_template("plots.html", plot_filenames=plot_filenames, task_id=task_id)
 
 
 @require_valid_task_id

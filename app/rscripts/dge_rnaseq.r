@@ -39,7 +39,7 @@ mean_difference = function(fit, name){
                    ylab = "Log2 fold change",
                    ggtheme = ggplot2::theme_minimal()
                    )
-  ggsave(mean_diff_rna_seq_path,  width = 20, height = 20, units = "cm")
+  ggsave(mean_diff_rna_seq_path,  width=10, height=10, units="cm", bg="white")
 }
 
 volcano_plot = function(fit, name){
@@ -58,7 +58,7 @@ volcano_plot = function(fit, name){
     scale_color_manual(values=c("blue", "black", "red")) +
     geom_vline(xintercept=c(-0.6, 0.6), col="red") +
     geom_hline(yintercept=-log10(0.05), col="red")
-  ggsave(rna_volcano_path, width = 20, height = 20, units = "cm")
+  ggsave(rna_volcano_path,  width=10, height=10, units="cm", bg="white")
 }
 
 n_cores <- detectCores() - 2

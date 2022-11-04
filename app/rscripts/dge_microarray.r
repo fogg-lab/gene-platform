@@ -16,7 +16,7 @@ filter_filepath <- file.path(input_dir, "filter.txt")
 mean_variance_trend = function(fit, filename){
   micro_array_mean_variance_trend_path <- file.path(output_dir, filename)
   options(bitmapType='cairo')
-  png(micro_array_mean_variance_trend_path)
+  png(micro_array_mean_variance_trend_path, height=15, width=15, units="cm", res=300, bg="white")
   plot<- plotSA(fit, xlab="Average log-expression", ylab="log2(sigma)", zero.weights=FALSE, pch=16, cex=0.2)
   dev.off()
 }
@@ -37,7 +37,7 @@ volcano_plot = function(fit, filename){
     scale_color_manual(values=c("blue", "black", "red")) +
     geom_vline(xintercept=c(-0.6, 0.6), col="red") +
     geom_hline(yintercept=-log10(0.05), col="red")
-  ggsave(micro_array_volcano_path,  width = 20, height = 20, units = "cm")
+  ggsave(micro_array_volcano_path, width=15, height=15, units="cm", dpi=300, bg="white")
 }
 
 
