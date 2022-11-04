@@ -2,17 +2,17 @@
 
 import os
 import csv
-from typing import TypedDict
+from typing import TypedDict, List
 
 
-def get_tsv_rows(filepath):
+def get_tsv_rows(filepath: str) -> List[List[str]]:
     """
     Returns the rows of the user input file as a 2d array
     If the file does not exist, returns None
     Args:
         filepath (string): Path to a .tsv file.
     Returns:
-        list[list[str]]: Contents of the file as a 2d array.
+        List[List[str]]: Contents of the file as a 2d array.
     """
 
     rows = None
