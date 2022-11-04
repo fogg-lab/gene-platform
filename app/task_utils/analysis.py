@@ -1,7 +1,7 @@
 import os.path
-from flask import current_app
 from redis import Redis
 from rq import Queue
+from flask import current_app
 
 from app.helper import get_tsv_rows, get_analysis_confirmation_msg, StatusDict
 from app.task_utils.task_runner import TaskRunner
@@ -22,8 +22,11 @@ class AnalysisRunner(TaskRunner):
     MICROARRAY_SCRIPT = "dge_microarray.r"
     RNASEQ_SCRIPT = "dge_rnaseq.r"
 
-    def execute_task(self) -> dict:
+    def execute_task(self) -> StatusDict:
         """Queue an analysis job."""
+
+        status = StatusDict(status="", errors=[])
+
         # get data_type param from config.yml
         data_type = self.get_config().get("data_type")
         input_dir = os.path.join(self._task_dir, "input")
@@ -37,11 +40,13 @@ class AnalysisRunner(TaskRunner):
         else:
             script_path = os.path.join(rscripts_path, AnalysisRunner.RNASEQ_SCRIPT)
 
-        q = Queue(connection=Redis())
-        cmd = f"Rscript {script_path} {input_dir} {output_dir} >>{log_path} 2>&1"
-        q.enqueue(execute_job_async, args=(self._task_id, log_path, self.task_type, cmd))
+        cmd = f"Rscript {script_path} {input_dir} {output_dir}"
 
-        return {}
+        if not status.get("errors"):
+            q = Queue(connection=Redis())
+            q.enqueue(execute_job_async, args=(self._task_id, log_path, self.task_type, cmd))
+
+        return status
 
     def validate_config(self, config) -> StatusDict:
         """
@@ -101,7 +106,7 @@ class AnalysisRunner(TaskRunner):
         status["status"] = get_analysis_confirmation_msg(config)
         return status
 
-    def validate_task(self) -> dict:
+    def validate_task(self) -> StatusDict:
         """Validates all input files for the task"""
 
         status = StatusDict(status="", errors=[])

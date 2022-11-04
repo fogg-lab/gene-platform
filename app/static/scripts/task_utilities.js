@@ -123,6 +123,16 @@ function loadResults() {
 }
 
 
+function getTaskID() {
+    let taskIDElement = document.getElementById("taskID");
+    let taskID = "";
+    if (taskIDElement) {
+        taskID = taskIDElement.value;
+    }
+    return taskID;
+}
+
+
 function getTaskUpdate(log_offset=0) {
     var taskLogReq = new XMLHttpRequest();
     console_log = document.getElementById("console_log");
@@ -145,10 +155,29 @@ function startTaskUpdateRepeater() {
 }
 
 
-function getTaskID() {
-    task_id = document.getElementById("task_id").value;
-    console.log(task_id)
-    return task_id;
+function sort_tasks(method, reverse) {
+    console.log(method)
+    // get all tasks into an array of js objects
+    var tasks_array = [];
+    var table = document.getElementById("tasks-table")
+    for (var i = 1; i < table.rows.length; i++) { // skip first row
+        task = {
+            "type":    table.rows[i].cells[0].innerHTML,
+            "status":  table.rows[i].cells[1].innerHTML,
+            "created": table.rows[i].cells[2].innerHTML,
+            "updated": table.rows[i].cells[3].innerHTML
+        }
+        tasks_array.push(task)
+    }
+    console.log(tasks_array[0][method])
+    tasks_array.sort(function(a, b) {
+        if (reverse) {
+            return b[method] > (a[method]) 
+        } else {
+            return a[method] > (b[method])
+        }
+    })
+    console.log(tasks_array)
 }
 
 
@@ -237,4 +266,14 @@ function getOverlay() {
 function submitReqListener() {
     var confirmation_text = this.responseText;
     confirmSubmission(confirmation_text);
+}
+
+window.onload = function() {
+    var ids = ["type", "status", "created", "updated"]
+    for (id of ids) {
+        var dom_node = document.getElementById(id)
+        dom_node.addEventListener("click", function() {
+            sort_tasks(id, false)
+        })
+    }
 }

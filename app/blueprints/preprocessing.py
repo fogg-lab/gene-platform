@@ -45,19 +45,3 @@ def confirm_preprocessing_submission():
     confirmation_message = Task.configure(task_id, config)
 
     return confirmation_message
-
-
-@require_valid_task_id
-@preprocessing_bp.route("/get-preprocessed-data")
-def get_preprocessed_data():
-    """Return preprocessed data for user to download"""
-
-    task_id = request.args.get("task_id")
-
-    processed_data = Task.create_task_zip(task_id)
-    processed_zip_path = Path(processed_data)
-
-    output_dir = processed_zip_path.parent
-    output_fname = processed_zip_path.name
-
-    return send_from_directory(output_dir, output_fname)

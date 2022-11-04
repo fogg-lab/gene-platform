@@ -634,3 +634,7 @@ span.organizational-logo {
     padding: 5px 10px;
     border: none
 }
+
+.table-header {
+	cursor: pointer;
+}

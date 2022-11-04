@@ -3,24 +3,33 @@ import subprocess
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from redis import Redis
+from rq import Queue
 from flask import current_app
 
 from app.helper import get_tsv_rows, StatusDict
 from app.task_utils.task_runner import TaskRunner
+from app.task_utils.execute_job_async import execute_job_async
 
 
 class BatchCorrectionRunner(TaskRunner):
     """Class for preparing and running a batch correction task."""
     def __init__(self, task_id, task_dir):
         super().__init__(task_id, task_dir)
-        self.task_type = "analysis"
+        self.task_type = "batch"
         self._input_filenames = ["counts.tsv", "coldata.tsv", "config.yml"]
 
     BC_SCRIPT = "batch_correction.r"
 
     def execute_task(self) -> StatusDict:
-        """"Run a batch correction task"""
-        return StatusDict(status="", errors=[])
+        """Queue a batch correction job."""
+        input_dir = Path(self._task_dir) / "input"
+        cfg = self.get_config()
+        data_type = cfg.get("data_type")
+        reference_level = cfg.get("reference_level")
+        contrast_level = cfg.get("contrast_level")
+        return BatchCorrectionRunner._call_batch_correction(self._task_id, input_dir, data_type,
+                                                            reference_level, contrast_level)
 
     def validate_config(self, config) -> StatusDict:
         """Ensures config parameters are valid for the task"""
@@ -30,22 +39,29 @@ class BatchCorrectionRunner(TaskRunner):
         """Validates all input files for the task"""
         return StatusDict(status="", errors=[])
 
-    def _call_batch_correction(self, directory, data_type, reference_level, contrast_level):
+    @staticmethod
+    def _call_batch_correction(task_id, directory, data_type, reference_level,
+                               contrast_level) -> StatusDict:
         """
         Calls the R script to run batch correction.
         Args:
-            directory (string): Absolute path to directory containing input files.
-            data_type (string): Type of expression data, either "microarray" or "rnaseq".
-            reference_level (string): Reference level for the samples, i.e "normal".
-            contrast_level (string): Contrast level for the samples, i.e "tumor".
+            task_id (str): The task id.
+            directory (str): Absolute path to directory containing input files.
+            data_type (str): Type of expression data, either "microarray" or "rnaseq".
+            reference_level (str): Reference level for the samples, i.e "normal".
+            contrast_level (str): Contrast level for the samples, i.e "tumor".
+        Returns:
+            StatusDict: A status message and errors, if any.
         """
+
+        status = StatusDict(status="", errors=[])
 
         # Get paths to the counts and coldata files
         counts_path = os.path.join(directory, "counts.tsv")
         coldata_path = os.path.join(directory, "coldata.tsv")
 
         # Read in counts and coldata dataframes
-        counts_cols = list(pd.read_csv(counts_path, nrows =1, sep="\t"))
+        counts_cols = list(pd.read_csv(counts_path, nrows=1, sep="\t"))
         counts = pd.read_csv(counts_path, usecols =
             [i for i in counts_cols if i.lower() != "entrez_gene_id"], sep='\t')
         counts.rename(columns=lambda x: "symbol" if "symbol" in x.lower() else x, inplace=True)
@@ -77,8 +93,13 @@ class BatchCorrectionRunner(TaskRunner):
         # Call the batch correction R script
         script = os.path.join(current_app.config["RSCRIPTS_PATH"], BatchCorrectionRunner.BC_SCRIPT)
         log_path = os.path.join(directory, ".log")
-        cmd = f"{script} {counts_in} {coldata_in} {directory} {data_type} >>{log_path} 2>&1"
-        subprocess.check_call(cmd, shell=True)
+        cmd = f"{script} {counts_in} {coldata_in} {directory} {data_type}"
+
+        if not status.get("errors"):
+            q = Queue(connection=Redis())
+            q.enqueue(execute_job_async, args=(task_id, log_path, "batch correction", cmd))
+
+        return status
 
     def check_bc_input_files(self):
         """

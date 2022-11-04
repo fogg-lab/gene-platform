@@ -10,6 +10,7 @@ from functools import wraps
 from redis import Redis
 from flask import current_app
 from flask_login import current_user
+from datetime import datetime
 
 from app.db.db import get_db
 from app.task_utils.task_runner import TaskRunner
@@ -54,8 +55,9 @@ class Task:
         self.user_id = user_id
         self.task_type = task_type
         self.status = status
-        self.created_at = created_at
-        self.updated_at = updated_at
+        self.created_at = datetime.strftime(created_at, "%b %d %-I:%M %p")
+        self.updated_at = datetime.strftime(updated_at, "%b %d %-I:%M %p")
+
 
     @staticmethod
     @require_task_id_correct_format
@@ -97,7 +99,7 @@ class Task:
         task_type = Task._get_type(task_id)
         if task_type == "analysis":
             return AnalysisRunner(task_id, task_dir)
-        elif task_type == "batch_correction":
+        elif task_type == "batch correction":
             return BatchCorrectionRunner(task_id, task_dir)
         elif task_type == "correlation":
             return CorrelationRunner(task_id, task_dir)
@@ -345,7 +347,7 @@ class Task:
 
         task_result_names = {
             "correlation": "correlation_plots",
-            "batch_correction": "batch_corrected_counts",
+            "batch correction": "batch_corrected_counts",
             "normalization": "normalized_counts",
             "preprocessing": "preprocessed_data",
             "analysis": "analysis_results"

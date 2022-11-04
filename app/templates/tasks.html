@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
 
+{% block scripts %}
+<script src="{{ url_for('static',filename='scripts/task_utilities.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 
-<table>
+<table id="tasks-table">
     <tr>
-      <th>Task Type</th>
-      <th>Status</th>
-      <th>Created At</th>
-      <th>Updated At</th>
-      <th>Results</th>
+      <th class="table-header" id="type">Task Type</th>
+      <th class="table-header" id="status">Status</th>
+      <th class="table-header" id="created">Created At</th>
+      <th class="table-header" id="updated">Updated At</th>
+      <th id="results">Results</th>
     </tr>
     {% for row in user_tasks %}
     <tr>
@@ -19,18 +23,9 @@
       <td>
         <form>
           <a href="{{ url_for('common_bp.get_task_output', task_id=row['task_id']) }}">Download results</a>
-          <!-- <button onclick="goto('{{ url_for('common_bp.get_task_output', task_id=row['task_id']) }}')">Get Results</button> -->
         </form>
       </td>
     </tr>
-{% endfor %}
+    {% endfor %}
 
 {% endblock %}
-
-<!-- http://localhost:8000/download-task-output?task_id=abcdefg123456789?results=results -->
-<!-- http://localhost:8000/download-task-output?task_id= -->
-<!-- http://localhost:8000/download-task-output? -->
-
-<!-- [<app.models.task.Task object at 0x7f086ea7bb80>, <app.models.task.Task object at 0x7f086ea92a90>] -->
-
-  <!-- <button onclick="goto('/download-task-output?task_id=abcdefg123456789')">Get Results</button> -->

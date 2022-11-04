@@ -7,6 +7,17 @@
 		<link rel="stylesheet" href="https://use.typekit.net/mco6ajw.css">
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
 	</head>
+    <script>
+        function toggleHamburger() {
+            var x = document.getElementById("topnavbar");
+            if (x.className === "topnav") {
+                x.className += " responsive";
+            } else {
+                x.className = "topnav";
+            }
+        }
+    </script>
+    {% block scripts %}{% endblock %}
 	<body>
 		<div class="topnav" id="topnavbar">
             <span class="organizational-logo">GENE Platform</span>
@@ -59,26 +70,6 @@
         {% endif %}
 
         <input type="hidden" id="taskID" name="taskID" value={{ task_id }}>
-        <script>
-            function getTaskID() {
-                let taskIDElement = document.getElementById("taskID");
-                let taskID = "";
-                if (taskIDElement) {
-                    taskID = taskIDElement.value;
-                }
-                return taskID;
-            }
-        </script>
         {% block content %}{% endblock %}
-        <script>
-            function toggleHamburger() {
-                var x = document.getElementById("topnavbar");
-                if (x.className === "topnav") {
-                    x.className += " responsive";
-                } else {
-                    x.className = "topnav";
-                }
-            }
-        </script>
     </body>
 </html>
