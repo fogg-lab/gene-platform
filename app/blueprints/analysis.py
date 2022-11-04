@@ -66,10 +66,6 @@ def confirm_analysis_submission():
             confirmation_message = f"<p>Error: {error}</p>"
         return confirmation_message
 
-    if status.get("warnings"):
-        for warning in status["warnings"]:
-            confirmation_message += f"<p>Warning: {warning}</p>"
-
     analysis_formula = status.get("status", "")
     confirmation_message += f"<p>{analysis_formula}</p>"
 

@@ -1,12 +1,10 @@
 import os
 import shutil
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple
 from glob import glob
 from redis import Redis
 import yaml
-from icecream import ic
-from typing import Tuple
 
 from app.exceptions import InvalidTaskInputFile
 
@@ -70,7 +68,7 @@ class TaskRunner(ABC):
         with open(config_path, "w", encoding="utf-8") as cfg_file:
             yaml.dump(config, cfg_file)
 
-    def get_log_update(self, last_log_offset: int, full_log=False) -> Tuple[str, int]:
+    def get_log_update(self, last_log_offset=0, full_log=False) -> Tuple[str, int]:
         """Returns the contents of the log file for a task since the last update"""
         log_file_path = os.path.join(self._task_dir, ".log")
         log_content = ""
@@ -78,16 +76,42 @@ class TaskRunner(ABC):
             with open(log_file_path, "r", encoding="utf-8") as log_file:
                 full_log_content = log_file.read()
                 full_log_length = len(full_log_content)
-
-                if full_log_length > last_log_offset and not full_log:
-                    # Limit returned log content to 100000 characters
-                    offset = max(0, full_log_length - 100000)
+                log_content_max_len = 100000
+                if (full_log_length == last_log_offset) and not full_log:
+                    # No new log content since last update
+                    log_content=""
+                elif (full_log_length > last_log_offset) and not full_log:
+                    # Return just the new part of the log since the last request
+                    offset = max(0, full_log_length - log_content_max_len)
                     offset = max(last_log_offset, offset)
                     log_content = full_log_content[offset:]
                 else:
-                    log_content = full_log_content[-100000:]
+                    # Return full log content
+                    log_content = full_log_content[-log_content_max_len:]
 
                 last_log_offset = full_log_length
+
+        # Check first 20 lines for extraneous warnings and remove them
+        extraneous_output_substrings = [
+            "During startup - Warning messages",
+            "Setting LC_",
+            "System has not been booted with systemd as init system",
+            "Failed to create bus connection",
+            "[1] TRUE",
+            "null device",
+        ]
+        extraneous_line_indices = []
+
+        log_lines = log_content.splitlines()
+        for line_idx, line in enumerate(log_lines[:20]):
+            for substring in extraneous_output_substrings:
+                if substring in line:
+                    extraneous_line_indices.append(line_idx)            
+
+        for line_idx in sorted(extraneous_line_indices, reverse=True):
+            del log_lines[line_idx]
+
+        log_content = "\n".join(log_lines)
 
         return log_content, last_log_offset
 

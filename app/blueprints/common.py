@@ -64,11 +64,18 @@ def cancelupload():
 def get_console_output():
     """Returns status and updated log of a running task."""
 
-    last_log_offset = 0#request.args.get("last_log_offset")
+    last_log_offset = int(request.args.get("last_log_offset"))
 
     task_id = request.args.get("task_id")
 
     log_content, last_log_offset = Task.get_log_update(task_id, last_log_offset)
+    task_status = Task.get_status(task_id)
+
+    # Append metadata to the log content (last log offset and task status)
+    log_content += ('\n###PROGRESS_METADATA:{'
+        f'"last_log_offset":{last_log_offset},'
+        f'"task_status":"{task_status}"'
+        '}')
 
     return Response(log_content, mimetype='text/plain')
 
@@ -98,7 +105,6 @@ def tasks():
 def get_task_output(task_id):
     """Return a compressed zip file of the task output to the client."""
 
-
     if Task.get(task_id) is None:
         err_msg = f"Invalid task ID: {task_id}" if task_id else "No task ID provided"
         return err_msg, 204
@@ -110,8 +116,5 @@ def get_task_output(task_id):
 
     out_dir = Path(zip_out_path).parent
     out_filename = Path(zip_out_path).name
-
-    print(out_dir)
-    print(out_filename)
 
     return send_from_directory(out_dir, out_filename, as_attachment=True)

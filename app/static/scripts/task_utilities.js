@@ -1,7 +1,8 @@
 var overlay_timer = {};
 var fetch_task_updates = {};
 var seconds_elapsed = 0;
-no_log_update_count = 0;
+var no_progress_count = 0;
+var last_log_offset = 0;
 
 
 function cancelTask() {
@@ -32,27 +33,38 @@ function taskFailed(status_msg) {
 
 
 function taskLogReqListener() {
-    log_update_text = this.responseText;
+    let log_with_metadata = this.responseText.split("###PROGRESS_METADATA:");
+    let log_update_text = log_with_metadata[0].slice(0, -1);    // remove trailing newline
+    // metadata is a JSON string
+    let log_metadata = JSON.parse(log_with_metadata[1]);
+    last_log_offset = log_metadata["last_log_offset"];
+    let task_status = log_metadata["task_status"];
+
+    if (task_status == "completed") {
+        loadResults();
+        return
+    }
+
     if (log_update_text.length == 0) {
-        no_log_update_count += 1;
+        no_progress_count += 1;
         let timeout = 120;
         let timeout_notice_interval = 30;
-        if (no_log_update_count % timeout_notice_interval == 0 && no_log_update_count < timeout) {
-            log_update_text = `No console output for ${no_log_update_count} seconds. `;
+        if (no_progress_count % timeout_notice_interval == 0 && no_progress_count < timeout) {
+            log_update_text = `No console output for ${no_progress_count} seconds. `;
             log_update_text += `Timeout=${timeout} seconds.\n`;
         }
-        else if (no_log_update_count == timeout) {
+        else if (no_progress_count == timeout) {
             taskFailed("Error: No response from server.");
             clearInterval(overlay_timer);
             clearInterval(fetch_task_updates);
             overlay_timer = {};
             seconds_elapsed = 0;
-            return;
         }
+        return;
     }
-    else {
-        no_log_update_count = 0;
-    }
+
+    no_progress_count = 0;
+
     task_log = document.getElementById("task_log");
     if (task_log != null) {
         let console_text = document.getElementById("console_text");
@@ -90,36 +102,46 @@ function taskLogReqListener() {
 
 
 function taskUpdateListener() {
-    task_update_text = this.responseText;
-    if (task_update_text.toLowerCase().includes("completed")) {
-        clearInterval(overlay_timer);
-        clearInterval(fetch_task_updates);
-        overlay_timer = {};
-        seconds_elapsed = 0;
-        task_id = getTaskID();
-        results_endpoint = getResultsEndpoint();
-        if (results_endpoint != "") {
-            window.location.href = `${results_endpoint}?task_id=${task_id}`;
-        }
+    let progress_metadata = this.responseText.split("###PROGRESS_METADATA:");
+    let task_status = JSON.parse(progress_metadata)["task_status"];
+    if (task_status == "completed") {
+        loadResults();
     }
 }
 
 
-function getTaskUpdate() {
+function loadResults() {
+    clearInterval(overlay_timer);
+    clearInterval(fetch_task_updates);
+    overlay_timer = {};
+    seconds_elapsed = 0;
+    task_id = getTaskID();
+    results_endpoint = getResultsEndpoint();
+    if (results_endpoint != "") {
+        window.location.href = `${results_endpoint}?task_id=${task_id}`;
+    }
+}
+
+
+function getTaskUpdate(log_offset=0) {
     var taskLogReq = new XMLHttpRequest();
     console_log = document.getElementById("console_log");
     if (console_log != null && console_log.style.display != "none") {
         taskLogReq.addEventListener("load", taskLogReqListener);
     }
-    taskLogReq.addEventListener("load", taskUpdateListener);
-    dest = `get-progress?task_id=${task_id}`;
+    else {
+        taskLogReq.addEventListener("load", taskUpdateListener);
+    }
+    dest = `get-progress?task_id=${task_id}&last_log_offset=${log_offset}`;
     taskLogReq.open("GET", dest);
     taskLogReq.send();
 }
 
 
 function startTaskUpdateRepeater() {
-    fetch_task_updates = setInterval(getTaskUpdate, 1000);
+    fetch_task_updates = setInterval(function() {
+        getTaskUpdate(last_log_offset);
+    }, 1000);
 }
 
 

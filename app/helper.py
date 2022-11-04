@@ -2,6 +2,7 @@
 
 import os
 import csv
+from typing import TypedDict
 
 
 def get_tsv_rows(filepath):
@@ -44,3 +45,20 @@ def format_msg_list_html(msg_list, tag="p"):
     msg_html = "".join([f"{opening_tag}{msg}{closing_tag}" for msg in msg_list])
 
     return msg_html
+
+def get_analysis_confirmation_msg(config_params):
+    """Get analysis formula from the config parameters"""
+
+    contrast_level = config_params["contrast_level"]
+    reference_level = config_params["reference_level"]
+
+    analysis_formula =  "<p><b>You are performing the following analysis:</b></p>\n"
+    analysis_formula += f"<p><i>condition ~ (intercept) + {contrast_level}</i></p>\n\n"
+    analysis_formula += f"<p>where the reference group is <i>{reference_level}</i>.\n</p>"
+
+    return analysis_formula
+
+class StatusDict(TypedDict):
+    """Status dictionary for task operations that need to return a status message."""
+    status: str
+    errors: list[str]

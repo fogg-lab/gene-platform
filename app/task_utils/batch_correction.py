@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from flask import current_app
 
-from app import helper
+from app.helper import get_tsv_rows, StatusDict
 from app.task_utils.task_runner import TaskRunner
 
 
@@ -18,17 +18,17 @@ class BatchCorrectionRunner(TaskRunner):
 
     BC_SCRIPT = "batch_correction.r"
 
-    def execute_task(self):
+    def execute_task(self) -> StatusDict:
         """"Run a batch correction task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
-    def validate_config(self, config) -> dict:
+    def validate_config(self, config) -> StatusDict:
         """Ensures config parameters are valid for the task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
-    def validate_task(self) -> dict:
+    def validate_task(self) -> StatusDict:
         """Validates all input files for the task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
     def _call_batch_correction(self, directory, data_type, reference_level, contrast_level):
         """
@@ -67,19 +67,18 @@ class BatchCorrectionRunner(TaskRunner):
 
         coldata = filtered_samples
 
-        counts_in_path = os.path.join(directory, "counts_bc-in.tsv")
-        coldata_in_path = os.path.join(directory, "coldata_bc-in.tsv")
+        counts_in = os.path.join(directory, "counts_bc-in.tsv")
+        coldata_in = os.path.join(directory, "coldata_bc-in.tsv")
 
         # Save prepared counts and coldata files for batch correction
-        counts.to_csv(counts_in_path, sep='\t', index=False)
-        coldata.to_csv(coldata_in_path, sep='\t', index=False)
+        counts.to_csv(counts_in, sep='\t', index=False)
+        coldata.to_csv(coldata_in, sep='\t', index=False)
 
         # Call the batch correction R script
         script = os.path.join(current_app.config["RSCRIPTS_PATH"], BatchCorrectionRunner.BC_SCRIPT)
         log_path = os.path.join(directory, ".log")
-        command = [script, counts_in_path, coldata_in_path, directory, data_type,
-                   "1>", log_path, "2>&1"]
-        subprocess.check_call(command, shell=True)
+        cmd = f"{script} {counts_in} {coldata_in} {directory} {data_type} >>{log_path} 2>&1"
+        subprocess.check_call(cmd, shell=True)
 
     def check_bc_input_files(self):
         """
@@ -116,7 +115,7 @@ class BatchCorrectionRunner(TaskRunner):
 
         input_dir = os.path.join(self._task_dir, "input")
         coldata_path = os.path.join(input_dir, "coldata.tsv")
-        coldata_rows = helper.get_tsv_rows(coldata_path)
+        coldata_rows = get_tsv_rows(coldata_path)
         status_msg = BatchCorrectionRunner._ensure_batches(coldata_rows)
 
         if status_msg:

@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from flask import current_app
 
+from app.helper import StatusDict
 from app.task_utils.task_runner import TaskRunner
 
 
@@ -18,15 +19,15 @@ class CorrelationRunner(TaskRunner):
 
     def execute_task(self):
         """Run an RNASeq correlation task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
     def validate_config(self, config) -> dict:
         """Ensures config parameters are valid for the task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
     def validate_task(self) -> dict:
         """Validates all input files for the task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
     def _call_corr(self, user_dir, corr_method):
         """

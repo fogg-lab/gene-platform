@@ -52,7 +52,6 @@ def init_db():
 
         g.db.close()
 
-
 def init_db_command():
     """Clear the existing data and create new tables."""
     with app.app_context():
@@ -62,37 +61,3 @@ def init_app(app):
     """Register database functions with the Flask app."""
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
-
-# CREATE TABLE user (
-#   id TEXT PRIMARY KEY,
-#   name TEXT,
-#   email TEXT UNIQUE,
-#   is_guest INTEGER DEFAULT 0,
-#   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-# );
-
-
-
-
-# CREATE TABLE task (
-#   id TEXT NOT NULL,
-#   user_id TEXT NOT NULL,
-#   task_type TEXT NOT NULL,
-#   status TEXT NOT NULL,
-#   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-#   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-#   PRIMARY KEY (id),
-#   FOREIGN KEY (user_id) REFERENCES user(id)
-# );
-
-
-
-
-# CREATE TRIGGER [UpdateLastTime]
-#     AFTER UPDATE
-#     ON task
-#     FOR EACH ROW
-#     WHEN NEW.updated_at < OLD.updated_at    --- this avoid infinite loop
-# BEGIN
-#     UPDATE task SET updated_at=CURRENT_TIMESTAMP WHERE id=OLD.id;
-# END;

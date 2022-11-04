@@ -19,6 +19,7 @@ from app.task_utils.preprocessing import PreprocessingRunner
 from app.task_utils.correlation import CorrelationRunner
 from app.task_utils.normalization import NormalizationRunner
 from app.exceptions import TaskNotFound, InvalidTaskType
+from app.helper import StatusDict
 
 
 def require_task_id_correct_format(task_method):
@@ -80,6 +81,7 @@ class Task:
             last_log_offset (int): Length of full log at the last log update. Defaults to 0.
             full_log (bool): Whether to return the full log (instead of offset). Defaults to False.
         """
+
         if last_log_offset == 0:
             full_log = True
         task_runner = Task._get_runner(task_id)
@@ -168,7 +170,9 @@ class Task:
                 "SELECT task_type FROM task WHERE id = ?",
                 (task_id,)
             ).fetchone()[0]
-            Task.__execute_task(task_id)
+            runner = Task._get_runner(task_id)
+            Task._update_task_status(task_id, "queued")
+            runner.execute_task()
         except TaskNotFound as exc:
             raise TaskNotFound("User task not found, so it could not be submitted.") from exc
 
@@ -255,7 +259,7 @@ class Task:
 
     @staticmethod
     @require_task_id_correct_format
-    def add_input_file(task_id, file_contents, standard_filename, user_filename) -> dict:
+    def add_input_file(task_id, file_contents, standard_filename, user_filename) -> StatusDict:
         """
         Saves uploaded file for a task and perform input validation
         Args:
@@ -266,27 +270,28 @@ class Task:
             dict: status
         """
         runner = Task._get_runner(task_id)
-        save_path = runner.add_input_file(file_contents, standard_filename)
+        #save_path = runner.add_input_file(file_contents, standard_filename)
+        runner.add_input_file(file_contents, standard_filename)
         # Perform input validation
         #status = runner.update_task()
-        status=dict()
-        if "errors" in status:
-            os.remove(save_path)
-        else:
-            redis_db = Redis()
-            redis_db.hset(f"{task_id}_input_files", standard_filename, user_filename)
+        status=StatusDict()
+        #if "errors" in status:
+            #os.remove(save_path)
+        #else:
+        redis_db = Redis()
+        redis_db.hset(f"{task_id}_input_files", standard_filename, user_filename)
         return status
 
     @staticmethod
     @require_task_id_correct_format
-    def configure(task_id, config) -> dict:
+    def configure(task_id, config) -> StatusDict:
         """
         Save configuration for a task.
         Args:
             task_id (str): The task id.
             config (dict): The configuration to save.
         Returns:
-            dict: status
+            StatusDict: A status message and errors, if any.
         """
         runner = Task._get_runner(task_id)
         status = runner.validate_config(config)
@@ -296,30 +301,17 @@ class Task:
 
     @staticmethod
     @require_task_id_correct_format
-    def validate_task(task_id) -> dict:
+    def validate_task(task_id) -> StatusDict:
         """
         Validate task input files, including the config file.
         Args:
             task_id (str): The task id.
         Returns:
-            dict: status
+            StatusDict: A status message and errors, if any.
         """
         runner = Task._get_runner(task_id)
         status = runner.validate_task()
         return status
-
-    @staticmethod
-    @require_task_id_correct_format
-    def __execute_task(task_id) -> None:
-        """Begin execution of a task."""
-        # Get task runner
-        runner = Task._get_runner(task_id)
-        # Update task status to started
-        Task._update_task_status(task_id, "started")
-        # Run task
-        status_msg = runner.execute_task()
-        status = "completed" if status_msg and "errors" not in status_msg else "failed"
-        Task._update_task_status(task_id, status)
 
     @staticmethod
     @require_task_id_correct_format

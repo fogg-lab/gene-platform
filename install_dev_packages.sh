@@ -14,7 +14,7 @@ sudo singularity exec --writable tmp_container/ bash -c \
 python3.11 -m pip install executing; \
 python3.11 -m pip install icecream; \
 python3.11 -m pip install jupyterlab; 
-curl -fsSL https://code-server.dev/install.sh | sh;"
+curl -fsSL https://code-server.dev/install.sh | sh;" \
 
 # 3: Convert the sandbox container to an sif file
 rm -rf dev_image.sif

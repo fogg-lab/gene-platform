@@ -5,6 +5,7 @@ from zipfile import ZipFile
 import pandas as pd
 
 from app.task_utils.task_runner import TaskRunner
+from app.helper import StatusDict
 
 
 class PreprocessingRunner(TaskRunner):
@@ -16,15 +17,15 @@ class PreprocessingRunner(TaskRunner):
 
     def execute_task(self):
         """Run a preprocessing task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
     def validate_config(self, config) -> dict:
         """Ensures config parameters are valid for the task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
     def validate_task(self) -> dict:
         """Validates all input files for the task"""
-        return dict(status="", warnings=[], errors=[])
+        return StatusDict(status="", errors=[])
 
     def _get_unmapped_counts_paths(self):
         """Returns a list of paths to unmapped expression matrices"""

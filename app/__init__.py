@@ -1,9 +1,12 @@
 import sqlite3
+from icecream import install
 from flask import Flask
-from flask_session.__init__ import Session
 from flask_login import LoginManager
+from flask_session.__init__ import Session
 from app.db.db import init_db_command
 from app.models.user import User
+
+install()   # Import icecream in all submodules for debugging
 
 def init_app():
     """Initialize the app."""
@@ -33,6 +36,7 @@ def init_app():
         from app.blueprints.correlation import correlation_bp
         from app.blueprints.normalization import normalization_bp
         from app.blueprints.preprocessing import preprocessing_bp
+
         # Register Blueprints
         app.register_blueprint(common_bp)
         app.register_blueprint(auth_bp)
