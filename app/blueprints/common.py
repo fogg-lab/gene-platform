@@ -1,6 +1,5 @@
 from functools import wraps
 from pathlib import Path
-from icecream import ic
 from flask import Blueprint, render_template, request, jsonify, Response, send_from_directory
 
 from app.models.task import Task

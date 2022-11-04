@@ -5,7 +5,6 @@ from flask import (Blueprint, render_template, request, redirect, url_for,
 from app.models.task import Task
 from app.blueprints.common import require_valid_task_id
 from app import helper
-from icecream import ic
 
 analysis_bp = Blueprint('analysis_bp', __name__)
 
