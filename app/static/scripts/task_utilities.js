@@ -172,9 +172,9 @@ function sort_tasks(method, reverse) {
     console.log(tasks_array[0][method])
     tasks_array.sort(function(a, b) {
         if (reverse) {
-            return b[method] > (a[method]) 
+            return (b[method] > (a[method]) ?  1: -1)
         } else {
-            return a[method] > (b[method])
+            return (a[method] > (b[method]) ?  1: -1)
         }
     })
     console.log(tasks_array)
@@ -273,7 +273,7 @@ window.onload = function() {
     for (id of ids) {
         var dom_node = document.getElementById(id)
         dom_node.addEventListener("click", function() {
-            sort_tasks(id, false)
+            sort_tasks(event.currentTarget.id, false)
         })
     }
 }
