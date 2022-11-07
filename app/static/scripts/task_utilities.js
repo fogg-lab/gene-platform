@@ -3,7 +3,7 @@ var fetch_task_updates = {};
 var seconds_elapsed = 0;
 var no_progress_count = 0;
 var last_log_offset = 0;
-
+var task_cols = ["id", "type", "status", "created", "updated", "results", "remove"];
 
 function cancelTask() {
     task_cancelled = true;
@@ -155,21 +155,22 @@ function startTaskUpdateRepeater() {
 }
 
 
-function sort_tasks(method, reverse) {
-    console.log(method)
+function sort_tasks(method) {
     // get all tasks into an array of js objects
     var tasks_array = [];
     var table = document.getElementById("tasks-table")
     for (var i = 1; i < table.rows.length; i++) { // skip first row
         task = {
-            "type":    table.rows[i].cells[0].innerHTML,
-            "status":  table.rows[i].cells[1].innerHTML,
-            "created": table.rows[i].cells[2].innerHTML,
-            "updated": table.rows[i].cells[3].innerHTML
+            "id":      table.rows[i].cells[0].innerHTML,
+            "type":    table.rows[i].cells[1].innerHTML,
+            "status":  table.rows[i].cells[2].innerHTML,
+            "created": table.rows[i].cells[3].innerHTML,
+            "updated": table.rows[i].cells[4].innerHTML,
+            "results": table.rows[i].cells[5].innerHTML,
+            "remove": table.rows[i].cells[6].innerHTML
         }
         tasks_array.push(task)
     }
-    console.log(tasks_array[0][method])
     tasks_array.sort(function(a, b) {
         if (reverse) {
             return (b[method] > (a[method]) ?  1: -1)
@@ -177,7 +178,14 @@ function sort_tasks(method, reverse) {
             return (a[method] > (b[method]) ?  1: -1)
         }
     })
-    console.log(tasks_array)
+
+    for (var i = 0; i < table.rows.length-1; i++) {
+        for (var j = 0; j < table.rows[i].cells.length; j++) {
+            field = task_cols[j]
+            table.rows[i+1].cells[j].innerHTML = tasks_array[i][field]
+        }
+    }
+
 }
 
 
@@ -268,12 +276,14 @@ function submitReqListener() {
     confirmSubmission(confirmation_text);
 }
 
+var reverse = false
+
 window.onload = function() {
-    var ids = ["type", "status", "created", "updated"]
-    for (id of ids) {
+    for (id of task_cols) {
         var dom_node = document.getElementById(id)
         dom_node.addEventListener("click", function() {
-            sort_tasks(event.currentTarget.id, false)
+            sort_tasks(event.currentTarget.id)
+            reverse = !(reverse)
         })
     }
 }

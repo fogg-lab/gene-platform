@@ -1,6 +1,6 @@
 from functools import wraps
 from pathlib import Path
-from flask import Blueprint, render_template, request, jsonify, Response, send_from_directory
+from flask import Blueprint, render_template, request, jsonify, Response, send_from_directory, redirect, url_for
 
 from app.models.task import Task
 
@@ -105,8 +105,7 @@ def get_task_output(task_id):
     """Return a compressed zip file of the task output to the client."""
 
     if Task.get(task_id) is None:
-        err_msg = f"Invalid task ID: {task_id}" if task_id else "No task ID provided"
-        return err_msg, 204
+        return f"Invalid task ID: {task_id}" if task_id else "No task ID provided", 204
 
     zip_out_path = Task.create_task_zip(task_id)
 
@@ -117,3 +116,15 @@ def get_task_output(task_id):
     out_filename = Path(zip_out_path).name
 
     return send_from_directory(out_dir, out_filename, as_attachment=True)
+
+
+@common_bp.route("/remove-task/<task_id>")
+def remove_task(task_id):
+    """Remove a task from the database and delete its directory."""
+
+    if Task.get(task_id) is None:
+        return f"Invalid task ID: {task_id}" if task_id else "No task ID provided", 204
+
+    Task.delete(task_id)
+
+    return redirect(url_for('common_bp.tasks'))

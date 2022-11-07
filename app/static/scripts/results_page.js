@@ -22,14 +22,8 @@ function populate_rows(start_index, end_index) {
     spicy_row = true;
     for (row of data) {
         table_row = new_output_tbody.insertRow();
-        if (spicy_row) {
-            table_row.className = "spicy";
-            spicy_row = false;
-        }
-        else {
-            table_row.className = "normal";
-            spicy_row = true;
-        }
+        table_row.className = (spicy_row ? "spicy" : "normal");
+        spicy_row = !spicy_row
         for (elem of row) {
             numeric_val = parseFloat(elem);
             if (!isNaN(numeric_val)) {
