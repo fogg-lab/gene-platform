@@ -31,7 +31,9 @@ SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS"
 SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///user.sqlite3")
 
 APP_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-GDC_DATA_PATH = os.path.join(APP_ROOT_PATH,"data/gdc_data")
+GDC_DATA_PATH = os.path.join(APP_ROOT_PATH,"data/preprocessing/gdc_data")
+GEO_DATA_PATH = os.path.join(APP_ROOT_PATH,"data/preprocessing/geo_data")
+PROBEMAPS_PATH = os.path.join(APP_ROOT_PATH,"data/preprocessing/probe_maps")
 USER_TASKS_PATH = os.path.join(APP_ROOT_PATH, "data/user_tasks")
 RSCRIPTS_PATH = os.path.join(APP_ROOT_PATH, "rscripts")
 TASK_SCRIPTS_PATH = os.path.join(APP_ROOT_PATH, "task_scripts")
