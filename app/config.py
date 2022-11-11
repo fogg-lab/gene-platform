@@ -1,7 +1,6 @@
 import os
 from base64 import b64encode
 import subprocess
-from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
