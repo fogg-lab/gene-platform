@@ -17,7 +17,6 @@
             }
         }
     </script>
-    {% block scripts %}{% endblock %}
 	<body>
 		<div class="topnav" id="topnavbar">
             <span class="organizational-logo">GENE Platform</span>
@@ -32,7 +31,7 @@
                 <a href="/setup">Analysis</a>
             {% endif %}
             <div class="dropdown">
-                <button class="dropbtn">Data Prep Tools
+                <button class="dropbtn">Data Prep
                     <i class="fa fa-caret-down"></i>
                 </button>
                 <div class="dropdown-content">
@@ -72,4 +71,5 @@
         <input type="hidden" id="taskID" name="taskID" value={{ task_id }}>
         {% block content %}{% endblock %}
     </body>
+    {% block scripts %}{% endblock %}
 </html>

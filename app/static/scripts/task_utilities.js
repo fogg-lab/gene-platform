@@ -3,7 +3,6 @@ var fetch_task_updates = {};
 var seconds_elapsed = 0;
 var no_progress_count = 0;
 var last_log_offset = 0;
-var task_cols = ["id", "type", "status", "created", "updated", "results", "remove"];
 
 function cancelTask() {
     task_cancelled = true;
@@ -102,7 +101,7 @@ function taskLogReqListener() {
 
 
 function taskUpdateListener() {
-    let progress_metadata = this.responseText.split("###PROGRESS_METADATA:");
+    let progress_metadata = this.responseText.split("###PROGRESS_METADATA:")[1];
     let task_status = JSON.parse(progress_metadata)["task_status"];
     if (task_status == "completed") {
         loadResults();
@@ -116,10 +115,9 @@ function loadResults() {
     overlay_timer = {};
     seconds_elapsed = 0;
     task_id = getTaskID();
-    results_endpoint = getResultsEndpoint();
-    if (results_endpoint != "") {
-        window.location.href = `${results_endpoint}?task_id=${task_id}`;
-    }
+    overlay = getOverlay();
+    overlay.remove();
+    displayResults();
 }
 
 
@@ -142,6 +140,7 @@ function getTaskUpdate(log_offset=0) {
     else {
         taskLogReq.addEventListener("load", taskUpdateListener);
     }
+    task_id = getTaskID();
     dest = `get-progress?task_id=${task_id}&last_log_offset=${log_offset}`;
     taskLogReq.open("GET", dest);
     taskLogReq.send();
@@ -152,46 +151,6 @@ function startTaskUpdateRepeater() {
     fetch_task_updates = setInterval(function() {
         getTaskUpdate(last_log_offset);
     }, 1000);
-}
-
-
-function sort_tasks(method) {
-    // get all tasks into an array of js objects
-    var tasks_array = [];
-    var table = document.getElementById("tasks-table")
-    for (var i = 1; i < table.rows.length; i++) { // skip first row
-        task = {
-            "id":      table.rows[i].cells[0].innerHTML,
-            "type":    table.rows[i].cells[1].innerHTML,
-            "status":  table.rows[i].cells[2].innerHTML,
-            "created": table.rows[i].cells[3].innerHTML,
-            "updated": table.rows[i].cells[4].innerHTML,
-            "results": table.rows[i].cells[5].innerHTML,
-            "remove": table.rows[i].cells[6].innerHTML
-        }
-        tasks_array.push(task)
-    }
-    tasks_array.sort(function(a, b) {
-        if (reverse) {
-            return (b[method] > (a[method]) ?  1: -1)
-        } else {
-            return (a[method] > (b[method]) ?  1: -1)
-        }
-    })
-
-    for (var i = 0; i < table.rows.length-1; i++) {
-        for (var j = 0; j < table.rows[i].cells.length; j++) {
-            field = task_cols[j]
-            table.rows[i+1].cells[j].innerHTML = tasks_array[i][field]
-        }
-    }
-
-}
-
-
-function getResultsEndpoint() {
-    results_endpoint_elem = document.getElementById("results_endpoint");
-    return ((results_endpoint_elem == null) ? "" : results_endpoint_elem.value);
 }
 
 
@@ -274,16 +233,4 @@ function getOverlay() {
 function submitReqListener() {
     var confirmation_text = this.responseText;
     confirmSubmission(confirmation_text);
-}
-
-var reverse = false
-
-window.onload = function() {
-    for (id of task_cols) {
-        var dom_node = document.getElementById(id)
-        dom_node.addEventListener("click", function() {
-            sort_tasks(event.currentTarget.id)
-            reverse = !(reverse)
-        })
-    }
 }

@@ -91,7 +91,7 @@ class BatchCorrectionRunner(TaskRunner):
         coldata.to_csv(coldata_in, sep='\t', index=False)
 
         # Call the batch correction R script
-        script = os.path.join(current_app.config["RSCRIPTS_PATH"], BatchCorrectionRunner.BC_SCRIPT)
+        script = os.path.join(current_app.config["SCRIPTS_PATH"], BatchCorrectionRunner.BC_SCRIPT)
         log_path = os.path.join(directory, ".log")
         cmd = f"{script} {counts_in} {coldata_in} {directory} {data_type}"
 

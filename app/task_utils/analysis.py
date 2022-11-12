@@ -3,12 +3,12 @@ from redis import Redis
 from rq import Queue
 from flask import current_app
 
-from app.helper import get_tsv_rows, get_analysis_confirmation_msg, StatusDict
 from app.task_utils.task_runner import TaskRunner
 from app.task_utils.expression_data_validation import (check_coldata_has_required_columns,
                                                        check_counts_matches_coldata,
                                                        check_factor_levels)
 from app.task_utils.execute_job_async import execute_job_async
+from app.helper import get_tsv_rows, get_analysis_confirmation_msg, StatusDict
 
 
 class AnalysisRunner(TaskRunner):
@@ -34,11 +34,11 @@ class AnalysisRunner(TaskRunner):
 
         log_path = os.path.join(self._task_dir, ".log")
 
-        rscripts_path = current_app.config["RSCRIPTS_PATH"]
+        scripts_path = current_app.config["SCRIPTS_PATH"]
         if data_type == "microarray":
-            script_path = os.path.join(rscripts_path, AnalysisRunner.MICROARRAY_SCRIPT)
+            script_path = os.path.join(scripts_path, AnalysisRunner.MICROARRAY_SCRIPT)
         else:
-            script_path = os.path.join(rscripts_path, AnalysisRunner.RNASEQ_SCRIPT)
+            script_path = os.path.join(scripts_path, AnalysisRunner.RNASEQ_SCRIPT)
 
         cmd = f"Rscript {script_path} {input_dir} {output_dir}"
 

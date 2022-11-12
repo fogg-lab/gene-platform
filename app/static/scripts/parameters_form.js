@@ -67,6 +67,12 @@ function submit() {
 }
 
 
+function displayResults() {
+  results_endpoint = document.getElementById("results_endpoint").value;
+  window.location.href = `${results_endpoint}?task_id=${task_id}`;
+}
+
+
 function get_parameters() {
   var param_labels = ["padj_thresh", "min_prop", "min_expr", "adj_method", "contrast_level", "reference_level", "use_qual_weights"]
   var params = []

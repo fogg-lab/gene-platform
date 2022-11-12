@@ -22,7 +22,7 @@ def execute_job_async(task_id, log_path, task_type, cmd):
     with open(log_path, "w") as log_file:
         log_file.write(f"Starting {task_type}...\n")
     try:
-        subprocess.check_call(cmd+" >>{log_path} 2>&1", shell=True)
+        subprocess.check_call(cmd+f" >>{log_path} 2>&1", shell=True)
         if os.path.isfile(expected_db_filepath):
             db = sqlite3.connect(
                 expected_db_filepath, detect_types=sqlite3.PARSE_DECLTYPES

@@ -37,13 +37,13 @@ function update_form() {
 function preprocessingReqListener() {
     // preprocessing completed
     let status_msg = this.responseText;
-    overlay = document.getElementById("overlay");
-    overlay.remove();
     let messages = document.getElementById("messages");
     messages.innerHTML = status_msg;
-    if (status_msg.includes("Preprocessing complete.")) {
-        document.getElementById("download-preprocessed-data-btn").disabled = false;
-    }
+}
+
+
+function displayResults() {
+    document.getElementById("download-preprocessed-data-btn").disabled = false;
 }
 
 
@@ -63,7 +63,7 @@ function submit() {
         alert("Please select a data source.");
         return;
     }
-    let query = "source=" + data_source + "&dsets=" + dsets;
+    let query = `source=${data_source}&dsets=${dsets}&task_id=${getTaskID()}`
     submitReq.send(query);
 }
 
@@ -81,11 +81,12 @@ function submissionConfirmed() {
         return;
     }
     let submitPreprocessingReq = new XMLHttpRequest();
-    let submit_preprocessing_query = "source=" + data_source + "&dsets=" + dsets;
+    let submit_preprocessing_query = `source=${data_source}&dsets=${dsets}&task_id=${getTaskID()}`;
     submitPreprocessingReq.addEventListener("load", preprocessingReqListener);
     submitPreprocessingReq.open("POST", "/submit-preprocessing");
     submitPreprocessingReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     submitPreprocessingReq.send(submit_preprocessing_query);
     document.getElementById("download-preprocessed-data-btn").disabled = true;
+    startTaskUpdateRepeater();
     showRuntime();
 }

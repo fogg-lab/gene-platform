@@ -14,7 +14,7 @@ def batchcorrection():
 
     task_id = request.args.get("task_id")
 
-    if Task.get(task_id) is None:
+    if not task_id or Task.get(task_id) is None:
         task_id = Task.create("batch correction")
 
     uploads = Task.list_input_files(task_id)

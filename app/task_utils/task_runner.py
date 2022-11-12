@@ -1,10 +1,12 @@
 import os
 import shutil
+from itertools import groupby
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Dict
 from glob import glob
 from redis import Redis
 import yaml
+
 
 from app.exceptions import InvalidTaskInputFile
 
@@ -14,7 +16,7 @@ class TaskRunner(ABC):
     def __init__(self, task_id, task_dir):
         self._task_id = task_id
         self._task_dir = task_dir
-        self._task_type = None
+        self.task_type = None
         self._input_filenames = None
 
     @abstractmethod
@@ -76,7 +78,7 @@ class TaskRunner(ABC):
             with open(log_file_path, "r", encoding="utf-8") as log_file:
                 full_log_content = log_file.read()
                 full_log_length = len(full_log_content)
-                log_content_max_len = 100000
+                log_content_max_len = 25000
                 if (full_log_length == last_log_offset) and not full_log:
                     # No new log content since last update
                     log_content=""
@@ -111,6 +113,10 @@ class TaskRunner(ABC):
         for line_idx in sorted(extraneous_line_indices, reverse=True):
             del log_lines[line_idx]
 
+        # Remove consecutive duplicate lines if task type is preprocessing
+        if self.task_type == "preprocessing":
+            log_lines = [k for k, _ in groupby(log_lines)]
+
         log_content = "\n".join(log_lines)
 
         return log_content, last_log_offset
@@ -121,7 +127,7 @@ class TaskRunner(ABC):
         if standard_fname not in self._input_filenames:
             raise InvalidTaskInputFile(
                 "Failed to add input file: "
-                f"Filename '{standard_fname}' is invalid for task type: {self._task_type}. "
+                f"Filename '{standard_fname}' is invalid for task type: {self.task_type}. "
                 f"Input file must be one of {self._input_filenames}")
 
         save_path = os.path.join(self._task_dir, "input", standard_fname)

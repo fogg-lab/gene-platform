@@ -353,6 +353,12 @@ class Task:
             "analysis": "analysis_results"
         }
 
+        if task_type == "preprocessing":
+            runner = Task._get_runner(task_id)
+            data_source = runner.get_config().get("data_source")
+            source = "geo" if "geo" in data_source.lower() else "gdc"
+            task_result_names["preprocessing"] = f"preprocessed_{source}_data"
+
         zip_path = os.path.join(output_dir, task_result_names.get(task_type, "results") + ".zip")
         if os.path.isfile(zip_path):
             os.remove(zip_path)
