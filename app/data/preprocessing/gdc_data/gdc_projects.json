@@ -1,5 +1,6 @@
 {
     "beataml1.0": [
+        "crenolanib",
         "cohort"
     ],
     "cgci": [
@@ -8,17 +9,31 @@
     ],
     "cmi": [
         "asc",
+        "mpc",
         "mbc"
     ],
     "cptac": [
-        "2",
-        "3"
+        "3",
+        "2"
     ],
     "ctsp": [
         "dlbcl1"
     ],
     "exceptional_responders": [
         "er"
+    ],
+    "fm": [
+        "ad"
+    ],
+    "genie": [
+        "grcc",
+        "dfci",
+        "nki",
+        "vicc",
+        "uhn",
+        "mda",
+        "msk",
+        "jhu"
     ],
     "hcmi": [
         "cmdc"
@@ -42,50 +57,56 @@
         "thyr"
     ],
     "target": [
-        "all-p1",
-        "all-p2",
-        "all-p3",
-        "aml",
-        "ccsk",
         "nbl",
-        "os",
+        "all-p1",
         "rt",
-        "wt"
+        "ccsk",
+        "os",
+        "all-p2",
+        "wt",
+        "aml",
+        "all-p3"
     ],
     "tcga": [
-        "acc",
-        "blca",
-        "brca",
-        "cesc",
-        "chol",
-        "coad",
-        "dlbc",
         "esca",
-        "gbm",
-        "hnsc",
-        "kich",
-        "kirc",
-        "kirp",
-        "laml",
-        "lgg",
-        "lihc",
-        "luad",
-        "lusc",
-        "meso",
-        "ov",
-        "paad",
-        "pcpg",
-        "prad",
-        "read",
         "sarc",
-        "skcm",
-        "stad",
+        "cesc",
+        "ucec",
+        "laml",
         "tgct",
+        "chol",
+        "meso",
+        "acc",
+        "dlbc",
+        "pcpg",
+        "kich",
         "thca",
         "thym",
-        "ucec",
         "ucs",
-        "uvm"
+        "gbm",
+        "uvm",
+        "coad",
+        "stad",
+        "ov",
+        "kirc",
+        "lgg",
+        "hnsc",
+        "blca",
+        "luad",
+        "prad",
+        "lihc",
+        "lusc",
+        "skcm",
+        "kirp",
+        "brca",
+        "paad",
+        "read"
+    ],
+    "trio": [
+        "cru"
+    ],
+    "varepop": [
+        "apollo"
     ],
     "wcdt": [
         "mcrpc"
