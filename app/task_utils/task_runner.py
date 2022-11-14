@@ -1,12 +1,13 @@
 import os
 import shutil
+from pathlib import Path
+import subprocess
 from itertools import groupby
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Dict
 from glob import glob
 from redis import Redis
 import yaml
-
 
 from app.exceptions import InvalidTaskInputFile
 
@@ -70,28 +71,12 @@ class TaskRunner(ABC):
         with open(config_path, "w", encoding="utf-8") as cfg_file:
             yaml.dump(config, cfg_file)
 
-    def get_log_update(self, last_log_offset=0, full_log=False) -> Tuple[str, int]:
-        """Returns the contents of the log file for a task since the last update"""
-        log_file_path = os.path.join(self._task_dir, ".log")
-        log_content = ""
-        if os.path.isfile(log_file_path):
-            with open(log_file_path, "r", encoding="utf-8") as log_file:
-                full_log_content = log_file.read()
-                full_log_length = len(full_log_content)
-                log_content_max_len = 25000
-                if (full_log_length == last_log_offset) and not full_log:
-                    # No new log content since last update
-                    log_content=""
-                elif (full_log_length > last_log_offset) and not full_log:
-                    # Return just the new part of the log since the last request
-                    offset = max(0, full_log_length - log_content_max_len)
-                    offset = max(last_log_offset, offset)
-                    log_content = full_log_content[offset:]
-                else:
-                    # Return full log content
-                    log_content = full_log_content[-log_content_max_len:]
+    @staticmethod
+    def _filter_log(log_path, task_type):
+        """Filters log content to remove extraneous output."""
 
-                last_log_offset = full_log_length
+        with open(log_path, "r") as log_file:
+            full_log_content = log_file.read()
 
         # Check first 20 lines for extraneous warnings and remove them
         extraneous_output_substrings = [
@@ -104,20 +89,59 @@ class TaskRunner(ABC):
         ]
         extraneous_line_indices = []
 
-        log_lines = log_content.splitlines()
+        log_lines = full_log_content.splitlines()
         for line_idx, line in enumerate(log_lines[:20]):
             for substring in extraneous_output_substrings:
                 if substring in line:
-                    extraneous_line_indices.append(line_idx)            
+                    extraneous_line_indices.append(line_idx)
 
         for line_idx in sorted(extraneous_line_indices, reverse=True):
             del log_lines[line_idx]
 
-        # Remove consecutive duplicate lines if task type is preprocessing
-        if self.task_type == "preprocessing":
-            log_lines = [k for k, _ in groupby(log_lines)]
+        # For consecutive download progress lines, only show the last one (for preprocessing only)
+        if task_type == "preprocessing":
+            # Use groupby with custom key function to group the download progress lines in order
+            def key_func(line):
+                return "Downloading: " in line
 
-        log_content = "\n".join(log_lines)
+            log_lines = [
+                list(group)[-1] for _, group in groupby(log_lines, key=key_func)
+            ]
+
+        # Write filtered log to file, preserving new log output since last read
+        tmp_log_path = os.path.join(Path(log_path).parent, ".tmp-log")
+        cmd = (f"tail -c {len(full_log_content)} {log_path} > {tmp_log_path} && "
+               f"cat {tmp_log_path} > {log_path} && rm {tmp_log_path}")
+
+        full_log_content = "\n".join(log_lines)
+        with open(tmp_log_path, "w") as log_file:
+            log_file.write(full_log_content)
+
+        subprocess.run(cmd, shell=True, check=True)
+
+        return full_log_content
+
+    def get_log_update(self, last_log_offset=0, full_log=False) -> Tuple[str, int]:
+        """Returns the contents of the log file for a task since the last update"""
+        log_file_path = os.path.join(self._task_dir, ".log")
+        log_content = ""
+        if os.path.isfile(log_file_path):
+            full_log_content = TaskRunner._filter_log(log_file_path, self.task_type)
+            full_log_length = len(full_log_content)
+            log_content_max_len = 50000
+            if (full_log_length == last_log_offset) and not full_log:
+                # No new log content since last update
+                log_content=""
+            elif (full_log_length > last_log_offset) and not full_log:
+                # Return just the new part of the log since the last request
+                offset = max(0, full_log_length - log_content_max_len)
+                offset = max(last_log_offset, offset)
+                log_content = full_log_content[offset:]
+            else:
+                # Return full log content
+                log_content = full_log_content[-log_content_max_len:]
+
+            last_log_offset = full_log_length
 
         return log_content, last_log_offset
 
