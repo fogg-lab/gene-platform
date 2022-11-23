@@ -580,6 +580,14 @@ span.organizational-logo {
     margin:auto;
 }
 
+.sort-down:after {
+	content: "▼";
+}
+
+.sort-up:after {
+	content: "▲";
+}
+
 .spicy-table{
     border: none;
     border-spacing: 0;

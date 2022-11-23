@@ -1,4 +1,4 @@
-// hide progress bar divs and cancel buttons for files which have not been uploaded
+// hide progress bar divs and cancel buttonsfor files which have not been uploaded
 if (document.getElementById("progress_of_counts") == null) {
     document.getElementById("progress_of_counts_div").style.display = 'none';
     document.getElementById("cancel_counts_button").style.display = 'none';
@@ -15,22 +15,30 @@ if (document.getElementById("progress_of_coldata") == null) {
     document.getElementById("coldata_upload_div").style.display = 'none';
 }
 
+if (document.getElementById("progress_of_filter") == null) {
+    document.getElementById("progress_of_filter_div").style.display = 'none';
+    document.getElementById("cancel_filter_button").style.display = 'none';
+} else {document.getElementById("progress_of_filter_div").style.backgroundPosition = "0% 0";
+    document.getElementById("filter_upload_div").style.display = 'none';
+}
+
+if (document.getElementById("progress_of_config") == null) {
+    document.getElementById("progress_of_config_div").style.display = 'none';
+    document.getElementById("cancel_config_button").style.display = 'none';
+} else {document.getElementById("progress_of_config_div").style.backgroundPosition = "0% 0";
+    document.getElementById("config_upload_div").style.display = 'none';
+}
+
 // disable next button if progress counts or coldata not uploaded
 update_next_button()
+
+function goto(url) {
+    window.location.href = url;
+}
 
 function cancelReqListener() {
     // file upload successfully cancelled
     console.log(this.responseText);
-}
-
-function bcReqListener() {
-    // batch correction completed
-    let messages = document.getElementById("messages");
-    messages.innerHTML = this.responseText;
-}
-
-function displayResults() {
-    document.getElementById("download-bc-btn").disabled = false;
 }
 
 function cancel_counts() {
@@ -41,6 +49,14 @@ function cancel_counts() {
 function cancel_coldata() {
     cancel_upload("coldata.tsv");
     update_next_button();
+}
+
+function cancel_filter() {
+    cancel_upload("filter.txt");
+}
+
+function cancel_config() {
+    cancel_upload("config.yml");
 }
 
 function update_next_button() {
@@ -54,23 +70,6 @@ function update_next_button() {
             document.getElementById("next_button").disabled = true;
         }
         else {
-            document.getElementById("next_button").disabled = false;
+        document.getElementById("next_button").disabled = false;
         }
-}
-
-function submit() {
-    document.getElementById("download-bc-btn").disabled = true;
-    let messages = document.getElementById("messages");
-    messages.innerHTML = "Performing batch correction...";
-    let datatype_select = document.getElementById("data_type")
-    let data_type = datatype_select.options[datatype_select.selectedIndex].text
-    let reference_level = document.getElementById("reference_level").value;
-    let contrast_level = document.getElementById("contrast_level").value;
-    let submitbcReq = new XMLHttpRequest();
-    let submit_bc_query = `data_type=${data_type}&reference_level=${reference_level}&contrast_level=${contrast_level}&task_id=${getTaskID()}`;
-    submitbcReq.open("POST", "/submit-batch-correction");
-    submitbcReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    submitbcReq.send(submit_bc_query);
-    startTaskUpdateRepeater();
-    showRuntime();
 }

@@ -110,7 +110,7 @@
     </table>
     <div id="messages" class="bottom-buttons"></div>
     <div class="bottom-buttons">
-      <a href="/setup" id="prev_uploads_btn" class="button">Previous: Upload Files</a>
+      <a href="/analysis-setup" id="prev_uploads_btn" class="button">Previous: Upload Files</a>
       <input type="submit" class="button" id="submit_button" value="Submit" disabled>
     </div>
   </form>
@@ -119,5 +119,5 @@
   <input type="hidden" id="results_endpoint" value="/display">
 
   <script src="{{ url_for('static',filename='scripts/task_utilities.js') }}"></script>
-  <script src="{{ url_for('static',filename='scripts/parameters_form.js') }}"></script>
+  <script src="{{ url_for('static',filename='scripts/analysis_parameters_form.js') }}"></script>
 {% endblock %}

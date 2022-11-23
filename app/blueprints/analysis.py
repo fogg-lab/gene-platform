@@ -9,8 +9,8 @@ from app import helper
 analysis_bp = Blueprint('analysis_bp', __name__)
 
 
-@analysis_bp.route("/setup")
-def setup():
+@analysis_bp.route("/analysis-setup")
+def analysis_setup():
     """first input page (file uploads)"""
 
     task_id = request.args.get("task_id")
@@ -20,7 +20,7 @@ def setup():
 
     uploads = Task.list_input_files(task_id)
 
-    return render_template("uploads_form.html", uploaded_input_files=uploads, task_id=task_id,
+    return render_template("analysis_uploads_form.html", uploaded_input_files=uploads, task_id=task_id,
                            title="DGE Analysis")
 
 
@@ -33,7 +33,7 @@ def analysis_parameters():
 
     config_params = Task.get_config(task_id)
 
-    return render_template("parameters_form.html", params=config_params, task_id=task_id,
+    return render_template("analysis_parameters_form.html", params=config_params, task_id=task_id,
                            title="Analysis parameters")
 
 
@@ -108,7 +108,7 @@ def display_output():
         filtered_output = helper.get_tsv_rows(filter_output_path)
         filtered_data = filtered_output[1:]
 
-    return render_template("results.html", cols = unfiltered_output[0],
+    return render_template("analysis_results_page.html", cols = unfiltered_output[0],
          data=unfiltered_data, filtered_data=filtered_data, task_id=task_id)
 
 
@@ -133,7 +133,7 @@ def plots():
         elif "filt" in filename:
             plot_filenames["filtered_volcano"] = filename
 
-    return render_template("plots.html", plot_filenames=plot_filenames, task_id=task_id)
+    return render_template("analysis_plots.html", plot_filenames=plot_filenames, task_id=task_id)
 
 
 @require_valid_task_id

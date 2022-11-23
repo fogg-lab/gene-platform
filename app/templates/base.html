@@ -25,10 +25,10 @@
             {% else %}
                 <a href="/">Home</a>
             {% endif %}
-            {% if request.endpoint == 'analysis_bp.setup'  %}
+            {% if request.endpoint == 'analysis_bp.analysis_setup'  %}
                 <a class="active" href="#">Analysis</a>
             {% else %}
-                <a href="/setup">Analysis</a>
+                <a href="/analysis-setup">Analysis</a>
             {% endif %}
             <div class="dropdown">
                 <button class="dropbtn">Data Prep

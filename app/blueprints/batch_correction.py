@@ -20,8 +20,7 @@ def batchcorrection():
     uploads = Task.list_input_files(task_id)
 
     return render_template("batchcorrection.html", uploaded_input_files=uploads,
-                           title="Batch Correction")
-
+                           task_id=task_id, title="Batch Correction")
 
 @require_valid_task_id
 @batch_correction_bp.route("/submit-batch-correction", methods=["POST"])

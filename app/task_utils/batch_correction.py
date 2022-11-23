@@ -1,5 +1,4 @@
 import os
-import subprocess
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -28,6 +27,10 @@ class BatchCorrectionRunner(TaskRunner):
         data_type = cfg.get("data_type")
         reference_level = cfg.get("reference_level")
         contrast_level = cfg.get("contrast_level")
+        # Make sure the counts and coldata files are present
+        status_msg = self.check_bc_input_files()
+        if status_msg:
+            return StatusDict(status=status_msg, errors=[status_msg])
         return BatchCorrectionRunner._call_batch_correction(self._task_id, input_dir, data_type,
                                                             reference_level, contrast_level)
 

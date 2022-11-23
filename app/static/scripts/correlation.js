@@ -1,4 +1,3 @@
-var UPLOAD_ENDPOINT = "/upload";
 // hide progress bar divs and cancel buttonsfor files which have not been uploaded
 if (document.getElementById("progress_of_counts") == null) {
     document.getElementById("progress_of_counts_div").style.display = 'none';
@@ -17,35 +16,8 @@ function cancelReqListener() {
 }
 
 function cancel_counts() {
-    cancel("counts.tsv");
+    cancel_upload("counts.tsv");
     update_next_button();
-}
-
-function cancel(filename) {
-    var cancelReq = new XMLHttpRequest();
-    let filename_base = filename.split(".")[0];
-    let progress_bar_id = "progress_of_" + filename_base;
-    let upload_div_id = filename_base + "_upload_div";
-    let cancel_button_id = "cancel_" + filename_base + "_button";
-    let cancel_req_query = "filename=" + filename;
-    let file_progress_bar = document.getElementById(progress_bar_id);
-    cancelReq.addEventListener("load", cancelReqListener);
-    cancelReq.open("POST", "/cancel-upload");
-    cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-    cancelReq.send(cancel_req_query);
-
-    // hide the progress bar
-    file_progress_bar.remove();
-    progress_div = document.getElementById(progress_bar_id + "_div");
-    progress_div.style.backgroundPosition = "100% 0";
-    progress_div.style.display = 'none';
-
-    // hide the cancel button
-    document.getElementById(cancel_button_id).style.display = 'none';
-
-    // show the file upload div
-    document.getElementById(upload_div_id).style.display = 'block';
 }
 
 function update_next_button() {

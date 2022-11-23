@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 
 {% block scripts %}
+	<script src="{{ url_for('static',filename='scripts/task_utilities.js') }}"></script>
 	<script src="{{ url_for('static',filename='scripts/batch_correction.js') }}"></script>
-	<script src="{{ url_for('static',filename='scripts/uploads_form.js') }}"></script>
+	<script src="{{ url_for('static',filename='scripts/upload.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -83,7 +84,7 @@
 	</form>
 
 	<div class="bottom-buttons">
-		<button onclick="submit_batch_correction()" class="button" id="next_button" disabled>Submit</button>
+		<button onclick="submit()" class="button" id="next_button" disabled>Submit</button>
 	</div>
 	<br>
 	<div id="messages" class="bottom-buttons">

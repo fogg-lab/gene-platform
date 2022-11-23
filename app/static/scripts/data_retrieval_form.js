@@ -35,10 +35,8 @@ function update_form() {
 
 
 function preprocessingReqListener() {
-    // preprocessing completed
-    let status_msg = this.responseText;
     let messages = document.getElementById("messages");
-    messages.innerHTML = status_msg;
+    messages.innerHTML = this.responseText;
 }
 
 

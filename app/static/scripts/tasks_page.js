@@ -1,7 +1,11 @@
 var task_cols = ["id", "type", "status", "created", "updated", "results", "remove"];
-var reverse = false
+var reverse = false;
+var current_sorted_col = "updated";
 
-function sort_tasks(method) {
+function sort_tasks(th_id) {
+    if (["results", "remove"].includes(th_id)) {
+        return;
+    }
     // get all tasks into an array of js objects
     var tasks_array = [];
     var table = document.getElementById("tasks-table");
@@ -19,9 +23,9 @@ function sort_tasks(method) {
     }
     tasks_array.sort(function(a, b) {
         if (reverse) {
-            return (b[method] > (a[method]) ?  1: -1);
+            return (b[th_id] > (a[th_id]) ?  1: -1);
         } else {
-            return (a[method] > (b[method]) ?  1: -1);
+            return (a[th_id] > (b[th_id]) ?  1: -1);
         }
     })
 
@@ -30,6 +34,17 @@ function sort_tasks(method) {
             field = task_cols[j];
             table.rows[i+1].cells[j].innerHTML = tasks_array[i][field];
         }
+    }
+    prev_sorted_th = document.getElementById(current_sorted_col);
+    prev_sorted_th.classList.remove("sort-down");
+    prev_sorted_th.classList.remove("sort-up");
+    current_sorted_col = th_id;
+    cur_sorted_th = document.getElementById(th_id);
+    if (reverse) {
+        cur_sorted_th.classList.add("sort-down");
+    }
+    else {
+        cur_sorted_th.classList.add("sort-up");
     }
 }
 
@@ -41,4 +56,5 @@ window.onload = function() {
             reverse = !reverse;
         })
     }
+    document.getElementById(current_sorted_col).classList.add("sort-down");
 }

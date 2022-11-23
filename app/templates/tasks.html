@@ -24,13 +24,13 @@ a[href^="{{url_for('analysis_bp.display_output')}}"]::after {
 
 <table class="spicy-table" id="tasks-table">
     <tr>
-      <th class="table-header" id="id">Task ID&nbsp;&nbsp;</th>
-      <th class="table-header" id="type">Task Type</th>
-      <th class="table-header" id="status">Status</th>
-      <th class="table-header" id="created">Created At</th>
-      <th class="table-header" id="updated">Updated At</th>
-      <th id="results">Results</th>
-      <th id="remove">Remove</th>
+      <th class="table-header" style="border: 1px solid; padding: 5px 10px 5px;" id="id">Task ID</th>
+      <th class="table-header" style="border: 1px solid; padding: 5px 10px 5px;" id="type">Task Type</th>
+      <th class="table-header" style="border: 1px solid; padding: 5px 10px 5px;" id="status">Status</th>
+      <th class="table-header" style="border: 1px solid; padding: 5px 10px 5px;" id="created">Created At</th>
+      <th class="table-header" style="border: 1px solid; padding: 5px 10px 5px;" id="updated">Updated At</th>
+      <th id="results" style="border: 1px solid; padding: 5px 15px 5px;">Results</th>
+      <th id="remove" style="border: 1px solid; padding: 5px 15px 5px;">Remove</th>
     </tr>
     {% for row in user_tasks %}
     <tr class={{ 'spicy' if loop.index % 2 == 0 else 'normal' }}>
