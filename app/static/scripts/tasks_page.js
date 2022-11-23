@@ -1,11 +1,12 @@
 var task_cols = ["id", "type", "status", "created", "updated", "results", "remove"];
-var reverse = false;
+var next_sort_reverse = Object.fromEntries(task_cols.map( x => [x, false]));
 var current_sorted_col = "updated";
 
 function sort_tasks(th_id) {
     if (["results", "remove"].includes(th_id)) {
         return;
     }
+
     // get all tasks into an array of js objects
     var tasks_array = [];
     var table = document.getElementById("tasks-table");
@@ -22,7 +23,7 @@ function sort_tasks(th_id) {
         tasks_array.push(task);
     }
     tasks_array.sort(function(a, b) {
-        if (reverse) {
+        if (next_sort_reverse[th_id]) {
             return (b[th_id] > (a[th_id]) ?  1: -1);
         } else {
             return (a[th_id] > (b[th_id]) ?  1: -1);
@@ -40,12 +41,13 @@ function sort_tasks(th_id) {
     prev_sorted_th.classList.remove("sort-up");
     current_sorted_col = th_id;
     cur_sorted_th = document.getElementById(th_id);
-    if (reverse) {
-        cur_sorted_th.classList.add("sort-down");
-    }
-    else {
+    if (next_sort_reverse[th_id]) {
         cur_sorted_th.classList.add("sort-up");
     }
+    else {
+        cur_sorted_th.classList.add("sort-down");
+    }
+    next_sort_reverse[th_id] = !next_sort_reverse[th_id];
 }
 
 window.onload = function() {
@@ -53,8 +55,7 @@ window.onload = function() {
         var dom_node = document.getElementById(id);
         dom_node.addEventListener("click", function() {
             sort_tasks(event.currentTarget.id);
-            reverse = !reverse;
-        })
+        });
     }
-    document.getElementById(current_sorted_col).classList.add("sort-down");
+    document.getElementById(current_sorted_col).classList.add("sort-up");
 }
