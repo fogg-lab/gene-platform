@@ -31,7 +31,7 @@ def submit_batch_correction():
 
     config = {}
 
-    config["datatype"] = request.form.get("data_type")
+    config["data_type"] = request.form.get("data_type")
     config["reference_level"] = request.form.get("reference_level")
     config["contrast_level"] = request.form.get("contrast_level")
 
@@ -51,7 +51,7 @@ def submit_batch_correction():
 def get_batch_correction_counts():
     """Returns batch correction results to the client"""
 
-    task_id = request.form.get("task_id")
+    task_id = request.args.get("task_id")
 
     bc_counts_path = Task.get_output_filepath(task_id, "batch_corrected_counts.tsv")
     output_file_dir = Path(bc_counts_path).parent if bc_counts_path else None
@@ -59,4 +59,4 @@ def get_batch_correction_counts():
     if not output_file_dir:
         return 200, "Batch correction output was not found."
 
-    return send_from_directory(output_file_dir, "counts_bc.tsv")
+    return send_from_directory(output_file_dir, "batch_corrected_counts.tsv")

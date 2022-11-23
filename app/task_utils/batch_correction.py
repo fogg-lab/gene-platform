@@ -15,14 +15,16 @@ class BatchCorrectionRunner(TaskRunner):
     """Class for preparing and running a batch correction task."""
     def __init__(self, task_id, task_dir):
         super().__init__(task_id, task_dir)
-        self.task_type = "batch"
+        self.task_type = "batch correction"
         self._input_filenames = ["counts.tsv", "coldata.tsv", "config.yml"]
 
     BC_SCRIPT = "batch_correction.r"
 
     def execute_task(self) -> StatusDict:
         """Queue a batch correction job."""
-        input_dir = Path(self._task_dir) / "input"
+        task_dir = self._task_dir
+        input_dir = Path(task_dir) / "input"
+        output_dir = Path(task_dir) / "output"
         cfg = self.get_config()
         data_type = cfg.get("data_type")
         reference_level = cfg.get("reference_level")
@@ -31,8 +33,8 @@ class BatchCorrectionRunner(TaskRunner):
         status_msg = self.check_bc_input_files()
         if status_msg:
             return StatusDict(status=status_msg, errors=[status_msg])
-        return BatchCorrectionRunner._call_batch_correction(self._task_id, input_dir, data_type,
-                                                            reference_level, contrast_level)
+        return BatchCorrectionRunner._call_batch_correction(self._task_id, task_dir, data_type, reference_level,
+                                                            contrast_level)
 
     def validate_config(self, config) -> StatusDict:
         """Ensures config parameters are valid for the task"""
@@ -43,13 +45,13 @@ class BatchCorrectionRunner(TaskRunner):
         return StatusDict(status="", errors=[])
 
     @staticmethod
-    def _call_batch_correction(task_id, directory, data_type, reference_level,
+    def _call_batch_correction(task_id, task_dir, data_type, reference_level,
                                contrast_level) -> StatusDict:
         """
         Calls the R script to run batch correction.
         Args:
             task_id (str): The task id.
-            directory (str): Absolute path to directory containing input files.
+            task_dir (str): Absolute path to task directory.
             data_type (str): Type of expression data, either "microarray" or "rnaseq".
             reference_level (str): Reference level for the samples, i.e "normal".
             contrast_level (str): Contrast level for the samples, i.e "tumor".
@@ -59,9 +61,12 @@ class BatchCorrectionRunner(TaskRunner):
 
         status = StatusDict(status="", errors=[])
 
+        in_dir = os.path.join(task_dir, "input")
+        out_dir = os.path.join(task_dir, "output")
+
         # Get paths to the counts and coldata files
-        counts_path = os.path.join(directory, "counts.tsv")
-        coldata_path = os.path.join(directory, "coldata.tsv")
+        counts_path = os.path.join(in_dir, "counts.tsv")
+        coldata_path = os.path.join(in_dir, "coldata.tsv")
 
         # Read in counts and coldata dataframes
         counts_cols = list(pd.read_csv(counts_path, nrows=1, sep="\t"))
@@ -86,8 +91,8 @@ class BatchCorrectionRunner(TaskRunner):
 
         coldata = filtered_samples
 
-        counts_in = os.path.join(directory, "counts_bc-in.tsv")
-        coldata_in = os.path.join(directory, "coldata_bc-in.tsv")
+        counts_in = os.path.join(in_dir, "counts_bc-in.tsv")
+        coldata_in = os.path.join(in_dir, "coldata_bc-in.tsv")
 
         # Save prepared counts and coldata files for batch correction
         counts.to_csv(counts_in, sep='\t', index=False)
@@ -95,8 +100,8 @@ class BatchCorrectionRunner(TaskRunner):
 
         # Call the batch correction R script
         script = os.path.join(current_app.config["SCRIPTS_PATH"], BatchCorrectionRunner.BC_SCRIPT)
-        log_path = os.path.join(directory, ".log")
-        cmd = f"{script} {counts_in} {coldata_in} {directory} {data_type}"
+        log_path = os.path.join(task_dir, ".log")
+        cmd = f"Rscript {script} {counts_in} {coldata_in} {out_dir} {data_type}"
 
         if not status.get("errors"):
             q = Queue(connection=Redis())

@@ -38,4 +38,4 @@ if (data_type == "rnaseq") {
 # Add symbol column and write the dataframe to a file
 bc_rma_expr <- data.frame(bc_rma_expr)
 result <- bind_cols(symbols, bc_rma_expr)
-write_tsv(result, file.path(output_dir, "counts_bc.tsv"))
+write_tsv(result, file.path(output_dir, "batch_corrected_counts.tsv"))

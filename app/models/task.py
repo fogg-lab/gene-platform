@@ -58,7 +58,6 @@ class Task:
         self.created_at = datetime.strftime(created_at, "%b %d %-I:%M %p")
         self.updated_at = datetime.strftime(updated_at, "%b %d %-I:%M %p")
 
-
     @staticmethod
     @require_task_id_correct_format
     def get(task_id: str) -> Task:

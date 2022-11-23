@@ -19,6 +19,7 @@ class TaskRunner(ABC):
         self._task_dir = task_dir
         self.task_type = None
         self._input_filenames = None
+        self._full_log_content = ""
 
     @abstractmethod
     def execute_task(self) -> dict:
@@ -78,6 +79,7 @@ class TaskRunner(ABC):
         with open(log_path, "r") as log_file:
             full_log_content = log_file.read()
 
+
         # Check first 20 lines for extraneous warnings and remove them
         extraneous_output_substrings = [
             "During startup - Warning messages",
@@ -114,6 +116,8 @@ class TaskRunner(ABC):
                f"cat {tmp_log_path} > {log_path} && rm {tmp_log_path}")
 
         full_log_content = "\n".join(log_lines)
+        if "Starting batch correction" not in full_log_content:
+            print("here")
         with open(tmp_log_path, "w") as log_file:
             log_file.write(full_log_content)
 
@@ -125,23 +129,36 @@ class TaskRunner(ABC):
         """Returns the contents of the log file for a task since the last update"""
         log_file_path = os.path.join(self._task_dir, ".log")
         log_content = ""
+        log_read_success = False
         if os.path.isfile(log_file_path):
-            full_log_content = TaskRunner._filter_log(log_file_path, self.task_type)
-            full_log_length = len(full_log_content)
-            log_content_max_len = 50000
-            if (full_log_length == last_log_offset) and not full_log:
-                # No new log content since last update
-                log_content=""
-            elif (full_log_length > last_log_offset) and not full_log:
-                # Return just the new part of the log since the last request
-                offset = max(0, full_log_length - log_content_max_len)
-                offset = max(last_log_offset, offset)
-                log_content = full_log_content[offset:]
-            else:
-                # Return full log content
-                log_content = full_log_content[-log_content_max_len:]
+            try:
+                full_log_content = TaskRunner._filter_log(log_file_path, self.task_type)
+                log_read_success = True
+            except UnicodeDecodeError:
+                pass
 
-            last_log_offset = full_log_length
+        if log_read_success:
+            self._full_log_content = full_log_content
+        else:
+            full_log_content = self._full_log_content
+            with open(log_file_path, "w") as log_file:
+                log_file.write(full_log_content)
+
+        full_log_length = len(full_log_content)
+        log_content_max_len = 50000
+        if (full_log_length == last_log_offset) and not full_log:
+            # No new log content since last update
+            log_content=""
+        elif (full_log_length > last_log_offset) and not full_log:
+            # Return just the new part of the log since the last request
+            offset = max(0, full_log_length - log_content_max_len)
+            offset = max(last_log_offset, offset)
+            log_content = full_log_content[offset:]
+        else:
+            # Return full log content
+            log_content = full_log_content[-log_content_max_len:]
+
+        last_log_offset = full_log_length
 
         return log_content, last_log_offset
 
