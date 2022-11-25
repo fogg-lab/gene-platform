@@ -7,7 +7,7 @@
 
 {% block content %}
 	<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
-	
+
 	<table class="centerinfo">
 		<tr>
 			<td colspan="2"><h2>RNAseq Sample Correlation</h2></td>
@@ -31,7 +31,7 @@
 								</div>
 							{%- endif %}
 							</div>
-							<button type="button" onclick="cancel_counts()" class="upload_action_button" id="cancel_counts_button">Cancel</button>
+							<button type="button" onclick="cancelUpload('counts.tsv')" class="upload_action_button" id="cancel_counts_button">Cancel</button>
 						</form>
 					</td>
 				</tr>
@@ -41,7 +41,7 @@
 	</table>
 
 	<br>
-	<form style="text-align:center;" id="rnaseq_correlation_form" action="javascript:submitRNASeqCorrelation()" method="POST">
+	<form style="text-align:center;" id="rnaseq_correlation_form" action="javascript:submit()" method="POST">
 		<span>Method:</span>
 		<select id="corr_method" name="corr_method">
 			<option value=""></option>
@@ -52,7 +52,7 @@
 	</form>
 
 	<div class="bottom-buttons">
-		<button onclick="submitRNASeqCorrelation()" class="button" id="next_button" disabled>Submit</button>
+		<button onclick="submit()" class="button" id="submit_button" disabled>Submit</button>
 	</div>
 	<br>
 

@@ -1,61 +1,10 @@
-// hide progress bar divs and cancel buttons for files which have not been uploaded
-if (document.getElementById("progress_of_counts") == null) {
-    document.getElementById("progress_of_counts_div").style.display = 'none';
-    document.getElementById("cancel_counts_button").style.display = 'none';
-} else {
-    document.getElementById("progress_of_counts_div").style.backgroundPosition = "0% 0";
-    document.getElementById("counts_upload_div").style.display = 'none';
-}
-
-if (document.getElementById("progress_of_coldata") == null) {
-    document.getElementById("progress_of_coldata_div").style.display = 'none';
-    document.getElementById("cancel_coldata_button").style.display = 'none';
-} else {
-    document.getElementById("progress_of_coldata_div").style.backgroundPosition = "0% 0";
-    document.getElementById("coldata_upload_div").style.display = 'none';
-}
-
-// disable next button if progress counts or coldata not uploaded
-update_next_button()
-
-function cancelReqListener() {
-    // file upload successfully cancelled
-    console.log(this.responseText);
-}
-
-function bcReqListener() {
-    // batch correction completed
-    let messages = document.getElementById("messages");
-    messages.innerHTML = this.responseText;
-}
-
 function displayResults() {
     document.getElementById("download-bc-btn").disabled = false;
 }
 
-function cancel_counts() {
-    cancel_upload("counts.tsv");
-    update_next_button();
-}
-
-function cancel_coldata() {
-    cancel_upload("coldata.tsv");
-    update_next_button();
-}
-
-function update_next_button() {
+function updateNextButton() {
     // hide next button if progress counts or coldata not uploaded
-    if (
-        document.getElementById("progress_of_counts") == null
-        || document.getElementById("progress_of_coldata") == null
-        || document.getElementById("progress_of_counts").className != "success"
-        || document.getElementById("progress_of_coldata").className != "success"
-        ) {
-            document.getElementById("next_button").disabled = true;
-        }
-        else {
-            document.getElementById("next_button").disabled = false;
-        }
+    document.getElementById("submit_button").disabled = !(isUploaded("counts") && isUploaded("coldata"));
 }
 
 function submit() {

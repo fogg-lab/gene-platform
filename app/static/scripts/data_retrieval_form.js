@@ -1,9 +1,4 @@
-// show the rest of the form if data source is selected
-update_form();
-document.getElementById("data_source").onchange = update_form;
-
-
-function update_form() {
+function updateForm() {
     let data_source = document.getElementById("data_source").value;
     if (data_source && data_source == "gdc") {
         document.getElementById("gdc_entry").style.display = 'block';
@@ -33,17 +28,14 @@ function update_form() {
     }
 }
 
-
 function preprocessingReqListener() {
     let messages = document.getElementById("messages");
     messages.innerHTML = this.responseText;
 }
 
-
 function displayResults() {
     document.getElementById("download-preprocessed-data-btn").disabled = false;
 }
-
 
 function submit() {
     var submitReq = new XMLHttpRequest();
@@ -64,7 +56,6 @@ function submit() {
     let query = `source=${data_source}&dsets=${dsets}&task_id=${getTaskID()}`
     submitReq.send(query);
 }
-
 
 function submissionConfirmed() {
     datasource_select = document.getElementById("data_source");
@@ -87,4 +78,10 @@ function submissionConfirmed() {
     document.getElementById("download-preprocessed-data-btn").disabled = true;
     startTaskUpdateRepeater();
     showRuntime();
+}
+
+window.onload = function() {
+    // show the rest of the form if data source is selected
+    updateForm();
+    document.getElementById("data_source").onchange = update_form;
 }

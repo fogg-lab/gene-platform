@@ -34,7 +34,7 @@
 								</div>
 							{%- endif %}
 							</div>
-							<button type="button" onclick="cancel_counts()" class="upload_action_button" id="cancel_counts_button">Cancel</button>
+							<button type="button" onclick="cancelUpload('counts.tsv')" class="upload_action_button" id="cancel_counts_button">Cancel</button>
 						</form>
 					</td>
 					<td>
@@ -50,7 +50,7 @@
 								</div>
 							{%- endif %}
 							</div>
-							<button type="button" onclick="cancel_coldata()" class="upload_action_button" id="cancel_coldata_button">Cancel</button>
+							<button type="button" onclick="cancelUpload('coldata.tsv')" class="upload_action_button" id="cancel_coldata_button">Cancel</button>
 						</form>
 					</td>
 					<td>
@@ -66,7 +66,7 @@
 								</div>
 							{%- endif %}
 							</div>
-							<button type="button" onclick="cancel_filter()" class="upload_action_button" id="cancel_filter_button">Cancel</button>
+							<button type="button" onclick="cancelUpload('filter.txt')" class="upload_action_button" id="cancel_filter_button">Cancel</button>
 						</form>
 					</td>
 					<td>
@@ -82,7 +82,7 @@
 								</div>
 							{%- endif %}
 							</div>
-							<button type="button" onclick="cancel_config()" class="upload_action_button" id="cancel_config_button">Cancel</button>
+							<button type="button" onclick="cancelUpload('config.yml')" class="upload_action_button" id="cancel_config_button">Cancel</button>
 						</form>
 					</td>
 				</tr>

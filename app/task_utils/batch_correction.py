@@ -23,8 +23,6 @@ class BatchCorrectionRunner(TaskRunner):
     def execute_task(self) -> StatusDict:
         """Queue a batch correction job."""
         task_dir = self._task_dir
-        input_dir = Path(task_dir) / "input"
-        output_dir = Path(task_dir) / "output"
         cfg = self.get_config()
         data_type = cfg.get("data_type")
         reference_level = cfg.get("reference_level")

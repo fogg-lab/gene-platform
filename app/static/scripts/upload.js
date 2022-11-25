@@ -131,7 +131,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 							progress.className = "success";
 							progress.innerHTML = displayed_filename;
 						}
-						update_next_button();
+						updateNextButton();
 					}
 				}
 			};
@@ -198,7 +198,7 @@ Developed by Craig Buckler (@craigbuckler) of OptimalWorks.net
 })();
 
 
-function cancel_upload(filename) {
+function cancelUpload(filename) {
     var cancelReq = new XMLHttpRequest();
     let filename_base = filename.split(".")[0];
     let progress_bar_id = "progress_of_" + filename_base;
@@ -223,4 +223,35 @@ function cancel_upload(filename) {
 
     // show the file upload div
     document.getElementById(upload_div_id).style.display = 'block';
+
+	// update next/submit button
+	updateNextButton();
+}
+
+
+function isUploaded(name) {
+	if (!(["counts", "coldata", "config", "filter"].includes(name))) {
+		return false;
+	}
+	progress_indicator = document.getElementById(`progress_of_${name}`);
+    return progress_indicator != null && progress_indicator.className == "success";
+}
+
+
+window.onload = function() {
+	// hide progress bar divs and cancel buttons for files which have not been uploaded
+	for (fname of ["counts", "coldata", "config", "filter"]) {
+		progress_div = document.getElementById(`progress_of_${fname}_div`);
+		if (progress_div != null && !isUploaded(fname)) {
+			progress_div.style.display = 'none';
+			document.getElementById(`cancel_${fname}_button`).style.display = 'none';
+		}
+		else if (progress_div != null) {
+			progress_div.style.backgroundPosition = "0% 0";
+			document.getElementById(`${fname}_upload_div`).style.display = 'none';
+		}
+	}
+
+    // disable next button if progress counts or coldata not uploaded
+    updateNextButton();
 }
