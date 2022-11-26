@@ -46,7 +46,7 @@ def get_normalized_counts():
 
     filename = "counts_normalized.tsv"
 
-    filepath = Task.get_output_filepath(task_id, "")
+    filepath = Task.get_output_filepath(task_id, filename)
     if filepath == "":
         return f"'{filename}' not found.", 204
 
