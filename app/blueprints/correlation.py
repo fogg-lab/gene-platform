@@ -19,11 +19,11 @@ def rnaseq_correlation():
     uploads = Task.list_input_files(task_id)
 
     return render_template("rnaseq_correlation.html", uploaded_input_files=uploads,
-                           title="RNAseq Sample Correlation")
+                           task_id=task_id, title="RNAseq Sample Correlation")
 
 
-@require_valid_task_id
 @correlation_bp.route("/get-correlation-plot")
+@require_valid_task_id
 def get_correlation_plot():
     """Returns specified correlation plot to client."""
 
@@ -34,15 +34,15 @@ def get_correlation_plot():
     img_path = Task.get_output_filepath(task_id, image_filename)
 
     if not os.path.isfile(img_path):
-        return (f"{image_filename} was not found", 204)
+        return f"{image_filename} was not found", 204
 
     with open(f'{img_path}', 'rb') as img_fp:
         img_data = base64.b64encode(img_fp.read()).decode("utf-8")
         return img_data
 
 
-@require_valid_task_id
 @correlation_bp.route("/submit-rnaseq-correlation", methods=["POST"])
+@require_valid_task_id
 def submit_rnaseq_correlation():
     """Submit task to get rnaseq sample correlation plots"""
 

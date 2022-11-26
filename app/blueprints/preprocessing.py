@@ -18,8 +18,8 @@ def preprocessing():
     return render_template("preprocessing.html", title="Preprocessing", task_id=task_id)
 
 
-@require_valid_task_id
 @preprocessing_bp.route("/submit-preprocessing", methods=["POST"])
+@require_valid_task_id
 def submit_preprocessing():
     """Submit preprocessing task"""
 
@@ -29,8 +29,8 @@ def submit_preprocessing():
     return status_msg
 
 
-@require_valid_task_id
 @preprocessing_bp.route("/confirm-preprocessing-submission", methods=["POST"])
+@require_valid_task_id
 def confirm_preprocessing_submission():
     """Validate submitted datasets and display datasets to load before submission"""
 

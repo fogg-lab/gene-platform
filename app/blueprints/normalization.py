@@ -19,11 +19,11 @@ def normalization():
     uploads = Task.list_input_files(task_id)
 
     return render_template("normalization.html", uploaded_input_files=uploads,
-                           title="Normalization")
+                           task_id=task_id, title="Normalization")
 
 
-@require_valid_task_id
 @normalization_bp.route("/submit-normalization", methods=["POST"])
+@require_valid_task_id
 def submit_normalization():
     """Submit a normalization task"""
 
@@ -37,8 +37,8 @@ def submit_normalization():
     return status_msg
 
 
-@require_valid_task_id
 @normalization_bp.route("/get-normalized-counts")
+@require_valid_task_id
 def get_normalized_counts():
     """Return the normalized counts file to the client"""
 

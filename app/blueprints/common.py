@@ -32,8 +32,8 @@ def require_valid_task_id(task_route):
     return check_task_id
 
 
-@require_valid_task_id
 @common_bp.route("/upload", methods=["POST"])
+@require_valid_task_id
 def upload():
     """Receive an uploaded file for a task."""
 
@@ -46,8 +46,8 @@ def upload():
     return jsonify(result)
 
 
-@require_valid_task_id
 @common_bp.route("/cancel-upload", methods=["POST"])
+@require_valid_task_id
 def cancelupload():
     """Remove uploaded file in task directory"""
 
@@ -59,8 +59,8 @@ def cancelupload():
     return f"{filename} upload cancelled"
 
 
-@require_valid_task_id
 @common_bp.route("/get-progress")
+@require_valid_task_id
 def get_console_output():
     """Returns status and updated log of a running task."""
 

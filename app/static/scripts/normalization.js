@@ -12,7 +12,7 @@ function submit() {
     document.getElementById("download-norm-btn").disabled = true;
     document.getElementById("messages").innerHTML = "Performing normalization...";
     let submitnormReq = new XMLHttpRequest();
-    let submit_norm_query = "method=" + document.getElementById("normalization_method").value;
+    let submit_norm_query = `method=${document.getElementById("normalization_method").value}&task_id=${getTaskID()}`;
     submitnormReq.open("POST", "/submit-normalization");
     submitnormReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     submitnormReq.send(submit_norm_query);

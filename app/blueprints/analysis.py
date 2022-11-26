@@ -37,8 +37,8 @@ def analysis_parameters():
                            title="Analysis parameters")
 
 
-@require_valid_task_id
 @analysis_bp.route("/confirm-analysis-submission", methods=["POST"])
+@require_valid_task_id
 def confirm_analysis_submission():
     """Validates input and display formula before submission."""
 
@@ -71,8 +71,8 @@ def confirm_analysis_submission():
     return confirmation_message
 
 
-@require_valid_task_id
 @analysis_bp.route("/submit", methods=["POST"])
+@require_valid_task_id
 def submit():
     """Submits input for analysis."""
 
@@ -83,8 +83,8 @@ def submit():
     return status_msg
 
 
-@require_valid_task_id
 @analysis_bp.route("/display")
+@require_valid_task_id
 def display_output():
     """Loads a page that displays output in a table."""
 
@@ -112,8 +112,8 @@ def display_output():
          data=unfiltered_data, filtered_data=filtered_data, task_id=task_id)
 
 
-@require_valid_task_id
 @analysis_bp.route("/plots")
+@require_valid_task_id
 def plots():
     """Load analysis plots page"""
 
@@ -136,8 +136,8 @@ def plots():
     return render_template("analysis_plots.html", plot_filenames=plot_filenames, task_id=task_id)
 
 
-@require_valid_task_id
 @analysis_bp.route('/getplot/<filename>')
+@require_valid_task_id
 def get_plot(filename):
     """Get an image for a plot"""
 
@@ -158,8 +158,8 @@ def reset():
     return redirect(url_for("common_bp.index"))
 
 
-@require_valid_task_id
 @analysis_bp.route("/get-unfiltered-tsv")
+@require_valid_task_id
 def get_unfiltered_tsv():
     """Download unfiltered output."""
 
@@ -179,8 +179,8 @@ def get_unfiltered_tsv():
                     f"attachment; filename={filename}"})
 
 
-@require_valid_task_id
 @analysis_bp.route("/get-filtered-tsv")
+@require_valid_task_id
 def get_filtered_tsv():
     """Download filtered output."""
 

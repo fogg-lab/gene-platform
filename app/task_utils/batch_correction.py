@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 import pandas as pd
 import numpy as np
 from redis import Redis
@@ -101,9 +100,8 @@ class BatchCorrectionRunner(TaskRunner):
         log_path = os.path.join(task_dir, ".log")
         cmd = f"Rscript {script} {counts_in} {coldata_in} {out_dir} {data_type}"
 
-        if not status.get("errors"):
-            q = Queue(connection=Redis())
-            q.enqueue(execute_job_async, args=(task_id, log_path, "batch correction", cmd))
+        q = Queue(connection=Redis())
+        q.enqueue(execute_job_async, args=(task_id, log_path, "batch correction", cmd))
 
         return status
 
@@ -116,8 +114,7 @@ class BatchCorrectionRunner(TaskRunner):
             string: Empty string if input files are present, error message otherwise.
         """
 
-        input_dir = Path(self._task_dir) / "input"
-
+        input_dir = os.path.join(self._task_dir, "input")
         counts_path = os.path.join(input_dir, "counts.tsv")
         coldata_path = os.path.join(input_dir, "coldata.tsv")
 

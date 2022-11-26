@@ -22,8 +22,9 @@ def batchcorrection():
     return render_template("batchcorrection.html", uploaded_input_files=uploads,
                            task_id=task_id, title="Batch Correction")
 
-@require_valid_task_id
+
 @batch_correction_bp.route("/submit-batch-correction", methods=["POST"])
+@require_valid_task_id
 def submit_batch_correction():
     """Submit a batch correction task"""
 
@@ -46,8 +47,8 @@ def submit_batch_correction():
     return task_status
 
 
-@require_valid_task_id
 @batch_correction_bp.route("/get-batch-corrected-counts")
+@require_valid_task_id
 def get_batch_correction_counts():
     """Returns batch correction results to the client"""
 
@@ -57,6 +58,6 @@ def get_batch_correction_counts():
     output_file_dir = Path(bc_counts_path).parent if bc_counts_path else None
 
     if not output_file_dir:
-        return 200, "Batch correction output was not found."
+        return "Batch correction output was not found.", 200
 
     return send_from_directory(output_file_dir, "batch_corrected_counts.tsv")

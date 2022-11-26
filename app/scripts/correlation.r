@@ -76,6 +76,7 @@ corrplot2 <- function(data,
     else if (method == "spearman") {
         plot_title = "Spearman's Correlation Matrix"
     }
+
     corrplot(mat,
         method = "color", col = col(200), number.font = number.font,
         mar = mar, number.cex = number.cex,
@@ -93,7 +94,7 @@ corrplot2 <- function(data,
     )
 }
 
-png(file = output_file, width=plot_size, height=plot_size, res=300, bg="white")
+png(file = output_file, width=plot_size, height=plot_size, units="in", res=300, bg="white")
 
 corrplot2(
   data = cts,

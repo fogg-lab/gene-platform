@@ -206,7 +206,6 @@ function cancelUpload(filename) {
     let cancel_button_id = "cancel_" + filename_base + "_button";
     let cancel_req_query = "filename=" + filename;
     let file_progress_bar = document.getElementById(progress_bar_id);
-    cancelReq.addEventListener("load", cancelReqListener);
     cancelReq.open("POST", "/cancel-upload");
     cancelReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 

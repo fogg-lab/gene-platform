@@ -1,11 +1,13 @@
 import os
-import subprocess
 import pandas as pd
 import numpy as np
+from redis import Redis
+from rq import Queue
 from flask import current_app
 
 from app.helper import StatusDict
 from app.task_utils.task_runner import TaskRunner
+from app.task_utils.execute_job_async import execute_job_async
 
 
 class CorrelationRunner(TaskRunner):
@@ -19,7 +21,9 @@ class CorrelationRunner(TaskRunner):
 
     def execute_task(self):
         """Run an RNASeq correlation task"""
-        return StatusDict(status="", errors=[])
+        cfg = self.get_config()
+        corr_method = cfg.get("corr_method")
+        return self._call_corr(corr_method)
 
     def validate_config(self, config) -> dict:
         """Ensures config parameters are valid for the task"""
@@ -29,7 +33,7 @@ class CorrelationRunner(TaskRunner):
         """Validates all input files for the task"""
         return StatusDict(status="", errors=[])
 
-    def _call_corr(self, user_dir, corr_method):
+    def _call_corr(self, corr_method):
         """
         Prepare data for correlation and call R script to generate plots.
         Args:
@@ -37,10 +41,13 @@ class CorrelationRunner(TaskRunner):
             corr_method (string): Correlation method to use ('pearson', 'spearman', or 'both').
         """
 
-        counts_path = os.path.join(user_dir, "counts.tsv")
+        in_dir = os.path.join(self._task_dir, "input")
+        out_dir = os.path.join(self._task_dir, "output")
+        counts_path = os.path.join(in_dir, "counts.tsv")
 
         if not os.path.isfile(counts_path):
-            return "Error: Counts file not found"
+            err_msg = "Error: Counts file not found"
+            return StatusDict(status=err_msg, errors=[err_msg])
 
         counts_cols = list(pd.read_csv(counts_path, nrows = 1, sep="\t"))
         counts = pd.read_csv(counts_path,
@@ -48,19 +55,23 @@ class CorrelationRunner(TaskRunner):
 
         counts = counts.select_dtypes(include=np.number)
 
-        counts.to_csv(os.path.join(user_dir, "counts_corr-in.tsv"), sep='\t', index=False)
+        counts_in_path = os.path.join(in_dir, 'counts_corr-in.tsv')
+        counts.to_csv(counts_in_path, sep='\t', index=False)
 
-        counts_in_path = os.path.join(user_dir, 'counts_corr-in.tsv')
-
-        rscripts_path = current_app.config["RSCRIPTS_PATH"]
-        script = os.path.join(rscripts_path, CorrelationRunner.CORR_SCRIPT)
+        scripts_path = current_app.config["SCRIPTS_PATH"]
+        script = os.path.join(scripts_path, CorrelationRunner.CORR_SCRIPT)
 
         if corr_method not in ["pearson", "spearman", "both"]:
             raise ValueError(f"Invalid correlation method: '{corr_method}'")
 
         corr_methods = ["pearson", "spearman"] if corr_method == "both" else [corr_method]
 
-        # Call R script to generate plots
-        for method in corr_methods:
-            cmd = [script, counts_in_path, user_dir, method]
-            subprocess.Popen(cmd, cwd=user_dir, shell=True)
+        cmd = [f"Rscript {script} {counts_in_path} {out_dir} {method}" for method in corr_methods]
+        cmd = " && ".join(cmd)
+        cmd = f"bash -c '{cmd}'"
+
+        log_path = os.path.join(self._task_dir, ".log")
+
+        q = Queue(connection=Redis())
+        q.enqueue(execute_job_async, args=(self._task_id, log_path, "correlation", cmd))
+
