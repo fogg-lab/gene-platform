@@ -1,5 +1,41 @@
 {% extends 'base.html' %}
 
+{% block scripts %}
+  <script>
+    function set_display_filters() {
+      if (filter_selection != null && filter_selection.options[filter_selection.selectedIndex].value == "filtered") {
+        display_filters["filter"] = true;
+      } else {
+        display_filters["filter"] = false;
+      }
+      sort_colname = sort_selection.options[sort_selection.selectedIndex].value;
+      if (sort_colname == "") {
+        display_filters["sortIndex"] = -1
+      } else {
+        col_names = {{cols|tojson}};
+        col_index = col_names.indexOf(sort_colname);
+        display_filters["sortIndex"] = col_index
+      }
+      display_filters["search"] = search_field.value;
+    }
+    function set_displayed_data() {
+      if (display_filters["filter"]) {
+        displayed_data = {{ filtered_data|tojson }};
+      } else {
+        displayed_data = {{ data|tojson }}
+      }
+      if (display_filters["sortIndex"] != -1) {
+        displayed_data = sort_data(displayed_data);
+      }
+      search_string = display_filters["search"];
+      if (search_string != "") {
+        displayed_data = search(displayed_data, search_string);
+      }
+    }
+  </script>
+  <script src="{{ url_for('static',filename='scripts/analysis_results_page.js') }}"></script>
+{% endblock %}
+
 {% block content %}
   <table class="linkbar">
     <tr>
@@ -72,63 +108,5 @@
   </table>
 
   <input type="hidden" id="filtered_data" name="filtered_data" value={{ filtered_data }}>
-
-  <script src="{{ url_for('static',filename='scripts/results_page.js') }}"></script>
-
-  <script>
-
-    if (filter_selection != null) {
-      filter_selection.onchange = display_output;
-    }
-    display_output();
-
-    function display_output() {
-      set_display_filters();
-      set_displayed_data();
-      go_to_page();
-    }
-
-    function set_display_filters() {
-      if (
-        filter_selection != null &&
-        filter_selection.options[filter_selection.selectedIndex].value == "filtered"
-      ) {
-        display_filters["filter"] = true;
-      }
-      else {
-        display_filters["filter"] = false;
-      }
-      sort_colname = sort_selection.options[sort_selection.selectedIndex].value;
-      if (sort_colname == "") {
-        display_filters["sortIndex"] = -1
-      }
-      else {
-        col_names = {{cols|tojson}};
-        col_index = col_names.indexOf(sort_colname);
-        display_filters["sortIndex"] = col_index
-      }
-      
-      display_filters["search"] = search_field.value;
-    }
-
-    function set_displayed_data() {
-      if (display_filters["filter"]) {
-        displayed_data = {{ filtered_data|tojson }};
-      }
-      else {
-        displayed_data = {{ data|tojson }}
-      }
-      
-      if (display_filters["sortIndex"] != -1) {
-        displayed_data = sort_data(displayed_data);
-      }
-
-      search_string = display_filters["search"];
-      if (search_string != "") {
-        displayed_data = search(displayed_data, search_string);
-      }
-    }
-
-  </script>
 
 {% endblock %}

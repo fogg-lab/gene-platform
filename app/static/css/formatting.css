@@ -446,7 +446,7 @@ pre {
 	display: inline-block;
 }
 
-.topnav a {
+.topnav a, .dropbtn {
 	display: inline-block;
 	color: #f2f2f2;
 	padding: 16px 15px;
@@ -457,7 +457,7 @@ pre {
 	white-space: nowrap;
 }
 
-.topnav a:hover, .dropdown:hover .dropbtn {
+.topnav a:hover, .dropdown:hover {
 	background-color: #ddd;
 	color: black;
 }

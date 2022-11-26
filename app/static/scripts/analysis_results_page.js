@@ -12,6 +12,17 @@ filter_selection = document.getElementById("filter_select");
 sort_selection = document.getElementById("sort_select");
 search_field = document.getElementById("search_field");
 
+if (filter_selection != null) {
+    filter_selection.onchange = display_output;
+}
+
+display_output();
+
+function display_output() {
+    set_display_filters();
+    set_displayed_data();
+    go_to_page();
+}
 
 function populate_rows(start_index, end_index) {
     data = displayed_data.slice(start_index, end_index+1)
