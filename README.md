@@ -10,7 +10,7 @@ Prerequisite: Install [Docker](https://docs.docker.com/get-docker/) or [Singular
 
 Instructions to set up and start the web app:  
 1. Clone this repo  
-  `https://github.com/fogg-lab/gene-platform.git`  
+  `git clone https://github.com/fogg-lab/gene-platform.git`  
 
 2. Build the container  
   `cd gene-platform`  
