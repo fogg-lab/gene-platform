@@ -5,6 +5,9 @@
 ### Main site (currently you must sign in with your OSU account): https://geneplatform.oregonstate.edu
 
 ## Installation
+The web server runs on Linux, including the Windows Subsystem for Linux (WSL).
+
+## Installation
 
 Prerequisite: Install [Docker](https://docs.docker.com/get-docker/) or [Singularity](https://docs.sylabs.io/guides/3.0/user-guide/installation.html) container platform
 
