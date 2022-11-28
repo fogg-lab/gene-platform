@@ -7,6 +7,16 @@
 		<link rel="stylesheet" href="https://use.typekit.net/mco6ajw.css">
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/formatting.css') }}">
 	</head>
+    <script>
+        function toggleHamburger() {
+            var x = document.getElementById("topnavbar");
+            if (x.className === "topnav") {
+                x.className += " responsive";
+            } else {
+                x.className = "topnav";
+            }
+        }
+    </script>
 	<body>
 		<div class="topnav" id="topnavbar">
             <span class="organizational-logo">GENE Platform</span>
@@ -15,13 +25,13 @@
             {% else %}
                 <a href="/">Home</a>
             {% endif %}
-            {% if request.endpoint == 'analysis_bp.setup'  %}
+            {% if request.endpoint == 'analysis_bp.analysis_setup'  %}
                 <a class="active" href="#">Analysis</a>
             {% else %}
-                <a href="/setup">Analysis</a>
+                <a href="/analysis-setup">Analysis</a>
             {% endif %}
             <div class="dropdown">
-                <button class="dropbtn">Data Prep Tools
+                <button class="dropbtn">Data Prep
                     <i class="fa fa-caret-down"></i>
                 </button>
                 <div class="dropdown-content">
@@ -47,18 +57,19 @@
             {% else %}
                 <a href="/rnaseq-correlation">RNAseq Correlation</a>
             {% endif %}
+            {% if request.endpoint == 'common_bp.tasks' %}
+                <a class="active" href="#">Tasks</a>
+                {% else %}
+                <a href="/tasks">Tasks</a>
+            {% endif %}
             <a href="javascript:void(0);" class="icon" onclick="toggleHamburger()">&#9776;</a>
 		</div>
+        {% if task_id is not defined %}
+            {% set task_id = "" %}
+        {% endif %}
+
+        <input type="hidden" id="taskID" name="taskID" value={{ task_id }}>
         {% block content %}{% endblock %}
-        <script>
-            function toggleHamburger() {
-                var x = document.getElementById("topnavbar");
-                if (x.className === "topnav") {
-                    x.className += " responsive";
-                } else {
-                    x.className = "topnav";
-                }
-            }
-        </script>
     </body>
+    {% block scripts %}{% endblock %}
 </html>

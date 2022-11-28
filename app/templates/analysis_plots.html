@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <table>
+        <tr>
+            <td><a href="/display" class="button">Previous: Display Results</a></td>
+        </tr>
+    </table>
+    <h3 align="center">Data Visualization</h3>
+    <div align="center">
+        <select class="data_type">
+            <option>Select</option>
+            <option value="volcano">Unfiltered Volcano</option>
+            <option value="f_volcano">Filtered Volcano</option>
+            <option value="v_trend">Unfiltered Variance Trend</option>
+            <option value="f_v_trend">Filtered Variance Trend</option>
+        </select>
+    </div>
+    <div align="center">
+        <div class="volcano IMG">
+            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_volcano, task_id=task_id) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_volcano, task_id=task_id) }}" alt="Volcano Plot"
+                    style="width: 30%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            </a>
+        </div>
+        <div class="f_volcano IMG">
+            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_volcano, task_id=task_id) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_volcano, task_id=task_id) }}" alt="Filtered Volcano Plot"
+                    style="width: 30%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            </a>
+        </div>
+        <div class="v_trend IMG">
+            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_mean_variance, task_id=task_id) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.unfiltered_mean_variance, task_id=task_id) }}" alt="Mean Variance Trend"
+                    style="width: 30%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            </a>
+        </div>
+        <div class="f_v_trend IMG">
+            <a href="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_mean_variance, task_id=task_id) }}" download="filename">
+                <img src="{{ url_for('analysis_bp.get_plot', filename=plot_filenames.filtered_mean_variance, task_id=task_id) }}" alt="Filtered Mean Variance Trend"
+                    style="width: 30%; height: auto; border: solid 1px red; border-radius: 8px; padding: 5px;">
+            </a>
+        </div>
+    </div>
+    <h3 align="center">Description</h3>
+    <div class="desc">
+        <p>Up: l2fc > 0.6 and p-value < 0.0e</p>
+        <p>Down: l2fc < -0.6 and p-value < 0.05</p>
+        <p>Not sig: Does not meet criteria for Up or Down</p>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function()
+        {
+            $("select").on('change', function()
+            {
+                $(this).find("option:selected").each(function()
+                {
+                    var pic = $(this).attr("value");
+                    if (pic)
+                    {
+                        $(".IMG").not("." + pic).hide();
+                        $("div." + pic + ".IMG").show();
+                    }
+                    else
+                    {
+                        $(".IMG").hide();
+                    }
+                });
+            }).change();
+        });
+    </script>
+{% endblock %}
