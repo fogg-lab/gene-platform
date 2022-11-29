@@ -30,7 +30,7 @@ def format_msg_list_html(msg_list, tag="p"):
     """
     Formats a list of status messages into HTML for display in the browser.
     Args:
-        msg_list (list[str]): List of status messages.
+        msg_list (List[str]): List of status messages.
         tag (str): HTML tag to use for each message (li or p). Defaults to p.
     Returns:
         str: HTML-formatted status messages.
@@ -66,7 +66,7 @@ def get_analysis_confirmation_msg(config_params):
 class StatusDict(TypedDict):
     """Status dictionary for task operations that need to return a status message."""
     status: str
-    errors: list[str]
+    errors: List[str]
 
 
 def get_series_probesets(accessions, metadata_dir):
@@ -106,7 +106,7 @@ def get_valid_geo_accessions(accessions, metadata_dir):
     """
     Returns a list of valid GEO accessions from given list of accessions
     Args:
-        accessions (list[str]): List of GEO accessions
+        accessions (List[str]): List of GEO accessions
     Returns:
         list: List of valid GEO accessions
     """
