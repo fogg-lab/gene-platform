@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+TEMPLATES_AUTO_RELOAD = True
 REDIS_PORT = os.environ.get("REDIS_PORT", 6379)
 
 ### Authentication ###
