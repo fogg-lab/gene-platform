@@ -2,3 +2,7 @@ __pycache__/
 .env
 .log
 image.sif
+*.db
+.vscode
+flask_session
+dev_container

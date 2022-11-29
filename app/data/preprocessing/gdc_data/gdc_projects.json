@@ -1,0 +1,114 @@
+{
+    "beataml1.0": [
+        "crenolanib",
+        "cohort"
+    ],
+    "cgci": [
+        "blgsp",
+        "htmcp-cc"
+    ],
+    "cmi": [
+        "asc",
+        "mpc",
+        "mbc"
+    ],
+    "cptac": [
+        "3",
+        "2"
+    ],
+    "ctsp": [
+        "dlbcl1"
+    ],
+    "exceptional_responders": [
+        "er"
+    ],
+    "fm": [
+        "ad"
+    ],
+    "genie": [
+        "grcc",
+        "dfci",
+        "nki",
+        "vicc",
+        "uhn",
+        "mda",
+        "msk",
+        "jhu"
+    ],
+    "hcmi": [
+        "cmdc"
+    ],
+    "mmrf": [
+        "commpass"
+    ],
+    "mp2prt": [
+        "wt"
+    ],
+    "nciccr": [
+        "dlbcl"
+    ],
+    "ohsu": [
+        "cnl"
+    ],
+    "organoid": [
+        "pancreatic"
+    ],
+    "rebc": [
+        "thyr"
+    ],
+    "target": [
+        "nbl",
+        "all-p1",
+        "rt",
+        "ccsk",
+        "os",
+        "all-p2",
+        "wt",
+        "aml",
+        "all-p3"
+    ],
+    "tcga": [
+        "esca",
+        "sarc",
+        "cesc",
+        "ucec",
+        "laml",
+        "tgct",
+        "chol",
+        "meso",
+        "acc",
+        "dlbc",
+        "pcpg",
+        "kich",
+        "thca",
+        "thym",
+        "ucs",
+        "gbm",
+        "uvm",
+        "coad",
+        "stad",
+        "ov",
+        "kirc",
+        "lgg",
+        "hnsc",
+        "blca",
+        "luad",
+        "prad",
+        "lihc",
+        "lusc",
+        "skcm",
+        "kirp",
+        "brca",
+        "paad",
+        "read"
+    ],
+    "trio": [
+        "cru"
+    ],
+    "varepop": [
+        "apollo"
+    ],
+    "wcdt": [
+        "mcrpc"
+    ]
+}

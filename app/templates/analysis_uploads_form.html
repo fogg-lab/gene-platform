@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block scripts %}
+	<script src="{{ url_for('static',filename='scripts/analysis_uploads_form.js') }}"></script>
+	<script src="{{ url_for('static',filename='scripts/upload.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+	<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
+	
+	<table class="centerinfo">
+		<tr>
+			<td><h2>Differential Expression Analysis - Upload Files</h2></td>
+		</tr>
+		<tr>
+			<td><table style="border: 1px solid black;">
+				<tr>
+					<th style="font-size: 20px">Counts</th>
+					<th style="font-size: 20px">Coldata</th>
+					<th style="font-size: 20px">Filter (optional)</th>
+					<th style="font-size: 20px">Config (optional)</th>
+				</tr>
+				<tr>
+					<td>
+						<form class="filedrag" id="upload_counts" method="POST" enctype="multipart/form-data">
+							<div class="upload_div" id="counts_upload_div">
+								<input type="file" class="fileselect" id="fileselect_counts" name="fileselect[]" style="display:none">
+								<p>Drop .tsv file<br>here or<label for="fileselect_counts" class="upload_action_button">Browse</label></p>
+							</div>
+							<div class="progress_div" id="progress_of_counts_div">
+							{% if uploaded_input_files["counts.tsv"] -%}
+								<div class="success" id="progress_of_counts">
+									Uploaded counts
+								</div>
+							{%- endif %}
+							</div>
+							<button type="button" onclick="cancelUpload('counts.tsv')" class="upload_action_button" id="cancel_counts_button">Cancel</button>
+						</form>
+					</td>
+					<td>
+						<form class="filedrag" id="upload_coldata" action="{{ url_for('common_bp.upload') }}" method="POST" enctype="multipart/form-data">
+							<div class="upload_div" id="coldata_upload_div">
+								<input type="file" class="fileselect" id="fileselect_coldata" name="fileselect[]" style="display:none">
+								<p>Drop .tsv file<br>here or<label for="fileselect_coldata" class="upload_action_button">Browse</label></p>
+							</div>
+							<div class="progress_div" id="progress_of_coldata_div">
+							{% if uploaded_input_files["coldata.tsv"] -%}
+								<div class="success" id="progress_of_coldata">
+									Uploaded coldata
+								</div>
+							{%- endif %}
+							</div>
+							<button type="button" onclick="cancelUpload('coldata.tsv')" class="upload_action_button" id="cancel_coldata_button">Cancel</button>
+						</form>
+					</td>
+					<td>
+						<form class="filedrag" id="upload_filter" action="{{ url_for('common_bp.upload') }}" method="POST" enctype="multipart/form-data">
+							<div class="upload_div" id="filter_upload_div">
+								<input type="file" class="fileselect" id="fileselect_filter" name="fileselect[]" style="display:none">
+								<p>Drop .txt file<br>here or<label for="fileselect_filter" class="upload_action_button">Browse</label></p>
+							</div>
+							<div class="progress_div" id="progress_of_filter_div">
+							{% if uploaded_input_files["filter.txt"] -%}
+								<div class="success" id="progress_of_filter">
+									Uploaded filter
+								</div>
+							{%- endif %}
+							</div>
+							<button type="button" onclick="cancelUpload('filter.txt')" class="upload_action_button" id="cancel_filter_button">Cancel</button>
+						</form>
+					</td>
+					<td>
+						<form class="filedrag" id="upload_config" action="{{ url_for('common_bp.upload') }}" method="POST" enctype="multipart/form-data">
+							<div class="upload_div" id="config_upload_div">
+								<input type="file" class="fileselect" id="fileselect_config" name="fileselect[]" style="display:none">
+								<p>Drop .yml file<br>here or<label for="fileselect_config" class="upload_action_button">Browse</label></p>
+							</div>
+							<div class="progress_div" id="progress_of_config_div">
+							{% if uploaded_input_files["config.yml"] -%}
+								<div class="success" id="progress_of_config">
+									Uploaded config
+								</div>
+							{%- endif %}
+							</div>
+							<button type="button" onclick="cancelUpload('config.yml')" class="upload_action_button" id="cancel_config_button">Cancel</button>
+						</form>
+					</td>
+				</tr>
+			</table>
+		</tr>
+		<tr>
+			<td colspan="4">&nbsp;</td>
+		</tr>
+	</td>
+	</table>
+
+	<div id="messages">
+	</div>
+
+	<div class="bottom-buttons">
+		<button onclick="goto('/analysis-parameters?task_id={{task_id}}')" class="button" id="next_button" disabled>Next: Parameters</button>
+	</div>
+
+	<input type="hidden" id="task_id" value="{{ task_id }}">
+
+{% endblock %}

@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block scripts %}
+	<script src="{{ url_for('static',filename='scripts/task_utilities.js') }}"></script>
+	<script src="{{ url_for('static',filename='scripts/data_retrieval_form.js') }}"></script>
+{% endblock %}
 
+{% block content %}
 	<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="2000000000">
 
 	<table class="centerinfo">
@@ -35,6 +39,7 @@
 							- A GEO series accessions, i.e "GSE11462".<br>
 							- A comma-separated list of GEO series accessions, i.e "GSE12396, GSE11462, GSE117247".
 						</span>
+					</span>
 				</th>
 				<td>
 					<input type="text" id="gdc_entry" name="gdc_entry" placeholder="GDC project name(s)">
@@ -51,11 +56,11 @@
 	<div id="messages" class="bottom-buttons">
 	</div>
 	<div class="bottom-buttons">
-		<button onclick="window.location.href='/get-preprocessed-data'" class="button" id="download-preprocessed-data-btn" disabled>
-			Download preprocessed data
-		</button>
+		<form action="{{ url_for('common_bp.get_task_output', task_id=task_id) }}">
+			<button type="submit" class="button" id="download-preprocessed-data-btn" disabled>
+				Download preprocessed data
+			</button>
+		</form>
 	</div>
 
-	<script src="{{ url_for('static',filename='scripts/job_utilities.js') }}"></script>
-	<script src="{{ url_for('static',filename='scripts/data_retrieval_form.js') }}"></script>
 {% endblock %}

@@ -261,13 +261,13 @@ pre {
 	margin-top: 2%;
 }
 
-#job_log {
+#task_log {
 	height: 38em;
 	width: 55em;
 	pointer-events: all;
 }
 
-#cancel_job_button {
+#cancel_task_button {
 	position: absolute;
 	top: 80%;
 	left: 50%;
@@ -446,7 +446,7 @@ pre {
 	display: inline-block;
 }
 
-.topnav a {
+.topnav a, .dropbtn {
 	display: inline-block;
 	color: #f2f2f2;
 	padding: 16px 15px;
@@ -457,7 +457,7 @@ pre {
 	white-space: nowrap;
 }
 
-.topnav a:hover, .dropdown:hover .dropbtn {
+.topnav a:hover, .dropdown:hover {
 	background-color: #ddd;
 	color: black;
 }
@@ -580,6 +580,14 @@ span.organizational-logo {
     margin:auto;
 }
 
+.sort-down:after {
+	content: "▼";
+}
+
+.sort-up:after {
+	content: "▲";
+}
+
 .spicy-table{
     border: none;
     border-spacing: 0;
@@ -633,4 +641,8 @@ span.organizational-logo {
 .header-table th {
     padding: 5px 10px;
     border: none
+}
+
+.table-header {
+	cursor: pointer;
 }
