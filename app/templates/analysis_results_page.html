@@ -40,8 +40,8 @@
   <table class="linkbar">
     <tr>
       {% if filtered_data %}
-        <td><a href="{{ url_for('analysis_bp.get_unfiltered_tsv') }}" class="button">Download full output</a></td>
-        <td><a href="{{ url_for('analysis_bp.get_filtered_tsv') }}" class="button">Download filtered output</a></td>
+        <td><a href="/get-unfiltered-tsv?task_id={{task_id}}" class="button">Download full output</a></td>
+        <td><a href="/get-filtered-tsv?task_id={{task_id}}" class="button">Download filtered output</a></td>
       {% else %}
         <td><a href="{{ url_for('analysis_bp.get_unfiltered_tsv') }}" class="button">Download output</a></td>
       {% endif %}
