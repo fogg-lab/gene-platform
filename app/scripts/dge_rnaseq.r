@@ -39,7 +39,7 @@ mean_difference = function(fit, name){
                    ylab = "Log2 fold change",
                    ggtheme = ggplot2::theme_minimal()
                    )
-  ggsave(mean_diff_rna_seq_path,  width=10, height=10, units="cm", bg="white")
+  ggsave(mean_diff_rna_seq_path,  width=15, height=15, dpi=300, units="cm", bg="white")
 }
 
 volcano_plot = function(fit, name){
