@@ -171,12 +171,10 @@ def get_unfiltered_tsv():
     if unfiltered_output_path == "":
         return "Analysis output file not found.", 204
 
-    with open(unfiltered_output_path, encoding="UTF-8") as unfiltered_output:
-        return Response(
-            unfiltered_output,
-            mimetype="text/csv",
-            headers={"Content-disposition":
-                    f"attachment; filename={filename}"})
+    out_dir = Path(unfiltered_output_path).parent
+    out_filename = Path(unfiltered_output_path).name
+
+    return send_from_directory(out_dir, out_filename, as_attachment=True)
 
 
 @analysis_bp.route("/get-filtered-tsv")
@@ -188,15 +186,10 @@ def get_filtered_tsv():
 
     filtered_output_path = Task.get_output_filepath(task_id, "filter_output.tsv")
 
-    if filtered_output_path == "":
-        return "Filtered analysis output file not found.", 204
+    out_dir = Path(filtered_output_path).parent
+    out_filename = Path(filtered_output_path).name
 
-    with open(filtered_output_path, encoding="UTF-8") as filtered_output:
-        return Response(
-            filtered_output,
-            mimetype="text/csv",
-            headers={"Content-disposition":
-                    "attachment; filename=filter_output.tsv"})
+    return send_from_directory(out_dir, out_filename, as_attachment=True)
 
 
 def get_analysis_request_parameters(form, data_type):
