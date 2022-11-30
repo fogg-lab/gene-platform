@@ -24,7 +24,8 @@ def init_app():
 
     redis_port = app.config["REDIS_PORT"]
     subprocess.Popen(["redis-server", "--port", str(redis_port)], shell=True)
-    subprocess.Popen(["/usr/local/bin/rq worker"], shell=True)
+    rq_exec = subprocess.check_output(["which", "rq"]).decode("utf-8").strip()
+    subprocess.Popen([f"{rq_exec} worker"], shell=True)
 
     sess = Session()
     sess.init_app(app)
