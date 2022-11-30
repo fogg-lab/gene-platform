@@ -219,7 +219,7 @@ function getOverlay() {
         overlay.innerHTML = `
             <span id="time"></span>
             <details id="console_log">
-                <summary style="font-size: 24px;font-weight:bold;width:31em;color:white;text-decoration: underline;">Show console output</summary>
+                <summary style="font-size: 24px;font-weight:bold;width:31em;color:white;text-decoration: underline;">Show console log</summary>
                 <div id="task_log"></div>
             </details>
         `;
