@@ -16,31 +16,23 @@ class PreprocessingRunner(TaskRunner):
         self.task_type = "preprocessing"
         self._input_filenames = ["config.yml"]
 
-    GEO_DATA_PATH = current_app.config["GEO_DATA_PATH"]
-    GDC_DATA_PATH = current_app.config["GDC_DATA_PATH"]
-    PROBEMAP_PATH = current_app.config["PROBEMAP_PATH"]
-    SCRIPTS_PATH = current_app.config["SCRIPTS_PATH"]
-    PREP_ALL_SCRIPT = os.path.join(SCRIPTS_PATH, "preprocess.py")
-    PREP_GEO_SCRIPT = os.path.join(SCRIPTS_PATH, "prep_geo.r")
-    PREP_GDC_SCRIPT = os.path.join(SCRIPTS_PATH, "prep_gdc.r")
-
     def execute_task(self) -> StatusDict:
         """Run a preprocessing task"""
         cfg = self.get_config()
         data_source = cfg.get("data_source")
         dsets = cfg.get("dsets")
 
-        py_script = PreprocessingRunner.PREP_ALL_SCRIPT
+        py_script = os.path.join(current_app.config["SCRIPTS_PATH"], "preprocess.py")
         if "geo" in data_source.lower():
-            r_script = PreprocessingRunner.PREP_GEO_SCRIPT
-            data_dir = PreprocessingRunner.GEO_DATA_PATH
+            r_script = os.path.join(current_app.config["SCRIPTS_PATH"], "prep_geo.r")
+            data_dir = current_app.config["GEO_DATA_PATH"]
         elif "gdc" in data_source.lower():
-            r_script = PreprocessingRunner.PREP_GDC_SCRIPT
-            data_dir = PreprocessingRunner.GDC_DATA_PATH
+            r_script = os.path.join(current_app.config["SCRIPTS_PATH"], "prep_gdc.r")
+            data_dir = current_app.config["GDC_DATA_PATH"]
         else:
             raise ValueError("Invalid data source")
 
-        probemap_path = PreprocessingRunner.PROBEMAP_PATH
+        probemap_path = current_app.config["PROBEMAP_PATH"]
         input_dir = os.path.join(self._task_dir, "input")
         output_dir = os.path.join(self._task_dir, "output")
         log = os.path.join(self._task_dir, ".log")
@@ -74,9 +66,9 @@ class PreprocessingRunner(TaskRunner):
         dsets = config.get("dsets", "")
 
         if "gdc" in source.lower():
-            metadata_dir = PreprocessingRunner.GDC_DATA_PATH
+            metadata_dir = current_app.config["GDC_DATA_PATH"]
         elif "geo" in source.lower():
-            metadata_dir = PreprocessingRunner.GEO_DATA_PATH
+            metadata_dir = current_app.config["GEO_DATA_PATH"]
         else:
             metadata_dir = ""
 

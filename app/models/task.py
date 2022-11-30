@@ -65,7 +65,7 @@ class Task:
         task = None
         if len(task_id) == 16:
             db = get_db()
-            user_id = current_user.id
+            user_id = current_user.get_id()
             cur = db.cursor()
             task = cur.execute(
                 "SELECT * FROM task WHERE id = ? AND user_id = ?", (task_id, user_id)
@@ -140,7 +140,7 @@ class Task:
     @staticmethod
     def get_user_tasks() -> List[Task]:
         """Retrieve all tasks for the current user"""
-        user_id = current_user.id
+        user_id = current_user.get_id()
         db = get_db()
         tasks = db.execute(
             "SELECT * FROM task WHERE user_id = ?", (user_id,)
@@ -190,7 +190,7 @@ class Task:
         db = get_db()
         new_task_id = ''.join(random.choice(string.ascii_lowercase + string.digits)
                              for _ in range(16))
-        user_id = current_user.id
+        user_id = current_user.get_id()
         cur = db.cursor()
         cur.execute(
             "INSERT INTO task (id, user_id, task_type, status) VALUES (?, ?, ?, ?)",

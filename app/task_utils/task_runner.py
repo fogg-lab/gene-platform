@@ -177,7 +177,9 @@ class TaskRunner(ABC):
 
         lines = file_contents.split(b'\n')
 
+        print(save_path)
         with open(save_path, "w+", encoding="UTF-8") as user_file:
+            print(len(lines))
             for line in lines:
                 user_file.write(f"{line.decode('UTF-8')}\n")
 

@@ -1,3 +1,4 @@
+import sys
 from functools import wraps
 from pathlib import Path
 from flask import (Blueprint, render_template, request, jsonify, Response,
@@ -40,6 +41,8 @@ def upload():
     user_fname = request.args.get("user_filename")
     standard_fname = request.headers.get('X_FILENAME')
     task_id = request.args.get("task_id")
+
+    print(f"User filename: {user_fname}", file=sys.stderr)
 
     result = Task.add_input_file(task_id, request.data, standard_fname, user_fname)
 

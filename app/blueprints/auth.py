@@ -1,6 +1,5 @@
 import os
 import json
-import sys
 import requests
 from flask import Blueprint, request, redirect, current_app
 from oauthlib.oauth2 import WebApplicationClient
@@ -10,28 +9,40 @@ from app.models.user import User
 
 auth_bp = Blueprint('auth_bp', __name__)
 
-load_dotenv(os.path.join(current_app.root_path, ".env"))
-client_id = os.environ.get("GOOGLE_CLIENT_ID", None)
-client_secret = os.environ.get("GOOGLE_CLIENT_SECRET", None)
-redirect_uri = os.environ.get("REDIRECT_URI", None)
+auth_bp.client_id=None
+auth_bp.client_secret=None
+auth_bp.redirect_uri=None
+auth_bp.client=None
+auth_bp.initialized=False
 
-client = WebApplicationClient(client_id)
+
+def init_env():
+    """Load environment variables"""
+    load_dotenv(os.path.join(current_app.root_path, ".env"))
+    auth_bp.client_id = os.environ.get("GOOGLE_CLIENT_ID", None)
+    auth_bp.client_secret = os.environ.get("GOOGLE_CLIENT_SECRET", None)
+    auth_bp.redirect_uri = os.environ.get("REDIRECT_URI", None)
+    auth_bp.client = WebApplicationClient(auth_bp.client_id)
+    auth_bp.initialized = True
 
 
 @auth_bp.before_app_request
 def before_request():
     """Check if user is logged in on each page load"""
-    if os.getenv("ENABLE_GOOGLE_AUTH"):
+    if not auth_bp.initialized:
+        init_env()
+    enable_google_auth = os.getenv("ENABLE_GOOGLE_AUTH")
+    if enable_google_auth and enable_google_auth.lower() not in ["false", "0"]:
         is_login_endpoint = request.endpoint in ["auth_bp.login", "auth_bp.callback"]
         if not current_user.is_authenticated and not is_login_endpoint:
-            print("redirecting...")
             return redirect("/login")
-    else:
+    elif not is_login_endpoint:
         # Log the user in as a guest
         if not User.get("guest1"):
             User.create("guest1", "John Doe", "email@domain.com")
         user = User.get("guest1")
         login_user(user)
+
 
 @auth_bp.route("/login")
 def login():
@@ -43,11 +54,9 @@ def login():
     # Use library to construct the request for Google login and provide
     # scopes that let you retrieve user's profile from Google
     load_dotenv("../.env")
-    print(f"REDIRECT_URI: {redirect_uri}", file=sys.stderr)
-    print(f"authorization_endpoint: {authorization_endpoint}")
-    request_uri = client.prepare_request_uri(
+    request_uri = auth_bp.client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri = redirect_uri,
+        redirect_uri = auth_bp.redirect_uri,
         scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)
@@ -56,6 +65,7 @@ def login():
 @auth_bp.route("/login/callback")
 def callback():
     """Callback function for Google OAuth"""
+
     # Get authorization code Google sent back to you
     code = request.args.get("code")
 
@@ -64,7 +74,7 @@ def callback():
     token_endpoint = google_provider_cfg["token_endpoint"]
 
     # Prepare and send a request to get tokens
-    token_url, headers, body = client.prepare_token_request(
+    token_url, headers, body = auth_bp.client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url.replace("http:","https:"),
         redirect_url=request.base_url.replace("http:","https:"),
@@ -75,16 +85,17 @@ def callback():
         token_url,
         headers=headers,
         data=body,
-        auth=(client_id, client_secret),
+        auth=(auth_bp.client_id, auth_bp.client_secret),
+        timeout=10,
     )
 
     # Parse the tokens
-    client.parse_request_body_response(json.dumps(token_response.json()))
+    auth_bp.client.parse_request_body_response(json.dumps(token_response.json()))
 
     # Get user info
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = client.add_token(userinfo_endpoint)
-    userinfo_response = requests.get(uri, headers=headers, data=body)
+    uri, headers, body = auth_bp.client.add_token(userinfo_endpoint)
+    userinfo_response = requests.get(uri, headers=headers, data=body, timeout=10)
 
     if userinfo_response.json().get("email_verified"):
         unique_id = userinfo_response.json()["sub"]
@@ -104,7 +115,7 @@ def callback():
         User.create(unique_id, users_name, users_email)
 
     # Begin user session by logging the user in
-    login_user(user)
+    login_user(user, remember=True)
 
     # Send user back to homepage
     return redirect("/")
@@ -121,4 +132,4 @@ def logout():
 def get_google_provider_cfg():
     """Get Google provider configuration"""
     discover_url = os.getenv("GOOGLE_DISCOVERY_URL")
-    return requests.get(discover_url).json()
+    return requests.get(discover_url, timeout=10).json()
