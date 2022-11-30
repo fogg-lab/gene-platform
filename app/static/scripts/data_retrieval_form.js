@@ -83,5 +83,5 @@ function submissionConfirmed() {
 window.onload = function() {
     // show the rest of the form if data source is selected
     updateForm();
-    document.getElementById("data_source").onchange = update_form;
+    document.getElementById("data_source").onchange = updateForm;
 }

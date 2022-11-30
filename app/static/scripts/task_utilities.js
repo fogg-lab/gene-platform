@@ -76,7 +76,7 @@ function taskLogReqListener() {
             console_text_scroll_pos_x = console_text.scrollLeft;
         }
         let task_log_html = task_log.innerHTML;
-        let pre_open_tag = "<pre id='console_text' style='width: 100%; height: 100%'>"
+        let pre_open_tag = "<pre id='console_text' style='width: 100%; height: 100%; color: white;'>"
         if ((task_log_html.length > pre_open_tag.length + 6) && task_log_html.slice(-6) == "</pre>") {
             task_log_html = `${pre_open_tag}${escapeHtml(task_log_html.slice(pre_open_tag.length,-6) + log_update_text)}</pre>`;
         } else {
@@ -219,7 +219,7 @@ function getOverlay() {
         overlay.innerHTML = `
             <span id="time"></span>
             <details id="console_log">
-                <summary style="font-size: 20px; font-weight:bold;">Show console output</summary>
+                <summary style="font-size: 24px;font-weight:bold;width:31em;color:white;text-decoration: underline;">Show console output</summary>
                 <div id="task_log"></div>
             </details>
         `;

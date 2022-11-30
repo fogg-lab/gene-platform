@@ -233,7 +233,7 @@ pre {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: rgba(0,0,0,0.75); /* Black background with opacity */
+	background-color: rgba(0,0,0,0.79); /* Black background with opacity */
 	z-index: 2;
 }
 
@@ -250,20 +250,18 @@ pre {
 
 #console_log {
 	font-size: 12px;
-	color: white;
 	border-radius: 4px;
     padding: .5em .5em 0;
 	z-index: 4;
 	position: relative;
-	color: white;
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: 2%;
 }
 
 #task_log {
-	height: 38em;
-	width: 55em;
+	height: 45em;
+	width: 62em;
 	pointer-events: all;
 }
 
@@ -330,7 +328,7 @@ pre {
     background-color: #ccc;
     display: inline-block;
     border-radius: 3px;
-    border: 1px solid #aaa;
+    border: 1px solid rgb(151, 150, 150);
     padding: 2px;
     text-align: center;
     width: 80px;

@@ -94,7 +94,7 @@ corrplot2 <- function(data,
     )
 }
 
-png(file = output_file, width=plot_size, height=plot_size, units="in", res=300, bg="white")
+png(file = output_file, width=plot_size, height=plot_size, units="in", res=300, bg="white", type="cairo")
 
 corrplot2(
   data = cts,

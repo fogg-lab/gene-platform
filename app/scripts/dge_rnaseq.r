@@ -26,7 +26,7 @@ mean_difference = function(fit, name){
   differential_expression = data.frame(fit)
   colnames(differential_expression) <- c("symbol", "baseMean", "log2FoldChange", "l2fc_se", "test_stat", "pval", "padj")
   options(ggrepel.max.overlaps = Inf)
-  ggpubr::ggmaplot(differential_expression, main = expression("Group 1" %->% "Group 2"),
+  ggpubr::ggmaplot(differential_expression, main = expression("Group 1" %->% "   Group 2"),
                    fdr = 0.05, fc = 2, size = 0.4,
                    palette = c("#B31B21", "#1465AC", "darkgray"),
                    genenames =  as.vector(differential_expression$symbol),
@@ -58,7 +58,7 @@ volcano_plot = function(fit, name){
     scale_color_manual(values=c("blue", "black", "red")) +
     geom_vline(xintercept=c(-0.6, 0.6), col="red") +
     geom_hline(yintercept=-log10(0.05), col="red")
-  ggsave(rna_volcano_path,  width=10, height=10, units="cm", bg="white")
+  ggsave(rna_volcano_path,  width=15, height=15, dpi=300, units="cm", bg="white")
 }
 
 n_cores <- detectCores() - 2

@@ -16,7 +16,7 @@ filter_filepath <- file.path(input_dir, "filter.txt")
 mean_variance_trend = function(fit, filename){
   micro_array_mean_variance_trend_path <- file.path(output_dir, filename)
   options(bitmapType='cairo')
-  png(micro_array_mean_variance_trend_path, height=15, width=15, units="cm", res=300, bg="white")
+  png(micro_array_mean_variance_trend_path, height=15, width=15, units="cm", res=300, bg="white", type="cairo")
   plot<- plotSA(fit, xlab="Average log-expression", ylab="log2(sigma)", zero.weights=FALSE, pch=16, cex=0.2)
   dev.off()
 }

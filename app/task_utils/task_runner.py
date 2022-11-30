@@ -63,6 +63,8 @@ class TaskRunner(ABC):
     def get_config(self):
         """Returns the config parameters for the task as a dict."""
         config_path = os.path.join(self._task_dir, "input", "config.yml")
+        if not os.path.isfile(config_path):
+            return {}
         with open(config_path, "r", encoding="utf-8") as cfg_file:
             return yaml.safe_load(cfg_file)
 
