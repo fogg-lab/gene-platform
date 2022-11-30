@@ -1,6 +1,7 @@
 import os
 from base64 import b64encode
 import subprocess
+from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,7 +26,8 @@ if SECRET_KEY is None:
 SESSION_PERMANENT = True
 SESSION_TYPE = "filesystem"
 SESSION_COOKIE_NAME = "my_session"
-PERMANENT_SESSION_LIFETIME = 3
+PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
+DEBUG = True
 
 SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS", False)
 SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///user.sqlite3")
