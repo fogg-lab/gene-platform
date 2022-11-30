@@ -85,11 +85,7 @@ def callback():
         token_url,
         headers=headers,
         data=body,
-<<<<<<< HEAD
         auth=(auth_bp.client_id, auth_bp.client_secret),
-=======
-        auth=(client_id, client_secret),
->>>>>>> a1024ec0fd84d466294b2e4498d20df95c7d89f9
         timeout=10,
     )
 
