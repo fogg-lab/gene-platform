@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>userguide.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!-- omit in toc -->
+<h1 id="gene-platform-quickstart-guide">GENE Platform Quickstart Guide</h1>
+<!-- omit in toc -->
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#preparing-input-files">Preparing input files</a>
+<ul>
+<li><a href="#examples">Examples</a>
+<ul>
+<li><a href="#dge-analysis"><strong>DGE Analysis</strong></a></li>
+<li><a href="#batch-correction"><strong>Batch correction</strong></a></li>
+<li><a href="#correlation"><strong>Correlation</strong></a></li>
+<li><a href="#normalization"><strong>Normalization</strong></a></li>
+</ul>
+</li>
+<li><a href="#gene-count-matrix-countstsv">Gene count matrix (counts.tsv)</a>
+<ul>
+<li><a href="#required-columns-for-count-matrix">Required columns for count matrix</a></li>
+<li><a href="#example-rna-seq-count-matrix-countstsv"><strong>Example</strong>: RNA-Seq count matrix (counts.tsv)</a></li>
+<li><a href="#example-microarray-count-matrix-countstsv"><strong>Example</strong>: Microarray count matrix (counts.tsv)</a></li>
+</ul>
+</li>
+<li><a href="#metadata-for-samples-coldatatsv">Metadata for samples (coldata.tsv)</a>
+<ul>
+<li><a href="#required-columns-for-coldatatsv">Required columns for coldata.tsv</a></li>
+<li><a href="#example-coldatatsv-file"><strong>Example</strong>: coldata.tsv file</a></li>
+</ul>
+</li>
+<li><a href="#filter-file-filtertxt">Filter file (filter.txt)</a></li>
+<li><a href="#configuration-file-configyml">Configuration file (config.yml)</a></li>
+</ul>
+</li>
+<li><a href="#differential-expression-analysis">Differential expression analysis</a></li>
+<li><a href="#data-preparation">Data preparation</a>
+<ul>
+<li><a href="#batch-correction-1">Batch correction</a></li>
+<li><a href="#preprocessing">Preprocessing</a></li>
+<li><a href="#normalization-1">Normalization</a></li>
+</ul>
+</li>
+<li><a href="#rna-seq-correlation">RNA-Seq correlation</a></li>
+</ul>
+<div style="page-break-after: always;"></div>
+<h2 id="preparing-input-files">Preparing input files</h2>
+<h3 id="examples">Examples</h3>
+<h4 id="dge-analysis"><strong>DGE Analysis</strong></h4>
+<p>RNA-Seq: <a href="assets/example_data/analysis/rnaseq/counts.tsv">counts.tsv</a>  |  <a href="assets/example_data/analysis/rnaseq/coldata.tsv">coldata.tsv</a>  |  <a href="assets/example_data/analysis/rnaseq/filter.txt">filter.txt</a>  |  <a href="assets/example_data/analysis/rnaseq/config.yml">config.yml</a><br>
+Microarray: <a href="assets/example_data/analysis/microarray/counts.tsv">counts.tsv</a>  |  <a href="assets/example_data/analysis/microarray/coldata.tsv">coldata.tsv</a>  |  <a href="assets/example_data/analysis/microarray/filter.txt">filter.txt</a>  |  <a href="assets/example_data/analysis/microarray/config.yml">config.yml</a></p>
+<h4 id="batch-correction"><strong>Batch correction</strong></h4>
+<p>RNA-Seq: <a href="assets/example_data/batch_correction/rnaseq/counts.tsv">counts.tsv</a>  |  <a href="assets/example_data/batch_correction/rnaseq/coldata.tsv">coldata.tsv</a></p>
+<h4 id="correlation"><strong>Correlation</strong></h4>
+<p><a href="assets/example_data/correlation/ohsu-cnl_counts.tsv">ohsu-cnl_counts.tsv</a></p>
+<h4 id="normalization"><strong>Normalization</strong></h4>
+<p><a href="assets/example_data/normalization/ohsu-cnl_counts.tsv">ohsu-cnl_counts.tsv</a>  |  <a href="assets/example_data/normalization/ohsu-cnl_coldata.tsv">ohsu-cnl_coldata.tsv</a></p>
+<h3 id="gene-count-matrix-countstsv">Gene count matrix (counts.tsv)</h3>
+<p><em>Used for</em>: <a href="#differential-expression-analysis">Analysis</a>  |  <a href="#batch-correction">Batch correction</a>  |  <a href="#rna-seq-correlation">RNA-seq correlation</a>  |  <a href="#normalization">Normalization</a></p>
+<h4 id="required-columns-for-count-matrix">Required columns for count matrix</h4>
+<ul>
+<li><em>symbol</em> or <em>Hugo_symbol</em> column containing gene symbols</li>
+<li>A column for each sample
+<ul>
+<li>Column name sould be the sample name (if a coldata.tsv is provided, the sample names must match)</li>
+<li>Column values should be the counts associated with each gene for that sample</li>
+</ul>
+</li>
+</ul>
+<p>Extra columns are okay (they will be ignored).</p>
+<h4 id="example-rna-seq-count-matrix-countstsv"><strong>Example</strong>: RNA-Seq count matrix (counts.tsv)</h4>
+<table>
+<thead>
+<tr>
+<th>Hugo_Symbol</th>
+<th>sampleName1</th>
+<th>sampleName2</th>
+<th>sampleName3</th>
+<th>sampleName4</th>
+<th>...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FAM208A</td>
+<td>2523.95</td>
+<td>2703.47</td>
+<td>2036.34</td>
+<td>2204.85</td>
+<td>...</td>
+</tr>
+<tr>
+<td>RADIL</td>
+<td>320.0</td>
+<td>183.0</td>
+<td>209.0</td>
+<td>577.0</td>
+<td>...</td>
+</tr>
+<tr>
+<td>AP1M2</td>
+<td>34.0</td>
+<td>8.0</td>
+<td>24.0</td>
+<td>2.0</td>
+<td>...</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+<h4 id="example-microarray-count-matrix-countstsv"><strong>Example</strong>: Microarray count matrix (counts.tsv)</h4>
+<table>
+<thead>
+<tr>
+<th>symbol</th>
+<th>sampleName1</th>
+<th>sampleName2</th>
+<th>sampleName3</th>
+<th>sampleName4</th>
+<th>...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1BG</td>
+<td>5.68557</td>
+<td>6.30914</td>
+<td>6.5588</td>
+<td>5.67676</td>
+<td>...</td>
+</tr>
+<tr>
+<td>A1BG-AS1</td>
+<td>6.35464</td>
+<td>7.02546</td>
+<td>7.01993</td>
+<td>6.82097</td>
+<td>...</td>
+</tr>
+<tr>
+<td>A1CF</td>
+<td>6.0172</td>
+<td>6.80624</td>
+<td>5.87632</td>
+<td>6.0752</td>
+<td>...</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<h3 id="metadata-for-samples-coldatatsv">Metadata for samples (coldata.tsv)</h3>
+<p><em>Used for</em>: <a href="#differential-expression-analysis">Analysis</a>  |  <a href="#batch-correction">Batch correction</a>  |  <a href="#normalization">Normalization</a></p>
+<h4 id="required-columns-for-coldatatsv">Required columns for coldata.tsv</h4>
+<ul>
+<li><em>sample_name</em> containing the sample names (should match the sample names in the count matrix)</li>
+<li><em>condition</em> containing the condition for each sample (e.g. healthy vs. disease)</li>
+<li><em>batch</em> (only required for batch correction)</li>
+</ul>
+<p>Extra columns are okay (they will be ignored).</p>
+<h4 id="example-coldatatsv-file"><strong>Example</strong>: coldata.tsv file</h4>
+<table>
+<thead>
+<tr>
+<th>sample_name</th>
+<th>condition</th>
+<th>batch <em><span style="font-weight: normal">(only required for batch correction)</span></em></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sampleName1</td>
+<td>tumor</td>
+<td>1</td>
+</tr>
+<tr>
+<td>sampleName2</td>
+<td>healthy</td>
+<td>2</td>
+</tr>
+<tr>
+<td>sampleName3</td>
+<td>healthy</td>
+<td>1</td>
+</tr>
+<tr>
+<td>sampleName4</td>
+<td>tumor</td>
+<td>2</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<h3 id="filter-file-filtertxt">Filter file (filter.txt)</h3>
+<p><strong>Used for</strong>: <a href="#differential-expression-analysis">Analysis</a> (optional)
+You can provide a text file with a list of genes to include in the &quot;filtered output&quot; of the analysis. The file should contain one gene symbol per line, for example:</p>
+<pre class="hljs"><code><div>FAM208A
+RADIL
+AP1M2
+NEB
+TEPP
+CD151
+AC009403.2
+CAMP
+</div></code></pre>
+<h3 id="configuration-file-configyml">Configuration file (config.yml)</h3>
+<p><strong>Used for</strong>: <a href="#differential-expression-analysis">Analysis</a> (optional)<br>
+A configuration file can be provided to specify the parameters for the analysis. The file should be in YAML format. If you do not provide a config.yml file, you can fill them in on the form after uploading your data files. See <a href="#examples">here</a> to download an example config.yml file. The following parameters can be specified in config.yml:<br>
+<strong>min_expr</strong>: Minimum expression threshold for a gene to be eligible for identification as differentially expressed<br>
+<strong>min_prop</strong>: The minimum proportion of samples (for a gene) in which the expression of that gene must exceed min_expr. For example, if min_prop=1/3, and min_expr=1, then the expression of a gene must exceed 1 in at least 1/3 of samples to be eligible for identification as differentially expressed<br>
+<strong>padj_thresh</strong>: The significance of threshold for the adjusted p-value of a gene’s expression — the expression change significance between conditions (e.g., disease vs. normal). Used in combination with log_fc to determine differential expression<br>
+<strong>log_fc</strong>: Log fold-change. The fold-change (change in expression) in the expression of a gene between conditions (e.g., disease vs. normal). Used in combination with padj_thresh to determine differential expression<br>
+<strong>adj_method</strong>: Method for adjusting expression differential expression p-values. See R documentation for a list of available methods.<br>
+<strong>condition</strong>: Name of the column name for the factor of interest (e.g., “disease status”)<br>
+<strong>contrast_level</strong>: The level (value) of condition for which effect size is being studied (e.g., “tumor”)<br>
+<strong>reference_level</strong>: The level (value) of condition against which effect size is being compared (e.g., “healthy”)<br>
+<strong>use_qual_weights</strong>: Used for microarray analysis. Whether to use quality weights for estimating differential expression. Recommended. See <a href="https://rdrr.io/bioc/limma/man/arrayWeights.html">documentation</a>.</p>
+<div style="page-break-after: always;"></div>
+<h2 id="differential-expression-analysis">Differential expression analysis</h2>
+<p>This section is in not written yet...</p>
+<div style="page-break-after: always;"></div>
+<h2 id="data-preparation">Data preparation</h2>
+<h3 id="batch-correction">Batch correction</h3>
+<p>This section is in not written yet...</p>
+<h3 id="preprocessing">Preprocessing</h3>
+<p>This section is in not written yet...</p>
+<h3 id="normalization">Normalization</h3>
+<p>This section is in not written yet...</p>
+<div style="page-break-after: always;"></div>
+<h2 id="rna-seq-correlation">RNA-Seq correlation</h2>
+<p>This section is in not written yet...</p>
+
+</body>
+</html>
