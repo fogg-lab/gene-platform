@@ -1,6 +1,5 @@
 {
     "beataml1.0": [
-        "crenolanib",
         "cohort"
     ],
     "cgci": [
@@ -9,7 +8,6 @@
     ],
     "cmi": [
         "asc",
-        "mpc",
         "mbc"
     ],
     "cptac": [
@@ -21,19 +19,6 @@
     ],
     "exceptional_responders": [
         "er"
-    ],
-    "fm": [
-        "ad"
-    ],
-    "genie": [
-        "grcc",
-        "dfci",
-        "nki",
-        "vicc",
-        "uhn",
-        "mda",
-        "msk",
-        "jhu"
     ],
     "hcmi": [
         "cmdc"
@@ -101,12 +86,6 @@
         "brca",
         "paad",
         "read"
-    ],
-    "trio": [
-        "cru"
-    ],
-    "varepop": [
-        "apollo"
     ],
     "wcdt": [
         "mcrpc"
