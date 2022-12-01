@@ -114,7 +114,7 @@ img {
 	max-width: 100%;
 }
 
-pre {
+.console {
 	width: 95%;
 	height: 20em;
 	font-size: 1.1em;

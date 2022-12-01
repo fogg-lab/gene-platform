@@ -3,12 +3,14 @@ function updateForm() {
     if (data_source && data_source == "gdc") {
         document.getElementById("gdc_entry").style.display = 'block';
         document.getElementById("gdc_entry_label").style.display = 'block';
+        document.getElementById("gdc_projects_list").hidden=false;
         document.getElementById("geo_entry").style.display = 'none';
         document.getElementById("geo_entry_label").style.display = 'none';
     }
     else if (data_source && data_source == "geo") {
         document.getElementById("gdc_entry").style.display = 'none';
         document.getElementById("gdc_entry_label").style.display = 'none';
+        document.getElementById("gdc_projects_list").hidden=true;
         document.getElementById("geo_entry").style.display = 'block';
         document.getElementById("geo_entry_label").style.display = 'block';
     }
@@ -20,6 +22,7 @@ function updateForm() {
         document.getElementById("gdc_entry_label").style.display = 'none';
         document.getElementById("geo_entry").style.display = 'none';
         document.getElementById("geo_entry_label").style.display = 'none';
+        document.getElementById("gdc_projects_list").hidden=true;
     }
     else {
         document.getElementById("submit_button").style.display = 'inline-block';

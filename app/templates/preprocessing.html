@@ -49,8 +49,27 @@
 		</table>
 	</form>
 
+	<details id="gdc_projects_list" style="text-align:center" hidden>
+		<summary>
+			<svg width="20" height="20">
+				<circle cx="10" cy="10" r="10" fill="#4444ff" />
+				<text x="50%" y="50%" text-anchor="middle" fill="white" font-size="16px" font-family="Verdana" dy=".3em">?</text>
+			  	?
+			</svg>
+			Supported open-access GDC projects
+		</summary>
+		<div id="gdc-projects">
+			<ul style="list-style: none;">
+				{% for project in gdc_projects %}
+					<li>{{ project }}</li>
+				{% endfor %}
+			</ul>
+		</pre>
+	</details>
+
+	<br>
+
 	<div class="bottom-buttons">
-		<a class="button" href="{{ url_for('preprocessing_bp.get_gdc_project_list') }}" disabled>Download list (.txt) of open-access GDC projects</a>
 		<button onclick="submit()" class="button" id="submit_button" disabled>Submit</button>
 	</div>
 	<br>

@@ -76,7 +76,7 @@ function taskLogReqListener() {
             console_text_scroll_pos_x = console_text.scrollLeft;
         }
         let task_log_html = task_log.innerHTML;
-        let pre_open_tag = "<pre id='console_text' style='width: 100%; height: 100%; color: white;'>"
+        let pre_open_tag = "<pre id='console_text' class='console' style='width: 100%; height: 100%; color: white;'>"
         if ((task_log_html.length > pre_open_tag.length + 6) && task_log_html.slice(-6) == "</pre>") {
             task_log_html = `${pre_open_tag}${escapeHtml(task_log_html.slice(pre_open_tag.length,-6) + log_update_text)}</pre>`;
         } else {

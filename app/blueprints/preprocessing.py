@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, Response, current_app
+from flask import Blueprint, render_template, request, current_app
 from pathlib import Path
 import json
 
@@ -17,7 +17,17 @@ def preprocessing():
     if not task_id or Task.get(task_id) is None:
         task_id = Task.create("preprocessing")
 
-    return render_template("preprocessing.html", title="Preprocessing", task_id=task_id)
+    gdc_projects_json = Path(current_app.config["GDC_DATA_PATH"]) / "gdc_projects.json"
+    gdc_projects_list = []
+    with open(gdc_projects_json, "r", encoding="utf-8") as f:
+        projects = json.load(f)
+
+    for project_base in [*projects.keys()]:
+        for ext in projects[project_base]:
+            gdc_projects_list.append(f"{project_base}-{ext}")
+
+    return render_template("preprocessing.html", title="Preprocessing", task_id=task_id,
+                           gdc_projects=gdc_projects_list)
 
 
 @preprocessing_bp.route("/submit-preprocessing", methods=["POST"])
@@ -29,25 +39,6 @@ def submit_preprocessing():
     status_msg = Task.submit(task_id)
 
     return status_msg
-
-
-@preprocessing_bp.route("/get-gdc-project-list", methods=["POST"])
-def get_gdc_project_list():
-    """Get GDC project list"""
-
-    gdc_projects_json = current_app.config["GDC_DATA_PATH"] / "gdc_projects.json"
-    projects_list = ""
-    with open(gdc_projects_json, "r") as f:
-        projects = json.load(f)
-
-    for project_base in [*projects.keys()]:
-        for ext in projects[project_base]:
-            projects_list += f"{project_base}-{ext}\n"
-
-    return Response(
-        projects_list,
-        mimetype='text/plain',
-        headers={'Content-disposition': 'attachment; filename=gdc-projects.txt'})
 
 
 @preprocessing_bp.route("/confirm-preprocessing-submission", methods=["POST"])
