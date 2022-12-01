@@ -26,7 +26,7 @@ def preprocessing():
         for ext in projects[project_base]:
             gdc_projects_list.append(f"{project_base}-{ext}")
 
-    return render_template("preprocessing.html", title="Preprocessing", task_id=task_id,
+    return render_template("preprocessing.html", title="Data Retrieval (GEO/GDC)", task_id=task_id,
                            gdc_projects=gdc_projects_list)
 
 
