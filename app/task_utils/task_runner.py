@@ -81,7 +81,6 @@ class TaskRunner(ABC):
         with open(log_path, "r") as log_file:
             full_log_content = log_file.read()
 
-
         # Check first 20 lines for extraneous warnings and remove them
         extraneous_output_substrings = [
             "During startup - Warning messages",
@@ -118,8 +117,6 @@ class TaskRunner(ABC):
                f"cat {tmp_log_path} > {log_path} && rm {tmp_log_path}")
 
         full_log_content = "\n".join(log_lines)
-        if "Starting batch correction" not in full_log_content:
-            print("here")
         with open(tmp_log_path, "w") as log_file:
             log_file.write(full_log_content)
 
