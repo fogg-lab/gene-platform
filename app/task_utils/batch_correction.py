@@ -35,6 +35,11 @@ class BatchCorrectionRunner(TaskRunner):
 
     def validate_config(self, config) -> StatusDict:
         """Ensures config parameters are valid for the task"""
+        if "data_type" not in config:
+            return StatusDict(status="Error: data_type not specified in config.yml",
+                              errors=["missing data_type"])
+        if config["data_type"] not in ["microarray", "rnaseq"]:
+            return StatusDict(status="Error: Invalid datatype", errors=["invalid data_type"])
         return StatusDict(status="", errors=[])
 
     def validate_task(self) -> StatusDict:

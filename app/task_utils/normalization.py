@@ -25,6 +25,10 @@ class NormalizationRunner(TaskRunner):
 
     def validate_config(self, config) -> dict:
         """Ensures config parameters are valid for the task"""
+        if "method" not in config:
+            return StatusDict(status="Invalid config", errors=["Missing method"])
+        elif config["method"] not in ["tmm", "mrn"]:
+            return StatusDict(status="Invalid config", errors=["Invalid method"])
         return StatusDict(status="", errors=[])
 
     def validate_task(self) -> dict:
