@@ -32,4 +32,3 @@ Instructions to set up and start the web app:
   `gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app`  
   ...or run the server persistently in the background like this:  
   `nohup gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app &`  
-  Note: Sometimes it may take 2 tries to start the server.  
