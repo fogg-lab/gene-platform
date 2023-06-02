@@ -19,7 +19,7 @@ Instructions to set up and start the web app:
   `cd gene-platform`  
   `chmod +x install_packages.sh`  
   `# One of the following commands (depends on whether you are using Docker or Singularity):`  
-  `docker build -t gene-platform-image .`  
+  `sudo docker build -t gene-platform-image .`  
   `sudo singularity build gene-platform-image.sif singularity.def`  
 
 3. Run the container  
