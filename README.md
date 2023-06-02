@@ -25,7 +25,7 @@ Instructions to set up and start the web app:
 3. Run the container  
   `# One of the following:`  
   `singularity run gene-platform-image.sif`  
-  `docker run gene-platform-image`
+  `sudo docker run -it --volume $PWD:/gene-platform -w /gene-platform gene-platform-image`
 
 4. Run the web app (replace xxxx with a port number)  
   `gunicorn --workers=3 --threads=2 --bind 0.0.0.0:xxxx wsgi:app`  
