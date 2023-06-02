@@ -36,12 +36,12 @@ def before_request():
         is_login_endpoint = request.endpoint in ["auth_bp.login", "auth_bp.callback"]
         if not current_user.is_authenticated and not is_login_endpoint:
             return redirect("/login")
-    elif not is_login_endpoint:
-        # Log the user in as a guest
-        if not User.get("guest1"):
-            User.create("guest1", "John Doe", "email@domain.com")
-        user = User.get("guest1")
-        login_user(user)
+        if not is_login_endpoint:
+            # Log the user in as a guest
+            if not User.get("guest1"):
+                User.create("guest1", "John Doe", "email@domain.com")
+            user = User.get("guest1")
+            login_user(user)
 
 
 @auth_bp.route("/login")
