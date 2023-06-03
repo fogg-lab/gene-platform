@@ -1,5 +1,6 @@
 import sys
 import os
+from glob import glob
 import subprocess
 import argparse
 from pathlib import Path
@@ -96,7 +97,7 @@ def map_probes(counts_path, species, probe_map_dir, metadata_dir):
     else:
         print(f"Probe map found: {probeset_map_path}")
     probe_map = read_csv(probeset_map_path, sep="\t",
-                            dtype={"hgnc_symbol": object, probeset: object})
+                         dtype={"hgnc_symbol": object, probeset: object})
 
     counts_df[probeset] = counts_df[probeset].apply(lambda x: str(x).rstrip("_at"))
     probe_map[probeset] = probe_map[probeset].apply(lambda x: str(x).rstrip("_at"))
@@ -113,13 +114,9 @@ def map_probes(counts_path, species, probe_map_dir, metadata_dir):
 
 def get_unmapped_counts_paths(data_dir):
     """Returns a list of paths to unmapped expression matrices"""
-    counts_paths = []
+    unmapped_counts_path_pattern = os.path.join(data_dir, "*_counts_unmapped.tsv")
 
-    for fname in os.listdir(data_dir):
-        if "_counts_unmapped.tsv" in fname:
-            counts_paths.append(os.path.join(data_dir, fname))
-
-    return counts_paths
+    return glob(unmapped_counts_path_pattern)
 
 
 if __name__ == "__main__":
