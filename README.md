@@ -24,7 +24,7 @@ chmod +x install_packages.sh
 # One of the following commands (depends on whether you are using Singularity or Docker):
 sudo singularity build gene-platform-image.sif singularity.def
 # or, for docker:
-sudo docker build -t gene-platform-image .
+docker build -t gene-platform-image .
 ```
 
 3. Run the container
@@ -33,7 +33,7 @@ sudo docker build -t gene-platform-image .
 singularity run gene-platform-image.sif
 # or, for docker:
 # Replace 1234 with some port number (the same number should be used in the next step)
-sudo docker run -it --volume $PWD:/gene-platform -w /gene-platform -p 1234:1234 gene-platform-image
+docker run -it --volume $PWD:/gene-platform -w /gene-platform -p 1234:1234 gene-platform-image
 ```
 
 4. Run the web app (replace 1234 with some port number)
