@@ -5,11 +5,8 @@
 ### Main site (currently you must sign in with your OSU account): https://geneplatform.oregonstate.edu
 
 ## Installation
-The web server runs on Linux, including the Windows Subsystem for Linux (WSL).
 
-## Installation
-
-Prerequisite: Install [Docker](https://docs.docker.com/get-docker/) or [Singularity](https://docs.sylabs.io/guides/3.0/user-guide/installation.html) container platform
+Prerequisite: Install [Docker](https://docs.docker.com/get-docker/) or [Singularity](https://docs.sylabs.io/guides/3.0/user-guide/installation.html) container platform. If you are using Docker on Linux and you get "permission denied" trying to build or run the container, see the following documentation: https://docs.docker.com/engine/install/linux-postinstall/.
 
 Instructions to set up and start the web app:
 1. Clone this repo
