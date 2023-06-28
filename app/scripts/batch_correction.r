@@ -1,10 +1,5 @@
 suppressMessages(suppressWarnings(library(tidyverse)))
-suppressMessages(suppressWarnings(library(BiocParallel)))
-suppressMessages(suppressWarnings(library(parallel)))
 suppressMessages(suppressWarnings(library(sva)))
-suppressMessages(suppressWarnings(library(dplyr)))
-suppressMessages(suppressWarnings(library(ggplot2)))
-suppressMessages(suppressWarnings(library(magrittr)))
 
 args = commandArgs(trailingOnly = TRUE)
 
