@@ -1,4 +1,5 @@
-suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(readr)))
+suppressMessages(suppressWarnings(library(dplyr)))
 suppressMessages(suppressWarnings(library(sva)))
 
 args = commandArgs(trailingOnly = TRUE)
