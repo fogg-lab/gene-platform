@@ -1,7 +1,11 @@
 Note: This is a rough readme and stand-in for the future readme.md
 
+Prerequisites: 
+1. NPM installed
+2. Node.js installed
+
 Install and run steps:
-1. install dependencies: npm install
+1. install NPM dependencies: npm install
 2. start webpack dev server: npm start
 3. run electron application: npm run electron
 
