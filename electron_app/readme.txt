@@ -12,8 +12,8 @@ Project Structure
 electron_app/
 │
 ├── src/
-│   ├── index.js
-│   ├── App.js //handles React (all UI goes here)
+│   ├── index.js // Main entry for React / where root gets rendered
+│   ├── App.js //routing / state management
 │   └── styles.css (not implemented)
 │
 ├── public/
@@ -22,7 +22,7 @@ electron_app/
 ├── dist/
 │   └── (output files after build)
 │
-├── main.js //handles electron
+├── main.js //react + electron bundler
 ├── package.json
 ├── webpack.config.js
 ├── .babelrc

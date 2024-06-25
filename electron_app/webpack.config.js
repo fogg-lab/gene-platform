@@ -4,7 +4,8 @@ module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    publicPath: '/' // Ensure correct public path
   },
   mode: 'development',
   module: {
@@ -12,13 +13,37 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader'
-        }
+        use: 'babel-loader'
       },
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'assets/fonts/', // Adjusted path for build output
+              publicPath: 'assets/fonts/' // Adjusted public path
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif)$/i, // Rule to handle image files
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'assets/', // Adjusted path for build output
+              publicPath: 'assets/' // Adjusted public path
+            }
+          }
+        ]
       }
     ]
   },
@@ -33,4 +58,3 @@ module.exports = {
     port: 9000
   }
 };
-
