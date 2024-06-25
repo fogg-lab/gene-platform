@@ -1,0 +1,82 @@
+/* src/assets/styles.css */
+@font-face {
+    font-family: 'Stratum2';
+    src: url('./fonts/Stratum2-Black.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'KievitOffc';
+    src: url('./fonts/KievitOffc.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'KievitOffc-Bold';
+    src: url('./fonts/KievitOffc-Bold.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+#fogg_logo {
+    width: 75px;
+}
+
+h1 {
+    font-family: 'Stratum2';
+}
+
+nav {
+    display: flex;
+    align-items: center;
+    /* Center items vertically */
+    justify-content: space-between;
+    /* Distribute space between the items */
+}
+
+#primary_navbar {
+    background-color: #D73F09;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-grow: 1;
+    /* Optional: Add padding for spacing */
+    width: 100%;
+    border-radius: 15px;
+    /* Add rounded edges */
+    /* Make the primary navbar take up available space */
+    padding-left: 75px;
+    padding-right: 75px;
+}
+
+#primary_navbar li {
+    padding: 12px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    /* Make the list items horizontal */
+    align-items: center;
+    /* Center items vertically within the ul */
+}
+
+a li {
+    margin-right: 10px;
+    /* Adjust spacing between list items */
+}
+
+a {
+    text-decoration: none;
+    color: black;
+    font-family: "KievitOffc-Bold";
+    font-size: 1.4em;
+}
+
+a:hover {
+    color: white;
+}
