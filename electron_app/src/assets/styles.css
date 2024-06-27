@@ -28,6 +28,11 @@ h1 {
     font-family: 'Stratum2';
 }
 
+h2,
+p {
+    font-family: 'KievitOffc-Bold';
+}
+
 nav {
     display: flex;
     align-items: center;
@@ -53,6 +58,36 @@ nav {
 
 #primary_navbar li {
     padding: 12px;
+}
+
+#homepage_main_div {
+    display: flex;
+    padding-top: 15%;
+    flex-direction: column;
+    /* Stacks items vertically */
+    justify-content: flex-start;
+    /* Centers vertically */
+    align-items: center;
+    /* Centers horizontally */
+    height: 100vh;
+}
+
+#homepage_main_div>* {
+    margin-bottom: -0.25em;
+}
+
+#homepage_main_div h1 {
+    font-size: 4em;
+}
+
+#homepage_buttons {
+    display: flex;
+    /* Use Flexbox for horizontal alignment */
+    justify-content: center;
+    /* Center the buttons horizontally */
+    margin-top: 4%;
+    gap: 20px;
+    /* Add some space between the buttons */
 }
 
 ul {
