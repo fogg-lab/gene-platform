@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from './components/ui/Button';
+import Button from './components/ui/IconButton';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Home from './pages/Home'
 import Analysis from './pages/Analysis'
