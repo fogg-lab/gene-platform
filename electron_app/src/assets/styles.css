@@ -20,6 +20,11 @@
     font-style: normal;
 }
 
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
 #fogg_logo {
     width: 75px;
 }
@@ -34,6 +39,9 @@ p {
 }
 
 nav {
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: -6px;
     display: flex;
     align-items: center;
     /* Center items vertically */
@@ -88,6 +96,26 @@ nav {
     margin-top: 4%;
     gap: 20px;
     /* Add some space between the buttons */
+}
+
+#analysis_container {
+    display: flex;
+    flex-direction: row;
+    padding: 0%;
+}
+
+#analysis_user_input {
+    background-color: #D9D9D9;
+    height: 100vh;
+    width: 40%;
+    padding: 0%;
+}
+
+#analysis_visualization_section {
+    background-color: #ffffff;
+    height: 100vh;
+    width: 100%;
+
 }
 
 ul {
