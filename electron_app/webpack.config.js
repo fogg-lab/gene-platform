@@ -39,8 +39,8 @@ module.exports = {
             loader: 'file-loader',
             options: {
               name: '[name].[ext]',
-              outputPath: 'assets/', // Adjusted path for build output
-              publicPath: 'assets/' // Adjusted public path
+              outputPath: 'assets/', // Unified path for all assets
+              publicPath: 'assets/' // Unified public path
             }
           }
         ]
