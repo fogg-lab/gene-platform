@@ -13,6 +13,7 @@ This should launch the electron/react window.
 
 Project Structure
 
+```
 electron_app/
 │
 ├── src/
@@ -31,4 +32,4 @@ electron_app/
 ├── webpack.config.js
 ├── .babelrc
 └── README.md
-
+```
