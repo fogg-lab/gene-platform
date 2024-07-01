@@ -1,17 +1,17 @@
-Note: This is a rough readme and stand-in for the future readme.md
+# GENE Platform
 
-Prerequisites: 
+## Prerequisites
 1. NPM installed
 2. Node.js installed
 
-Install and run steps:
+## Install and run steps:
 1. install NPM dependencies: npm install
 2. start webpack dev server: npm start
 3. run electron application: npm run electron
 
 This should launch the electron/react window.
 
-Project Structure
+## Project Structure
 
 ```
 electron_app/
