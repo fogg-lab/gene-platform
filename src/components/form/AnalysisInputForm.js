@@ -1,5 +1,5 @@
 import React from 'react'
-const AnalysisInput = ({/* Put parameters for different inputs here later(ie, which page and change accordingly) */ }) => {
+const AnalysisInput = ({/* Put parameters for different inputs here later(ie, which tab and change accordingly) */ }) => {
 
     return (
         <div>
