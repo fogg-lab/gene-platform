@@ -11,8 +11,6 @@ const IconButton = ({ iconFilename, label }) => {
 		return null;
 	}
 
-	console.log(`Icon source for ${iconFilename}:`, iconSrc);
-
 	const iconStyle = {
 		width: '24px',
 		height: '24px',
@@ -21,9 +19,9 @@ const IconButton = ({ iconFilename, label }) => {
 
 	const buttonStyle = {
 		backgroundColor: '#D73F09',
-		display: 'flex', // Use flexbox for alignment
-		alignItems: 'center', // Center vertically
-		justifyContent: 'center', // Center horizontally if needed
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
 		padding: '5px',
 		border: 'none',
 		color: 'white',

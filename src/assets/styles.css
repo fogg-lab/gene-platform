@@ -111,6 +111,15 @@ nav {
     padding: 0%;
 }
 
+#analysis_tab_nav {
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#analysis_run_section {}
+
 #analysis_visualization_section {
     background-color: #ffffff;
     height: 100vh;
