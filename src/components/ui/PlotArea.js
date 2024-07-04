@@ -8,11 +8,13 @@ const PlotArea = ({ data, layout, config }) => {
         Plotly.newPlot(plotRef.current, data, layout, config);
 
         return () => {
-            Plotly.purge(plotRef.current);
+            if (plotRef.current) {
+                Plotly.purge(plotRef.current);
+            }
         };
     }, [data, layout, config]);
 
-    return <div ref={plotRef} style={{ width: '500px', height: '400' }} />;
+    return <div ref={plotRef} style={{ width: '500px', height: '400px', border: '1px solid black' }} />;
 };
 
 export default PlotArea;
