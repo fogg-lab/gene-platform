@@ -12,7 +12,7 @@ const PlotArea = ({ data, layout, config }) => {
         };
     }, [data, layout, config]);
 
-    return <div ref={plotRef} style={{ width: '100%', height: '100%' }} />;
+    return <div ref={plotRef} style={{ width: '500px', height: '400' }} />;
 };
 
 export default PlotArea;

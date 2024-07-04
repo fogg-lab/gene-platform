@@ -3,6 +3,7 @@ import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
 import IconButton from '../components/ui/IconButton';
 import ToolTip from '../components/ui/ToolTip';
+import PlotArea from '../components/ui/PlotArea';
 
 const Analysis = () => {
     return (
@@ -20,6 +21,7 @@ const Analysis = () => {
                     {/* <ToolTip /> */}
                 </div>
                 <div id="analysis_run_section">
+                    <PlotArea />
                 </div>
             </div>
         </div>
