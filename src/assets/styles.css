@@ -7,6 +7,13 @@
 }
 
 @font-face {
+    font-family: 'stratumThin';
+    src: url('./fonts/Stratum2-Thin.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
     font-family: 'KievitOffc';
     src: url('./fonts/KievitOffc.ttf') format('truetype');
     font-weight: normal;
@@ -29,8 +36,18 @@ body {
     width: 75px;
 }
 
-h1 {
+h1,
+h3 {
     font-family: 'Stratum2';
+}
+
+label {
+    font-family: 'Stratum2';
+    font-size: 1.2em;
+}
+
+input {
+    margin-left: 50px;
 }
 
 h2,
@@ -44,9 +61,7 @@ nav {
     margin-bottom: -6px;
     display: flex;
     align-items: center;
-    /* Center items vertically */
     justify-content: space-between;
-    /* Distribute space between the items */
 }
 
 #primary_navbar {
@@ -55,11 +70,8 @@ nav {
     justify-content: space-between;
     align-items: center;
     flex-grow: 1;
-    /* Optional: Add padding for spacing */
     width: 100%;
     border-radius: 15px;
-    /* Add rounded edges */
-    /* Make the primary navbar take up available space */
     padding-left: 75px;
     padding-right: 75px;
 }
@@ -105,10 +117,10 @@ nav {
 }
 
 #analysis_user_input {
-    background-color: #D9D9D9;
+    background-color: #ECECEC;
     height: 100vh;
-    width: 40%;
-    padding: 0%;
+    width: 35%;
+    padding: 1%;
 }
 
 #analysis_tab_nav {
@@ -118,13 +130,72 @@ nav {
     flex-wrap: wrap;
 }
 
-#analysis_run_section {}
+#analysis_run_section {
+    padding: 3%;
+}
 
 #analysis_visualization_section {
     background-color: #ffffff;
     height: 100vh;
     width: 100%;
+}
 
+.dataSubfield {
+    display: flex;
+    flex-direction: column;
+    background-color: #D9D9D9;
+    margin: 1%;
+    padding: 3%;
+    border-radius: 10px;
+}
+
+.radioLabel {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+
+.radioLabel input[type="radio"] {
+    margin: 0;
+}
+
+.radioInput {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+}
+
+#filedropContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.filedropArea {
+    border: 2px dashed black;
+    display: flex;
+    padding: 2%;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 2%;
+    width: 45%;
+    box-sizing: border-box;
+}
+
+.openFilesystemButton {
+    width: 95%;
+    padding: 7%;
+    border-radius: 5px;
+    border: 1px solid black;
+    background-color: #D9D9D9;
+}
+
+input[type='file'] {
+    display: none;
 }
 
 ul {
@@ -132,14 +203,11 @@ ul {
     padding: 0;
     margin: 0;
     display: flex;
-    /* Make the list items horizontal */
     align-items: center;
-    /* Center items vertically within the ul */
 }
 
 a li {
     margin-right: 10px;
-    /* Adjust spacing between list items */
 }
 
 a {
@@ -149,6 +217,6 @@ a {
     font-size: 1.4em;
 }
 
-a:hover {
+s a:hover {
     color: white;
 }
