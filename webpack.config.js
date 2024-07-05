@@ -9,6 +9,7 @@ module.exports = {
     publicPath: '/' // Ensure correct public path
   },
   mode: 'development',
+  target: 'electron-renderer',
   module: {
     rules: [
       {
@@ -53,7 +54,10 @@ module.exports = {
     fallback: {
       "buffer": require.resolve('buffer/'),
       "stream": require.resolve('stream-browserify'),
-      "process": require.resolve('process/browser')
+      "process": require.resolve('process/browser'),
+      "path": require.resolve("path-browserify"),
+      "crypto": require.resolve("crypto-browserify"),
+      "fs": false
     }
   },
   plugins: [

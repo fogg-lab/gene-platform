@@ -4,9 +4,12 @@
   "description": "Standalone desktop ver. of Fogg Lab's Gene Platform",
   "main": "main.js",
   "scripts": {
-    "start": "node --no-warnings node_modules/webpack-dev-server/bin/webpack-dev-server.js --mode development",
+    "start": "webpack serve --config webpack.config.js --mode development",
+    "build": "webpack --config webpack.config.js --mode production",
     "electron": "electron .",
-    "build": "node --no-warnings node_modules/webpack/bin/webpack.js --mode production"
+    "electron-dev": "electron . --dev-tools",
+    "dev": "concurrently \"npm run start\" \"wait-on http://localhost:9000 && npm run electron\"",
+    "dev-debug": "concurrently \"npm run start\" \"wait-on http://localhost:9000 && npm run electron-dev\""
   },
   "repository": {
     "type": "git",
@@ -22,28 +25,50 @@
     "@babel/core": "^7.24.7",
     "@babel/preset-env": "^7.24.7",
     "@babel/preset-react": "^7.24.7",
+    "@chromatic-com/storybook": "^1.6.1",
+    "@storybook/addon-essentials": "^8.1.11",
+    "@storybook/addon-interactions": "^8.1.11",
+    "@storybook/addon-links": "^8.1.11",
+    "@storybook/addon-onboarding": "^8.1.11",
+    "@storybook/addon-webpack5-compiler-swc": "^1.0.4",
+    "@storybook/blocks": "^8.1.11",
+    "@storybook/react": "^8.1.11",
+    "@storybook/react-webpack5": "^8.1.11",
+    "@storybook/test": "^8.1.11",
     "babel-loader": "^9.1.3",
-    "buffer": "^6.0.3",
+    "concurrently": "^8.2.2",
     "css-loader": "^7.1.2",
     "electron": "^31.0.1",
+    "electron-devtools-installer": "^3.2.0",
     "electron-is-dev": "^3.0.1",
+    "eslint-plugin-storybook": "^0.8.0",
     "file-loader": "^6.2.0",
-    "process": "^0.11.10",
     "sass": "^1.77.6",
     "sass-loader": "^14.2.1",
-    "stream-browserify": "^3.0.0",
+    "storybook": "^8.1.11",
     "style-loader": "^4.0.0",
+    "wait-on": "^7.2.0",
     "webpack": "^5.92.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {
     "assert": "^2.1.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "path-browserify": "^1.0.1",
     "plotly.js": "^2.33.0",
+    "process": "^0.11.10",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-plotly.js": "^2.6.0",
-    "react-router-dom": "^6.23.1"
+    "react-router-dom": "^6.23.1",
+    "stream-browserify": "^3.0.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
   }
 }
