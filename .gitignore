@@ -18,3 +18,5 @@ image.sif
 *.db
 .vscode
 dev_container
+
+*storybook.log

@@ -2,6 +2,7 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
 let mainWindow;
+const isDevToolsRequested = process.argv.includes('--dev-tools');
 
 async function createWindow() {
   const isDev = (await import('electron-is-dev')).default;
@@ -21,6 +22,11 @@ async function createWindow() {
       : `file://${path.join(__dirname, 'dist/index.html')}`
   );
 
+  // Open the DevTools if the --dev-tools flag is passed
+  if (isDevToolsRequested) {
+    mainWindow.webContents.openDevTools();
+  }
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -39,4 +45,3 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
