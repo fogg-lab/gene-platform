@@ -1,93 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useMemo } from 'react';
+import DataGrid, { SelectColumn, textEditor } from 'react-data-grid';
+import 'react-data-grid/lib/styles.css';
 import PropTypes from 'prop-types';
 
 const DataTable = ({ data, columns }) => {
-  const [tableData, setTableData] = useState([]);
-  const [tableColumns, setTableColumns] = useState([]);
+  const [rows, setRows] = useState(data);
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [sortColumns, setSortColumns] = useState([]);
 
-  useEffect(() => {
-    setTableData(data);
-    setTableColumns(columns);
-  }, [data, columns]);
+  const gridColumns = useMemo(() => {
+    return [
+      SelectColumn,
+      ...columns.map(col => ({
+        ...col,
+        sortable: true,
+        resizable: true,
+        editor: textEditor
+      }))
+    ];
+  }, [columns]);
 
-  const parentRef = React.useRef();
+  const sortedRows = useMemo(() => {
+    if (sortColumns.length === 0) return rows;
 
-  const rowVirtualizer = useVirtualizer({
-    count: tableData.length + 1, // +1 for header row
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 35,
-    overscan: 5,
-  });
+    return [...rows].sort((a, b) => {
+      for (const sort of sortColumns) {
+        const comparator = (a, b) => {
+          if (a[sort.columnKey] === b[sort.columnKey]) return 0;
+          return a[sort.columnKey] > b[sort.columnKey] ? 1 : -1;
+        };
+        const compResult = comparator(a, b);
+        if (compResult !== 0) {
+          return sort.direction === 'ASC' ? compResult : -compResult;
+        }
+      }
+      return 0;
+    });
+  }, [rows, sortColumns]);
 
-  const columnVirtualizer = useVirtualizer({
-    horizontal: true,
-    count: tableColumns.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 150,
-    overscan: 5,
-  });
+  function rowKeyGetter(row) {
+    return row.id;
+  }
 
   return (
-    <Card className="w-full">
-      <CardContent>
-        <div
-          ref={parentRef}
-          className="overflow-auto"
-          style={{
-            height: '400px',
-            width: '100%',
-          }}
-        >
-          <div
-            style={{
-              height: `${rowVirtualizer.getTotalSize()}px`,
-              width: `${columnVirtualizer.getTotalSize()}px`,
-              position: 'relative',
-            }}
-          >
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-              <React.Fragment key={virtualRow.index}>
-                {columnVirtualizer.getVirtualItems().map((virtualColumn) => (
-                  <div
-                    key={`${virtualRow.index}-${virtualColumn.index}`}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: `${virtualColumn.size}px`,
-                      height: `${virtualRow.size}px`,
-                      transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    <div
-                      style={{
-                        padding: '4px',
-                        borderBottom: '1px solid #eee',
-                        borderRight: '1px solid #eee',
-                        background: virtualRow.index === 0 ? '#f0f0f0' : 'white',
-                      }}
-                    >
-                      {virtualRow.index === 0
-                        ? tableColumns[virtualColumn.index]
-                        : tableData[virtualRow.index - 1][virtualColumn.index]}
-                    </div>
-                  </div>
-                ))}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <DataGrid
+      columns={gridColumns}
+      rows={sortedRows}
+      rowKeyGetter={rowKeyGetter}
+      onRowsChange={setRows}
+      selectedRows={selectedRows}
+      onSelectedRowsChange={setSelectedRows}
+      sortColumns={sortColumns}
+      onSortColumnsChange={setSortColumns}
+      className="fill-grid"
+    />
   );
 };
 
 DataTable.propTypes = {
-  data: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any)).isRequired,
-  columns: PropTypes.arrayOf(PropTypes.string).isRequired,
+  data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };
 
 export default DataTable;
-

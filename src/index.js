@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import './styles/tailwind.css';
 
 console.log('index.js is running');
 console.log('Attempting to render App component');
