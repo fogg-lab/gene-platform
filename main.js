@@ -1,8 +1,8 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-extension-installer');
 
 let mainWindow;
-const isDevToolsRequested = process.argv.includes('--dev-tools');
 
 async function createWindow() {
   const isDev = (await import('electron-is-dev')).default;
@@ -12,27 +12,33 @@ async function createWindow() {
     height: 900,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
     }
   });
 
-  mainWindow.loadURL(
-    isDev
-      ? 'http://localhost:9000'
-      : `file://${path.join(__dirname, 'dist/index.html')}`
-  );
+  const url = isDev
+    ? 'http://localhost:9000'
+    : `file://${path.join(__dirname, 'dist/index.html')}`;
 
-  // Open the DevTools if the --dev-tools flag is passed
-  if (isDevToolsRequested) {
-    mainWindow.webContents.openDevTools();
-  }
+  console.log('Loading URL:', url);
+
+  mainWindow.loadURL(url).catch(err => {
+    console.error('Failed to load URL:', err);
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
 
-app.on('ready', createWindow);
+app.on("ready", async () => {
+  await installExtension(REACT_DEVELOPER_TOOLS, {
+    loadExtensionOptions: {
+      allowFileAccess: true,
+    },
+  });
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

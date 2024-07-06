@@ -1,5 +1,20 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import App from './App';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+console.log('index.js is running');
+console.log('Attempting to render App component');
+const rootElement = document.getElementById('root');
+console.log('Root element:', rootElement);
+
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+  console.log('App rendered successfully');
+} else {
+  console.error('Failed to find root element');
+}
