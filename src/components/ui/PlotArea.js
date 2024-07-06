@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-const PlotArea = ({ data = [], layout, config }) => {
+const PlotArea = ({ data = [], layout = {}, config = {} }) => {
     const plotRef = useRef(null);
 
     const initializePlot = useCallback(() => {
@@ -28,11 +28,6 @@ PlotArea.propTypes = {
     data: PropTypes.array,
     layout: PropTypes.object,
     config: PropTypes.object
-};
-
-PlotArea.defaultProps = {
-    layout: {},
-    config: {}
 };
 
 export default PlotArea;
