@@ -1,20 +1,38 @@
-import React, { useEffect, useRef } from 'react';
-import Plotly from 'plotly.js';
+import React, { useEffect, useRef, useCallback } from 'react';
+import PropTypes from 'prop-types';
 
-const PlotArea = ({ data, layout, config }) => {
+const PlotArea = ({ data = [], layout, config }) => {
     const plotRef = useRef(null);
 
-    useEffect(() => {
-        Plotly.newPlot(plotRef.current, data, layout, config);
-
-        return () => {
-            if (plotRef.current) {
-                Plotly.purge(plotRef.current);
-            }
-        };
+    const initializePlot = useCallback(() => {
+        if (plotRef.current) {
+            import('plotly.js').then(Plotly => {
+                Plotly.newPlot(plotRef.current, data, layout, config);
+            });
+        }
     }, [data, layout, config]);
 
-    return <div ref={plotRef} style={{ width: '500px', height: '400px', border: '1px solid black' }} />;
+    useEffect(() => {
+        // Delay initialization to ensure DOM is ready
+        const timer = setTimeout(() => {
+            initializePlot();
+        }, 0);
+
+        return () => clearTimeout(timer);
+    }, [initializePlot]);
+
+    return <div ref={plotRef} style={{ width: '100%', height: '400px' }} />;
+};
+
+PlotArea.propTypes = {
+    data: PropTypes.array,
+    layout: PropTypes.object,
+    config: PropTypes.object
+};
+
+PlotArea.defaultProps = {
+    layout: {},
+    config: {}
 };
 
 export default PlotArea;
