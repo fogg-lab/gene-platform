@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
 import IconButton from '../components/ui/IconButton';
@@ -8,6 +8,8 @@ import DataTable from '../components/ui/DataTable';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
+    const [tableScrollPosition, setTableScrollPosition] = useState(0);
+    const tableContainerRef = useRef(null);
 
     const data = useMemo(() => {
         const rows = [];
@@ -30,6 +32,16 @@ const Analysis = () => {
         { key: 'baseMean', name: 'Base Mean' },
         { key: 'log2FoldChange', name: 'Log2 Fold Change' },
     ];
+
+    useEffect(() => {
+        if (activeTab === 'table' && tableContainerRef.current) {
+            tableContainerRef.current.scrollTop = tableScrollPosition;
+        }
+    }, [activeTab, tableScrollPosition]);
+
+    const handleTableScroll = (event) => {
+        setTableScrollPosition(event.target.scrollTop);
+    };
 
     return (
         <div id="analysis_container">
@@ -60,11 +72,16 @@ const Analysis = () => {
                         </button>
                     </div>
                     <div id="view_content">
-                        {activeTab === 'table' ? (
+                        <div 
+                            style={{ display: activeTab === 'table' ? 'block' : 'none', height: '600px', overflow: 'auto' }}
+                            ref={tableContainerRef}
+                            onScroll={handleTableScroll}
+                        >
                             <DataTable data={data} columns={columns} />
-                        ) : (
+                        </div>
+                        <div style={{ display: activeTab === 'plot' ? 'block' : 'none' }}>
                             <PlotArea />
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>
