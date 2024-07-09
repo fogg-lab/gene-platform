@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const IconButton = ({ iconFilename, label }) => {
+const IconButton = ({ iconFilename, label, onClick }) => {
 	let iconSrc;
 
 	try {
@@ -31,7 +31,7 @@ const IconButton = ({ iconFilename, label }) => {
 	};
 
 	return (
-		<button className="icon-button" style={buttonStyle}>
+		<button className="icon-button" style={buttonStyle} onClick={onClick}>
 			<img src={iconSrc} alt={label} style={iconStyle} />
 			<span>{label}</span>
 		</button>

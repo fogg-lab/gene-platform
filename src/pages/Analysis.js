@@ -58,13 +58,13 @@ const Analysis = () => {
                 </div>
                 <div id="analysis_content">
                     <div id="view_toggle">
-                        <button 
+                        <button
                             className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
                             onClick={() => setActiveTab('table')}
                         >
                             Table View
                         </button>
-                        <button 
+                        <button
                             className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
                             onClick={() => setActiveTab('plot')}
                         >
@@ -72,8 +72,8 @@ const Analysis = () => {
                         </button>
                     </div>
                     <div id="view_content">
-                        <div 
-                            style={{ display: activeTab === 'table' ? 'block' : 'none', height: '600px', overflow: 'auto' }}
+                        <div
+                            style={{ display: activeTab === 'table' ? 'block' : 'none', height: '100%', overflow: 'auto' }}
                             ref={tableContainerRef}
                             onScroll={handleTableScroll}
                         >
