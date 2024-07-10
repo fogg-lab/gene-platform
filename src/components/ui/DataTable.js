@@ -1,29 +1,59 @@
-import React, { useState, useMemo } from 'react';
-import DataGrid, { SelectColumn, textEditor } from 'react-data-grid';
+import React, { useState, useMemo, useEffect } from 'react';
+import DataGrid from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 import PropTypes from 'prop-types';
 
+// Error boundary component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.log('Error caught by ErrorBoundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong. Please try refreshing the page.</h1>;
+    }
+
+    return this.props.children; 
+  }
+}
+
+
 const DataTable = ({ data, columns }) => {
-  const [rows, setRows] = useState(data);
-  const [selectedRows, setSelectedRows] = useState(new Set());
   const [sortColumns, setSortColumns] = useState([]);
 
   const gridColumns = useMemo(() => {
-    return [
-      SelectColumn,
-      ...columns.map(col => ({
-        ...col,
-        sortable: true,
-        resizable: true,
-        editor: textEditor
-      }))
-    ];
+    return columns.map(col => ({
+      ...col,
+      sortable: true,
+      resizable: true,
+      width: 150,
+      minwidth: 50,
+    }));
   }, [columns]);
 
-  const sortedRows = useMemo(() => {
-    if (sortColumns.length === 0) return rows;
+  const filteredData = useMemo(() => {
+    return data.filter(row => {
+      // Check if the row has at least one non-empty value
+      return Object.values(row).some(value => 
+        value !== null && value !== undefined && value !== ''
+      );
+    });
+  }, [data]);
 
-    return [...rows].sort((a, b) => {
+  const sortedRows = useMemo(() => {
+    if (sortColumns.length === 0) return filteredData;
+
+    return [...filteredData].sort((a, b) => {
       for (const sort of sortColumns) {
         const comparator = (a, b) => {
           if (a[sort.columnKey] === b[sort.columnKey]) return 0;
@@ -36,26 +66,45 @@ const DataTable = ({ data, columns }) => {
       }
       return 0;
     });
-  }, [rows, sortColumns]);
+  }, [filteredData, sortColumns]);
 
   function rowKeyGetter(row) {
     return row.id;
   }
 
+  // ResizeObserver error workaround
+  useEffect(() => {
+    const resizeObserverError = error => {
+      if (error.message.includes('ResizeObserver loop')) {
+        const resizeObserverError = new Error('Resize observer error');
+        console.log('ResizeObserver error caught and suppressed:', resizeObserverError);
+      }
+    };
+    window.addEventListener('error', resizeObserverError);
+    return () => window.removeEventListener('error', resizeObserverError);
+  }, []);
+
   return (
-    <DataGrid
-      columns={gridColumns}
-      rows={sortedRows}
-      rowKeyGetter={rowKeyGetter}
-      onRowsChange={setRows}
-      selectedRows={selectedRows}
-      onSelectedRowsChange={setSelectedRows}
-      sortColumns={sortColumns}
-      onSortColumnsChange={setSortColumns}
-      className="fill-grid"
-    />
+    <ErrorBoundary>
+      <DataGrid
+        columns={gridColumns}
+        rows={sortedRows}
+        rowKeyGetter={rowKeyGetter}
+        sortColumns={sortColumns}
+        onSortColumnsChange={setSortColumns}
+        className="fill-grid"
+        defaultColumnOptions={{
+          resizable: true,
+          sortable: true,
+        }}
+        style={{
+          height: 'calc(100% - 40px)',
+        }}
+      />
+    </ErrorBoundary>
   );
 };
+
 
 DataTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,

@@ -17,7 +17,7 @@ async function createWindow() {
   });
 
   const url = isDev
-    ? 'http://localhost:9000'
+    ? 'http://localhost:9328'
     : `file://${path.join(__dirname, 'dist/index.html')}`;
 
   console.log('Loading URL:', url);

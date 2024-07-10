@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const TabButton = ({ label }) => {
+const TabButton = ({ label, onClick }) => {
     const buttonStyle = {
         backgroundColor: '#D73F09',
         display: 'flex',
@@ -17,7 +17,7 @@ const TabButton = ({ label }) => {
     };
 
     return (
-        <button className="tab-button" style={buttonStyle}>
+        <button className="tab-button" style={buttonStyle} onClick={onClick}>
             <span>{label}</span>
         </button>
     );
@@ -25,6 +25,8 @@ const TabButton = ({ label }) => {
 
 TabButton.propTypes = {
     label: PropTypes.string.isRequired,
+    onClick: PropTypes.func.isRequired,
 };
+
 
 export default TabButton;
