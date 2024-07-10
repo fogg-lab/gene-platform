@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/index.js',
@@ -68,13 +69,18 @@ module.exports = {
       template: './public/index.html',
       filename: 'index.html'
     }),
-    new webpack.HotModuleReplacementPlugin()
+    new webpack.HotModuleReplacementPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'src/assets', to: 'assets' }
+      ],
+    }),
   ],
   devServer: {
     static: {
       directory: path.join(__dirname, 'public')
     },
     compress: true,
-    port: 9000,
+    port: 9328,
   }
 };

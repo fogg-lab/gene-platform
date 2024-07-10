@@ -1,47 +1,115 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
-import IconButton from '../components/ui/IconButton';
-import ToolTip from '../components/ui/ToolTip';
 import PlotArea from '../components/ui/PlotArea';
 import DataTable from '../components/ui/DataTable';
+import Papa from 'papaparse';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
-    const [tableScrollPosition, setTableScrollPosition] = useState(0);
+    const [currentStage, setCurrentStage] = useState('exploration');
+    const [tableData, setTableData] = useState([]);
+    const [tableColumns, setTableColumns] = useState([]);
+    const [error, setError] = useState(null);
+    const [currentTable, setCurrentTable] = useState('coldata.csv');
+    const [currentPlot, setCurrentPlot] = useState('pca_3d.html');
     const tableContainerRef = useRef(null);
 
-    const data = useMemo(() => {
-        const rows = [];
-        for (let i = 0; i < 1000; i++) {
-            rows.push({
-                id: i + 1,
-                gene: `ENSG${String(i + 1).padStart(11, '0')}`,
-                symbol: `GENE${i + 1}`,
-                baseMean: Math.floor(Math.random() * 10000),
-                log2FoldChange: (Math.random() * 4 - 2).toFixed(6)
-            });
-        }
-        return rows;
-    }, []);
+    console.log('tableData:', tableData);
+    console.log('tableColumns:', tableColumns);
 
-    const columns = [
-        { key: 'id', name: 'ID' },
-        { key: 'gene', name: 'Gene' },
-        { key: 'symbol', name: 'Symbol' },
-        { key: 'baseMean', name: 'Base Mean' },
-        { key: 'log2FoldChange', name: 'Log2 Fold Change' },
-    ];
+    const file_to_display_name = {
+        'coldata.csv': 'Sample Metadata',
+        //'rnaseq_counts.csv': 'Gene Expression Matrix',
+        'DE_results.csv': 'Differential Expression',
+        'GSEA_results.csv': 'Gene Set Enrichment',
+        'pca_3d.html': 'PCA 3D Embedding',
+        'umap_3d.html': 'UMAP 3D Embedding',
+        'sample_correlation_heatmap.html': 'Sample Correlation Heatmap',
+        'mean_difference.html': 'Mean Difference Plot',
+        'volcano_plot.html': 'Volcano Plot',
+        'gene_concept_network.html': 'Gene Concept Network'
+    };
+
+    const stages = {
+        exploration: {
+            tables: ['coldata.csv'],
+            plots: ['pca_3d.html', 'umap_3d.html', 'sample_correlation_heatmap.html']
+        },
+        differential: {
+            tables: ['DE_results.csv'],
+            plots: ['mean_difference.html', 'volcano_plot.html']
+        },
+        enrichment: {
+            tables: ['GSEA_results.csv'],
+            plots: ['gene_concept_network.html']
+        }
+    };
 
     useEffect(() => {
-        if (activeTab === 'table' && tableContainerRef.current) {
-            tableContainerRef.current.scrollTop = tableScrollPosition;
-        }
-    }, [activeTab, tableScrollPosition]);
+        loadTableData(currentTable);
+    }, [currentTable]);
 
     const handleTableScroll = (event) => {
         setTableScrollPosition(event.target.scrollTop);
     };
+
+    const loadTableData = (filename) => {
+        fetch(`data/${filename}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(csvString => {
+                const result = Papa.parse(csvString, { header: true });
+                if (result.data.length > 0) {
+                    setTableData(result.data);
+                    setTableColumns(Object.keys(result.data[0]).map(field => ({ key: field, name: field })));
+                } else {
+                    setError('CSV file is empty or could not be parsed correctly.');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading CSV:', error);
+                setError(`Failed to load CSV: ${error.message}`);
+            });
+    };
+
+    const handleStageChange = (stage) => {
+        setCurrentStage(stage);
+        setCurrentTable(stages[stage].tables[0]);
+        setCurrentPlot(stages[stage].plots[0]);
+    };
+
+    const renderTableButtons = () => {
+        return stages[currentStage].tables.map(table => (
+            <button 
+                key={table} 
+                onClick={() => setCurrentTable(table)}
+                className={`view-toggle-btn ${currentTable === table ? 'active' : ''}`}
+            >
+                {file_to_display_name[table]}
+            </button>
+        ));
+    };
+
+    const renderPlotButtons = () => {
+        return stages[currentStage].plots.map(plot => (
+            <button 
+                key={plot} 
+                onClick={() => setCurrentPlot(plot)}
+                className={`view-toggle-btn ${currentPlot === plot ? 'active' : ''}`}
+            >
+                {file_to_display_name[plot]}
+            </button>
+        ));
+    };
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
 
     return (
         <div id="analysis_container">
@@ -50,11 +118,9 @@ const Analysis = () => {
             </div>
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
-                    <TabButton label="Exploratory" />
-                    <TabButton label="Differential Expression Analysis" />
-                    <TabButton label="Differential Expression Results" />
-                    <TabButton label="Gene Set Enrichment Analysis" />
-                    <TabButton label="Analysis Log" />
+                    <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />
+                    <TabButton label="Differential Expression Analysis" onClick={() => handleStageChange('differential')} />
+                    <TabButton label="Gene Set Enrichment Analysis" onClick={() => handleStageChange('enrichment')} />
                 </div>
                 <div id="analysis_content">
                     <div id="view_toggle">
@@ -77,10 +143,65 @@ const Analysis = () => {
                             ref={tableContainerRef}
                             onScroll={handleTableScroll}
                         >
-                            <DataTable data={data} columns={columns} />
+                            <div id="table_toggle">
+                                {renderTableButtons()}
+                            </div>
+                            <div 
+                                style={{ 
+                                    position: 'relative',
+                                    paddingBottom: '56.25%',
+                                    height: 0,
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <div 
+                                    style={{ 
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        border: 'none'
+                                    }}
+                                >
+                                    {tableData.length > 0 && tableColumns.length > 0 ? (
+                                            <DataTable data={tableData} columns={tableColumns} />
+                                    ) : (
+                                        <p>Loading table data...</p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                        <div style={{ display: activeTab === 'plot' ? 'block' : 'none' }}>
-                            <PlotArea />
+                        <div 
+                            style={{ 
+                                display: activeTab === 'plot' ? 'block' : 'none',
+                                height: 'calc(100vh - 200px)',
+                                width: '100%',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            <div id="plot_toggle">
+                                {renderPlotButtons()}
+                            </div>
+                            <div style={{ 
+                                position: 'relative',
+                                paddingBottom: '56.25%', // 16:9 aspect ratio
+                                height: 0,
+                                overflow: 'hidden'
+                            }}>
+                                <iframe
+                                    src={`plots/${currentPlot}`}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        border: 'none'
+                                    }}
+                                    title="Analysis Plot"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
