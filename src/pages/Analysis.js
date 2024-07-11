@@ -7,20 +7,18 @@ import Papa from 'papaparse';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
+    const [tableScrollPosition, setTableScrollPosition] = useState(0);
     const [currentStage, setCurrentStage] = useState('exploration');
     const [tableData, setTableData] = useState([]);
     const [tableColumns, setTableColumns] = useState([]);
     const [error, setError] = useState(null);
     const [currentTable, setCurrentTable] = useState('coldata.csv');
     const [currentPlot, setCurrentPlot] = useState('pca_3d.html');
+    const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
     const tableContainerRef = useRef(null);
-
-    console.log('tableData:', tableData);
-    console.log('tableColumns:', tableColumns);
 
     const file_to_display_name = {
         'coldata.csv': 'Sample Metadata',
-        //'rnaseq_counts.csv': 'Gene Expression Matrix',
         'DE_results.csv': 'Differential Expression',
         'GSEA_results.csv': 'Gene Set Enrichment',
         'pca_3d.html': 'PCA 3D Embedding',
@@ -50,6 +48,20 @@ const Analysis = () => {
         loadTableData(currentTable);
     }, [currentTable]);
 
+    useEffect(() => {
+        // Load plot when switching to 'plot' tab or when changing stage while in 'plot' tab
+        if (activeTab === 'plot') {
+            setShouldDisplayPlot(true);
+        } else {
+            setShouldDisplayPlot(false);
+        }
+    }, [activeTab, currentStage]);
+
+    useEffect(() => {
+        if (activeTab === 'table' && tableContainerRef.current) {
+            tableContainerRef.current.scrollTop = tableScrollPosition;
+        }
+    }, [activeTab, tableScrollPosition]);
     const handleTableScroll = (event) => {
         setTableScrollPosition(event.target.scrollTop);
     };
@@ -81,6 +93,10 @@ const Analysis = () => {
         setCurrentStage(stage);
         setCurrentTable(stages[stage].tables[0]);
         setCurrentPlot(stages[stage].plots[0]);
+    };
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
     };
 
     const renderTableButtons = () => {
@@ -126,13 +142,13 @@ const Analysis = () => {
                     <div id="view_toggle">
                         <button
                             className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('table')}
+                            onClick={() => handleTabChange('table')}
                         >
                             Table View
                         </button>
                         <button
                             className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('plot')}
+                            onClick={() => handleTabChange('plot')}
                         >
                             Plot View
                         </button>
@@ -149,7 +165,7 @@ const Analysis = () => {
                             <div 
                                 style={{ 
                                     position: 'relative',
-                                    paddingBottom: '56.25%',
+                                    paddingBottom: '90%',
                                     height: 0,
                                     overflow: 'hidden'
                                 }}
@@ -165,7 +181,7 @@ const Analysis = () => {
                                     }}
                                 >
                                     {tableData.length > 0 && tableColumns.length > 0 ? (
-                                            <DataTable data={tableData} columns={tableColumns} />
+                                        <DataTable data={tableData} columns={tableColumns} />
                                     ) : (
                                         <p>Loading table data...</p>
                                     )}
@@ -175,7 +191,7 @@ const Analysis = () => {
                         <div 
                             style={{ 
                                 display: activeTab === 'plot' ? 'block' : 'none',
-                                height: 'calc(100vh - 200px)',
+                                height: 'calc(100vh)',
                                 width: '100%',
                                 overflow: 'hidden'
                             }}
@@ -189,18 +205,20 @@ const Analysis = () => {
                                 height: 0,
                                 overflow: 'hidden'
                             }}>
-                                <iframe
-                                    src={`plots/${currentPlot}`}
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%',
-                                        border: 'none'
-                                    }}
-                                    title="Analysis Plot"
-                                />
+                                {shouldDisplayPlot && (
+                                    <iframe
+                                        src={`plots/${currentPlot}`}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            border: 'none'
+                                        }}
+                                        title="Analysis Plot"
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>

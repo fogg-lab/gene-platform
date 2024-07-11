@@ -52,8 +52,8 @@ const AnalysisInput = ({/* Put parameters for different inputs here later(ie, wh
                     <label className="radioLabel">
                         <span id="adjustmentSubfield">Adjustment method:</span>
                         <select id="exampleDropdown" name="exampleDropdown">
-                            <option value="option1">Median of Ratios (MRN)</option>
-                            <option value="option2">Trimmed Mean of N Values (TMM)</option>
+                            <option value="option1">Bonferroni</option>
+                            <option value="option2">Benjamini and Hochberg</option>
                         </select>
                     </label>
                     <label className="radioLabel">
