@@ -1,10 +1,12 @@
 # GENE Platform
 
-## Prerequisites
+For the original Flask-based web application, visit https://github.com/fogg-lab/gene-platform-archive
+
+## (Development) Prerequisites
 1. NPM installed
 2. Node.js installed
 
-## Install and run steps:
+## (Development) Install and run steps:
 1. install NPM dependencies: npm install
 2. start webpack dev server: npm start
 3. run electron application: npm run electron
