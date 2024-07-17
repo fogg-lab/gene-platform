@@ -1,7 +1,97 @@
 import React from 'react'
+import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
+import { useCallback, useState } from 'react';
+import Papa from 'papaparse';
 
-const AnalysisInput = ({/* Put parameters for different inputs here later(ie, which tab and change accordingly) */ }) => {
+
+
+const FileDropArea = ({ title, onDrop, fileName }) => {
+    const [isFileTypeValid, setIsFileTypeValid] = useState(true);
+
+    const onDragEnter = useCallback((event) => {
+        const fileType = event.dataTransfer.items[0].type;
+        if (fileType !== 'text/tab-separated-values' && fileType !== 'text/csv') {
+            setIsFileTypeValid(false);
+        } else {
+            setIsFileTypeValid(true);
+        }
+    }, []);
+
+    const onDragLeave = useCallback(() => {
+        setIsFileTypeValid(true);
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop: (acceptedFiles, rejectedFiles) => {
+            const validFiles = acceptedFiles.filter(file => file.type === 'text/tab-separated-values' || file.type === 'text/csv');
+            onDrop(validFiles);
+        },
+        onDragEnter,
+        onDragLeave,
+        accept: '.tsv, .csv'
+    });
+
+    return (
+        <div {...getRootProps()} className="filedropArea">
+            <input {...getInputProps()} className="fileDrop" />
+            <h4>{title}</h4>
+            <span>Drop .tsv/.csv file here or</span>
+            <button className="openFilesystemButton">
+                <span>Browse</span>
+            </button>
+            {isDragActive ? (
+                <p>{isFileTypeValid ? '' : <span style={{ color: 'red' }}>Invalid file type.</span>}</p>
+            ) : (
+                <p></p>
+            )}
+            {fileName && <p className="fileName">{fileName}</p>}
+        </div>
+    );
+};
+
+
+const AnalysisInput = ({/* Put parameters for different inputs here later (ie which tab and change accordingly) */ }) => {
+
+    const [countsFileName, setCountsFileName] = useState('');
+    const [coldataFileName, setColdataFileName] = useState('');
+    const [referenceLevels, setReferenceLevels] = useState({
+        conditions: [],
+        phases: []
+    });
+    const [contrastLevels, setContrastLevels] = useState([]);
+
+    const cleanData = (data) => {
+        return data
+            .map(item => item && item.trim()) // Trim whitespace
+            .filter(item => item); // Filter out empty strings or null values
+    };
+
+    const onDropCounts = useCallback((acceptedFiles) => {
+        if (acceptedFiles.length > 0) {
+            setCountsFileName(acceptedFiles[0].name);
+        }
+    }, []);
+
+    const onDropColdata = useCallback((acceptedFiles) => {
+        if (acceptedFiles.length > 0) {
+            setColdataFileName(acceptedFiles[0].name);
+            const file = acceptedFiles[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const text = event.target.result;
+                const data = Papa.parse(text, { header: true, delimiter: '\t' }).data;
+
+                const conditions = cleanData([...new Set(data.map(item => item.condition))]);
+                const phases = cleanData([...new Set(data.map(item => item.phase))]);
+                const contrasts = [...conditions, ...phases];
+
+                setReferenceLevels({ conditions, phases });
+                setContrastLevels(cleanData(contrasts));
+            };
+            reader.readAsText(file);
+        }
+    }, []);
 
     return (
         <div id="analysisInputContainer_comp">
@@ -18,9 +108,11 @@ const AnalysisInput = ({/* Put parameters for different inputs here later(ie, wh
                 </label>
             </div>
             <div id="filedropContainer">
-                <div className="filedropArea">
+                <FileDropArea title="Counts" onDrop={onDropCounts} fileName={countsFileName} />
+                <FileDropArea title="Coldata" onDrop={onDropColdata} fileName={coldataFileName} />
+                {/* <div className="filedropArea">
                     <h4>Counts</h4>
-                    <span>Drop .tsv file here or</span>
+                    <span>Drop .tsv/.csv file here or</span>
                     <input type="file" title=" " name="myFile" />
                     <button className="openFilesystemButton">
                         <span>Browse</span>
@@ -28,12 +120,12 @@ const AnalysisInput = ({/* Put parameters for different inputs here later(ie, wh
                 </div>
                 <div className="filedropArea">
                     <h4>Coldata</h4>
-                    <span>Drop .tsv file here or</span>
+                    <span>Drop .tsv/.csv file here or</span>
                     <input className="fileDrop" type="file" title=" " name="myFile" />
                     <button className="openFilesystemButton">
                         <span>Browse</span>
                     </button>
-                </div>
+                </div> */}
             </div>
             <h3>Configuration</h3>
             <div>
@@ -57,14 +149,30 @@ const AnalysisInput = ({/* Put parameters for different inputs here later(ie, wh
                         </select>
                     </label>
                     <label className="radioLabel">
-                        {/* &nbsp; to add whitespace is not professional. I will figure out a better way to do this
-                        vertical alignment later. -Lucas */}
-                        <span id="adjustmentSubfield">Contrast level:&nbsp;&nbsp;</span>
-                        <input type="text" id="textInput" name="textInput" />
+                        <span id="adjustmentSubfield">Contrast level:</span>
+                        <select id="exampleDropdown" name="contrastLevel">
+                            {contrastLevels.map(level => (
+                                <option key={level} value={level}>{level}</option>
+                            ))}
+                        </select>
                     </label>
+                    {/* <label className="radioLabel">
+                        <span id="adjustmentSubfield">Reference level:</span>
+                        <select id="exampleDropdown" name="exampleDropdown">
+                            <option value="option1">Example</option>
+                            <option value="option2">Example</option>
+                        </select>
+                    </label> */}
                     <label className="radioLabel">
                         <span id="adjustmentSubfield">Reference level:</span>
-                        <input type="text" id="textInput" name="textInput" />
+                        <select id="exampleDropdown" name="exampleDropdown">
+                            {referenceLevels.conditions.map(condition => (
+                                <option key={condition} value={condition}>{condition}</option>
+                            ))}
+                            {referenceLevels.phases.map(phase => (
+                                <option key={phase} value={phase}>{phase}</option>
+                            ))}
+                        </select>
                     </label>
                 </div>
                 <label className="radioLabel">

@@ -112,7 +112,7 @@ nav {
 }
 
 #homepage_main_div h2 {
-    font-size: 2em;
+    font-size: 3em;
 }
 
 #homepage_buttons {
@@ -245,6 +245,12 @@ nav {
     margin-bottom: 2%;
 }
 
+#fogg_logo_home {
+    width: 41.8%;
+    margin-top: -9%;
+    height: auto
+}
+
 .filedropArea {
     border: 2px dashed black;
     display: flex;
@@ -254,6 +260,14 @@ nav {
     margin-right: 2%;
     width: 45%;
     box-sizing: border-box;
+}
+
+.fileName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+    display: inline-block;
 }
 
 .filedropArea h4 {
