@@ -17,7 +17,6 @@ const Home = () => {
 
 	return (
 		<div id="homepage_main_div">
-			{/* <h1>GENE Platform</h1> */}
 			<img src={logo} id="fogg_logo_home" alt="Fogg Labs Logo" />
 			<h2>Gene Expression Explorer</h2>
 			<div id="homepage_buttons">

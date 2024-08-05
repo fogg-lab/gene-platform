@@ -1,10 +1,7 @@
-import React from 'react'
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
-import { useCallback, useState } from 'react';
 import Papa from 'papaparse';
-
-
 
 const FileDropArea = ({ title, onDrop, fileName }) => {
     const [isFileTypeValid, setIsFileTypeValid] = useState(true);
@@ -50,9 +47,7 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     );
 };
 
-
-const AnalysisInput = ({/* Put parameters for different inputs here later (ie which tab and change accordingly) */ }) => {
-
+const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
     const [referenceLevels, setReferenceLevels] = useState({
@@ -93,39 +88,43 @@ const AnalysisInput = ({/* Put parameters for different inputs here later (ie wh
         }
     }, []);
 
+    const handleRadioChange = (event) => {
+        if (event.target.value === 'external') {
+            setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
+        } else {
+            setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
+        }
+    };
+
+    const handleButtonClick = (datasetType) => {
+        if (datasetType === 'external') {
+            setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
+        } else {
+            setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
+        }
+    };
+
     return (
         <div id="analysisInputContainer_comp">
             <h3>Data</h3>
             <div className='dataSubfield'>
                 {/* Load example data / External dataset */}
-                <label className="radioLabel">
-                    <input className="radioInput" type="radio" name="exampleDataset" />
-                    <span>Use Example Dataset</span>
-                </label>
-                <label className="radioLabel">
-                    <input className="radioInput" type="radio" name="exampleDataset" />
-                    <span>Use External Dataset</span>
-                </label>
+                <button
+                    className="analysisInputButton"
+                    onClick={() => handleButtonClick('example')}
+                >
+                    Use Example Dataset
+                </button>
+                <button
+                    className="analysisInputButton"
+                    onClick={() => handleButtonClick('external')}
+                >
+                    Use External Dataset
+                </button>
             </div>
             <div id="filedropContainer">
                 <FileDropArea title="Counts" onDrop={onDropCounts} fileName={countsFileName} />
                 <FileDropArea title="Coldata" onDrop={onDropColdata} fileName={coldataFileName} />
-                {/* <div className="filedropArea">
-                    <h4>Counts</h4>
-                    <span>Drop .tsv/.csv file here or</span>
-                    <input type="file" title=" " name="myFile" />
-                    <button className="openFilesystemButton">
-                        <span>Browse</span>
-                    </button>
-                </div>
-                <div className="filedropArea">
-                    <h4>Coldata</h4>
-                    <span>Drop .tsv/.csv file here or</span>
-                    <input className="fileDrop" type="file" title=" " name="myFile" />
-                    <button className="openFilesystemButton">
-                        <span>Browse</span>
-                    </button>
-                </div> */}
             </div>
             <h3>Configuration</h3>
             <div>
@@ -156,13 +155,6 @@ const AnalysisInput = ({/* Put parameters for different inputs here later (ie wh
                             ))}
                         </select>
                     </label>
-                    {/* <label className="radioLabel">
-                        <span id="adjustmentSubfield">Reference level:</span>
-                        <select id="exampleDropdown" name="exampleDropdown">
-                            <option value="option1">Example</option>
-                            <option value="option2">Example</option>
-                        </select>
-                    </label> */}
                     <label className="radioLabel">
                         <span id="adjustmentSubfield">Reference level:</span>
                         <select id="exampleDropdown" name="exampleDropdown">
@@ -191,10 +183,8 @@ const AnalysisInput = ({/* Put parameters for different inputs here later (ie wh
             <div id="runAnalysisContainer">
                 <IconButton iconFilename="terminal.png" label="Run Analysis" />
             </div>
-        </div >
+        </div>
     );
 };
-
-
 
 export default AnalysisInput;

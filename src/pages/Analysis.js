@@ -3,6 +3,7 @@ import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
 import PlotArea from '../components/ui/PlotArea';
 import DataTable from '../components/ui/DataTable';
+import DatabasePopup from '../components/ui/DatabasePopup';
 import Papa from 'papaparse';
 
 const Analysis = () => {
@@ -101,8 +102,8 @@ const Analysis = () => {
 
     const renderTableButtons = () => {
         return stages[currentStage].tables.map(table => (
-            <button 
-                key={table} 
+            <button
+                key={table}
                 onClick={() => setCurrentTable(table)}
                 className={`view-toggle-btn ${currentTable === table ? 'active' : ''}`}
             >
@@ -113,8 +114,8 @@ const Analysis = () => {
 
     const renderPlotButtons = () => {
         return stages[currentStage].plots.map(plot => (
-            <button 
-                key={plot} 
+            <button
+                key={plot}
                 onClick={() => setCurrentPlot(plot)}
                 className={`view-toggle-btn ${currentPlot === plot ? 'active' : ''}`}
             >
@@ -127,11 +128,16 @@ const Analysis = () => {
         return <div>Error: {error}</div>;
     }
 
+    const [isVisible, setIsVisible] = useState(false);
+    const [isCheckedRadioButton, setIsCheckedRadioButton] = useState(false);
+    const [selectedRadio, setSelectedRadio] = useState(null); // Manage the selected radio button
+
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-                <AnalysisInputForm />
+                <AnalysisInputForm setIsVisible={setIsVisible} isCheckedRadioButton={isCheckedRadioButton} setSelectedRadio={setSelectedRadio} selectedRadio={selectedRadio} />
             </div>
+            <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} setIsCheckedRadioButton={setIsCheckedRadioButton} setSelectedRadio={setSelectedRadio} selectedRadio={selectedRadio} />
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
                     <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />
@@ -162,16 +168,16 @@ const Analysis = () => {
                             <div id="table_toggle">
                                 {renderTableButtons()}
                             </div>
-                            <div 
-                                style={{ 
+                            <div
+                                style={{
                                     position: 'relative',
                                     paddingBottom: '90%',
                                     height: 0,
                                     overflow: 'hidden'
                                 }}
                             >
-                                <div 
-                                    style={{ 
+                                <div
+                                    style={{
                                         position: 'absolute',
                                         top: 0,
                                         left: 0,
@@ -188,8 +194,8 @@ const Analysis = () => {
                                 </div>
                             </div>
                         </div>
-                        <div 
-                            style={{ 
+                        <div
+                            style={{
                                 display: activeTab === 'plot' ? 'block' : 'none',
                                 height: 'calc(100vh)',
                                 width: '100%',
@@ -199,7 +205,7 @@ const Analysis = () => {
                             <div id="plot_toggle">
                                 {renderPlotButtons()}
                             </div>
-                            <div style={{ 
+                            <div style={{
                                 position: 'relative',
                                 paddingBottom: '56.25%', // 16:9 aspect ratio
                                 height: 0,
