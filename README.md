@@ -7,9 +7,9 @@ For the original Flask-based web application, visit https://github.com/fogg-lab/
 2. Node.js installed
 
 ## (Development) Install and run steps:
-1. install NPM dependencies: npm install
-2. start webpack dev server: npm start
-3. run electron application: npm run electron
+1. install NPM dependencies: `npm install`
+2. start webpack dev server: `npm start`
+3. run electron application: `npm run electron`
 
 This should launch the electron/react window.
 
