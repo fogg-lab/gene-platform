@@ -50,6 +50,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.jsx'],
+    alias: {
+      global: path.resolve(__dirname, './global-shim.js'),
+    },
     fallback: {
       "buffer": require.resolve('buffer/'),
       "stream": require.resolve('stream-browserify'),
@@ -60,12 +63,7 @@ module.exports = {
     }
   },
   node: {
-    global: true,
-  },
-  resolve: {
-    alias: {
-      global: path.resolve(__dirname, './global-shim.js'),
-    },
+    global: true, fs: 'empty'
   },
   plugins: [
     new webpack.ProvidePlugin({
