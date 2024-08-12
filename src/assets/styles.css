@@ -433,3 +433,63 @@ a:hover {
     overflow-y: auto;
     box-sizing: border-box;
 }
+
+.inputWrapper {
+    position: relative;
+    /* Ensure the dropdown is positioned relative to this element */
+    width: 100%;
+    border-radius: 100px;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    /* Add vertical padding for spacing */
+}
+
+.inputWrapper {
+    position: relative;
+    /* Ensure the dropdown is positioned relative to this element */
+    width: 100%;
+    border-radius: 100px;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    /* Add vertical padding for spacing */
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    /* Position the dropdown below the input */
+    left: 50%;
+    /* Center the dropdown */
+    transform: translateX(-50%);
+    background-color: white;
+    border: 1px solid #ccc;
+    width: 40vw;
+    /* 70% of the viewport width */
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 1000;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.databasePopupButton {
+    border: 1px solid white;
+    border-radius: 5px;
+    margin-top: 3%;
+}
+
+.dropdown-item {
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    /* Ensure items take full width */
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}
