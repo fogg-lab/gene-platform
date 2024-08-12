@@ -8,6 +8,11 @@ import './assets/styles.css';
 import logo from './assets/fogg_logo.png';
 
 const App = () => {
+	function importAll(r) {
+		r.keys().forEach(r);
+	}
+	importAll(require.context('./assets', true, /\.(jpg|svg|png)$/));
+
 	return (
 		<Router>
 			<nav>
