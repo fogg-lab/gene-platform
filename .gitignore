@@ -2,12 +2,11 @@
 node_modules
 
 # Build output
-dist
+#dist
 
 # Log files
 *.log
 
-# Other common items to ignore
 .DS_Store
 
 # Misc
