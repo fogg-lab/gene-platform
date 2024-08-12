@@ -63,7 +63,7 @@ module.exports = {
     }
   },
   node: {
-    global: true, fs: 'empty'
+    global: true
   },
   plugins: [
     new webpack.ProvidePlugin({
