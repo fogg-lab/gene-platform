@@ -59,6 +59,14 @@ module.exports = {
       "fs": false
     }
   },
+  node: {
+    global: true,
+  },
+  resolve: {
+    alias: {
+      global: path.resolve(__dirname, './global-shim.js'),
+    },
+  },
   plugins: [
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
