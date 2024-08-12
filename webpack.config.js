@@ -10,7 +10,7 @@ module.exports = {
     publicPath: '/'
   },
   mode: 'development',
-  target: 'electron-renderer',
+  target: 'web',
   module: {
     rules: [
       {
@@ -34,14 +34,14 @@ module.exports = {
         }
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i, // Rule to handle image files
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
         use: [
           {
             loader: 'file-loader',
             options: {
               name: '[name].[ext]',
-              outputPath: 'assets/', // Unified path for all assets
-              publicPath: 'assets/' // Unified public path
+              outputPath: 'assets/',
+              publicPath: 'assets/'
             }
           }
         ]
@@ -58,8 +58,8 @@ module.exports = {
       "stream": require.resolve('stream-browserify'),
       "process": require.resolve('process/browser'),
       "path": require.resolve("path-browserify"),
-      "crypto": require.resolve("crypto-browserify"),
-      "fs": false
+      "crypto": require.resolve("crypto-browserify")
+      // Removed "fs": false, as it's not needed for web
     }
   },
   node: {

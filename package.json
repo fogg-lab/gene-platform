@@ -2,13 +2,10 @@
   "name": "electron_app",
   "version": "1.0.0",
   "description": "Standalone desktop ver. of Fogg Lab's Gene Platform",
-  "main": "main.js",
   "scripts": {
     "start": "webpack serve --config webpack.config.js --mode development",
     "build": "webpack --config webpack.config.js --mode production",
-    "electron": "electron .",
     "dev": "concurrently \"npm run start\" \"wait-on http://localhost:9328 && npm run electron\"",
-    "prod": "npm run build && electron .",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -21,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/fogg-lab/gene-platform/issues"
   },
-  "homepage": "https://github.com/fogg-lab/gene-platform/tree/electron_app#readme",
+  "homepage": "https://fogg-lab.github.io/gene-platform/",
   "devDependencies": {
     "@babel/core": "^7.24.7",
     "@babel/eslint-parser": "^7.24.7",
@@ -44,8 +41,6 @@
     "concurrently": "^8.2.2",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.2",
-    "electron": "^31.0.1",
-    "electron-is-dev": "^3.0.1",
     "eslint": "^8.57.0",
     "eslint-plugin-jest": "^28.6.0",
     "eslint-plugin-jsx-a11y": "^6.9.0",
@@ -53,6 +48,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-storybook": "^0.8.0",
     "file-loader": "^6.2.0",
+    "gh-pages": "^6.1.1",
     "globals": "^15.8.0",
     "html-webpack-plugin": "^5.6.0",
     "mini-css-extract-plugin": "^2.9.0",
@@ -78,7 +74,6 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "crypto-browserify": "^3.12.0",
-    "electron-extension-installer": "^1.2.0",
     "papa": "^0.0.0",
     "papaparse": "^5.4.1",
     "path-browserify": "^1.0.1",
