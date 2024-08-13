@@ -1,8 +1,10 @@
 import React, { useCallback, useState } from 'react';
+import PropTypes from 'prop-types';  // Import PropTypes
 import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
 import Papa from 'papaparse';
 
+// FileDropArea Component
 const FileDropArea = ({ title, onDrop, fileName }) => {
     const [isFileTypeValid, setIsFileTypeValid] = useState(true);
 
@@ -20,7 +22,7 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        onDrop: (acceptedFiles, rejectedFiles) => {
+        onDrop: (acceptedFiles) => {
             const validFiles = acceptedFiles.filter(file => file.type === 'text/tab-separated-values' || file.type === 'text/csv');
             onDrop(validFiles);
         },
@@ -47,7 +49,15 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     );
 };
 
-const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
+// PropTypes for FileDropArea
+FileDropArea.propTypes = {
+    title: PropTypes.string.isRequired,
+    onDrop: PropTypes.func.isRequired,
+    fileName: PropTypes.string
+};
+
+// AnalysisInput Component
+const AnalysisInput = ({ setIsVisible }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
     const [referenceLevels, setReferenceLevels] = useState({
@@ -88,14 +98,6 @@ const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
         }
     }, []);
 
-    const handleRadioChange = (event) => {
-        if (event.target.value === 'external') {
-            setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
-        } else {
-            setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
-        }
-    };
-
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {
             setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
@@ -108,7 +110,6 @@ const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
         <div id="analysisInputContainer_comp">
             <h3>Data</h3>
             <div className='dataSubfield'>
-                {/* Load example data / External dataset */}
                 <button
                     className="analysisInputButton"
                     onClick={() => handleButtonClick('example')}
@@ -185,6 +186,11 @@ const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
             </div>
         </div>
     );
+};
+
+// PropTypes for AnalysisInput
+AnalysisInput.propTypes = {
+    setIsVisible: PropTypes.func.isRequired,
 };
 
 export default AnalysisInput;

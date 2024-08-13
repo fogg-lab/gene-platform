@@ -1,7 +1,15 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
-const ToolTip = ({ }) => {
-    let iconSrc = require(`../../assets/icons/help.png`).default;
+const ToolTip = ({ iconFilename = 'help.png', altText = 'Help' }) => {
+    let iconSrc;
+
+    try {
+        iconSrc = require(`../../assets/icons/${iconFilename}`).default;
+    } catch (error) {
+        console.error(`Icon ${iconFilename} not found in assets/icons`);
+        return null;
+    }
 
     const iconStyle = {
         margin: '0px',
@@ -26,10 +34,20 @@ const ToolTip = ({ }) => {
     };
 
     return (
-        <button className="tooltip" style={tooltipStyle}>
-            <img src={iconSrc} style={iconStyle} />
+        <button
+            className="tooltip"
+            style={tooltipStyle}
+            aria-label={altText} // Added for accessibility
+        >
+            <img src={iconSrc} style={iconStyle} alt={altText} />
         </button>
     );
+};
+
+// PropTypes validation
+ToolTip.propTypes = {
+    iconFilename: PropTypes.string, // Default is 'help.png'
+    altText: PropTypes.string,      // Accessible text description
 };
 
 export default ToolTip;

@@ -1,18 +1,18 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 import IconButton from '../components/ui/IconButton';
 import logo from '../assets/fogg_logo.svg';
 
 const Home = () => {
-	const navigate = useNavigate();
+	const router = useRouter();
 
 	const handleAnalysisClick = () => {
 		console.log("HERE. handleAnalysisClick");
-		navigate('/Analysis');
+		router.push('/Analysis'); // Navigate using Next.js router
 	};
 
 	const handleGuideClick = () => {
-		navigate('/Guide');
+		router.push('/Guide'); // Navigate using Next.js router
 	};
 
 	return (

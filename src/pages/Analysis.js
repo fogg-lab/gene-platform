@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
-import PlotArea from '../components/ui/PlotArea';
 import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
 import Papa from 'papaparse';
@@ -17,8 +16,10 @@ const Analysis = () => {
     const [currentPlot, setCurrentPlot] = useState('pca_3d.html');
     const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
     const tableContainerRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
+    const [selectedRadio, setSelectedRadio] = useState(null);
 
-    const file_to_display_name = {
+    const fileToDisplayName = {
         'coldata.csv': 'Sample Metadata',
         'DE_results.csv': 'Differential Expression',
         'GSEA_results.csv': 'Gene Set Enrichment',
@@ -50,12 +51,7 @@ const Analysis = () => {
     }, [currentTable]);
 
     useEffect(() => {
-        // Load plot when switching to 'plot' tab or when changing stage while in 'plot' tab
-        if (activeTab === 'plot') {
-            setShouldDisplayPlot(true);
-        } else {
-            setShouldDisplayPlot(false);
-        }
+        setShouldDisplayPlot(activeTab === 'plot');
     }, [activeTab, currentStage]);
 
     useEffect(() => {
@@ -63,6 +59,7 @@ const Analysis = () => {
             tableContainerRef.current.scrollTop = tableScrollPosition;
         }
     }, [activeTab, tableScrollPosition]);
+
     const handleTableScroll = (event) => {
         setTableScrollPosition(event.target.scrollTop);
     };
@@ -107,7 +104,7 @@ const Analysis = () => {
                 onClick={() => setCurrentTable(table)}
                 className={`view-toggle-btn ${currentTable === table ? 'active' : ''}`}
             >
-                {file_to_display_name[table]}
+                {fileToDisplayName[table]}
             </button>
         ));
     };
@@ -119,7 +116,7 @@ const Analysis = () => {
                 onClick={() => setCurrentPlot(plot)}
                 className={`view-toggle-btn ${currentPlot === plot ? 'active' : ''}`}
             >
-                {file_to_display_name[plot]}
+                {fileToDisplayName[plot]}
             </button>
         ));
     };
@@ -128,16 +125,17 @@ const Analysis = () => {
         return <div>Error: {error}</div>;
     }
 
-    const [isVisible, setIsVisible] = useState(false);
-    const [isCheckedRadioButton, setIsCheckedRadioButton] = useState(false);
-    const [selectedRadio, setSelectedRadio] = useState(null); // Manage the selected radio button
-
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-                <AnalysisInputForm setIsVisible={setIsVisible} isCheckedRadioButton={isCheckedRadioButton} setSelectedRadio={setSelectedRadio} selectedRadio={selectedRadio} />
+                <AnalysisInputForm setIsVisible={setIsVisible} />
             </div>
-            <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} setIsCheckedRadioButton={setIsCheckedRadioButton} setSelectedRadio={setSelectedRadio} selectedRadio={selectedRadio} />
+            <DatabasePopup
+                setIsVisible={setIsVisible}
+                isVisible={isVisible}
+                setSelectedRadio={setSelectedRadio}
+                selectedRadio={selectedRadio}
+            />
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
                     <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />

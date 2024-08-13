@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 const Accordion = ({ data }) => {
     const [activeIndex, setActiveIndex] = useState(null);
@@ -66,18 +67,22 @@ const Accordion = ({ data }) => {
                     <div
                         style={headerStyle}
                         onClick={() => handleAccordionClick(index)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyPress={() => handleAccordionClick(index)}
                     >
                         <div
                             style={activeIndex !== index ? questionBarStyle : questionBarHoverStyle}
                         >
-                            {activeIndex !== index && <span style={questionStyle}>{item.question}</span>}
-                            {activeIndex !== index && (
-                                <img
-                                    src={iconSrc}
-                                    alt="Add Circle"
-                                    style={iconStyle}
-                                />
-                            )}
+                            <span style={questionStyle}>{item.question}</span>
+                            <img
+                                src={iconSrc}
+                                alt="Add Circle"
+                                style={{
+                                    ...iconStyle,
+                                    transform: activeIndex === index ? 'rotate(45deg)' : 'rotate(0deg)'
+                                }}
+                            />
                         </div>
                     </div>
                     {activeIndex === index && (
@@ -89,6 +94,14 @@ const Accordion = ({ data }) => {
             ))}
         </div>
     );
+};
+
+// Adding PropTypes validation
+Accordion.propTypes = {
+    data: PropTypes.arrayOf(PropTypes.shape({
+        question: PropTypes.string.isRequired,
+        answer: PropTypes.string.isRequired
+    })).isRequired,
 };
 
 export default Accordion;

@@ -1,17 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import closeIcon from '../../assets/icons/close.svg';
 import IconButton from '../ui/IconButton';
 
-const DatabasePopup = ({ setIsVisible, isVisible, isCheckedRadioButton, setSelectedRadio, selectedRadio }) => {
-  let iconSrc;
-
-  try {
-    iconSrc = require(`../../assets/icons/close.svg`).default;
-  } catch (error) {
-    console.error(`Icon not found in assets/icons`);
-    return null;
-  }
+const DatabasePopup = ({ setIsVisible, isVisible, setSelectedRadio }) => {
 
   const handleClose = () => {
     setIsVisible(false);
@@ -22,8 +14,8 @@ const DatabasePopup = ({ setIsVisible, isVisible, isCheckedRadioButton, setSelec
     <div>
       {isVisible ? (
         <div className="databasePopup">
-          <div className="closeButton" onClick={handleClose}>
-            <img src={iconSrc} alt="Close" />
+          <div className="closeButton" onClick={handleClose} role="button" tabIndex={0} onKeyPress={handleClose}>
+            <img src={closeIcon} alt="Close" />
           </div>
           <div>
             <h1>Search GEO and GDC Datasets</h1>
@@ -32,15 +24,13 @@ const DatabasePopup = ({ setIsVisible, isVisible, isCheckedRadioButton, setSelec
             </form>
           </div>
           <div className="selectedDataset">
-            <p>selected datasets will go here</p>
+            <p>Selected datasets will go here</p>
           </div>
           <div className='databasePopupButton'>
             <IconButton iconFilename="terminal.png" label="Select dataset" />
           </div>
         </div>
-      ) : (
-        null
-      )}
+      ) : null}
     </div>
   );
 };
@@ -48,7 +38,6 @@ const DatabasePopup = ({ setIsVisible, isVisible, isCheckedRadioButton, setSelec
 DatabasePopup.propTypes = {
   setIsVisible: PropTypes.func.isRequired,
   isVisible: PropTypes.bool.isRequired,
-  isCheckedRadioButton: PropTypes.bool.isRequired,
   setSelectedRadio: PropTypes.func.isRequired,
   selectedRadio: PropTypes.string,
 };

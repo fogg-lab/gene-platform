@@ -27,11 +27,16 @@ const IconButton = ({ iconFilename, label, onClick }) => {
 		color: 'white',
 		cursor: 'pointer',
 		borderRadius: '3px',
-		fontSize: '16px'
+		fontSize: '16px',
 	};
 
 	return (
-		<button className="icon-button" style={buttonStyle} onClick={onClick}>
+		<button
+			className="icon-button"
+			style={buttonStyle}
+			onClick={onClick}
+			aria-label={label} // Improved accessibility
+		>
 			<img src={iconSrc} alt={label} style={iconStyle} />
 			<span>{label}</span>
 		</button>
@@ -41,6 +46,7 @@ const IconButton = ({ iconFilename, label, onClick }) => {
 IconButton.propTypes = {
 	iconFilename: PropTypes.string.isRequired,
 	label: PropTypes.string.isRequired,
+	onClick: PropTypes.func.isRequired, // Added onClick prop validation
 };
 
 export default IconButton;

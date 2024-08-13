@@ -10,7 +10,7 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
@@ -23,10 +23,14 @@ class ErrorBoundary extends React.Component {
       return <h1>Something went wrong. Please try refreshing the page.</h1>;
     }
 
-    return this.props.children; 
+    return this.props.children;
   }
 }
 
+// Add PropTypes for ErrorBoundary
+ErrorBoundary.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 const DataTable = ({ data, columns }) => {
   const [sortColumns, setSortColumns] = useState([]);
@@ -44,7 +48,7 @@ const DataTable = ({ data, columns }) => {
   const filteredData = useMemo(() => {
     return data.filter(row => {
       // Check if the row has at least one non-empty value
-      return Object.values(row).some(value => 
+      return Object.values(row).some(value =>
         value !== null && value !== undefined && value !== ''
       );
     });
@@ -76,8 +80,7 @@ const DataTable = ({ data, columns }) => {
   useEffect(() => {
     const resizeObserverError = error => {
       if (error.message.includes('ResizeObserver loop')) {
-        const resizeObserverError = new Error('Resize observer error');
-        console.log('ResizeObserver error caught and suppressed:', resizeObserverError);
+        console.log('ResizeObserver error caught and suppressed:', error);
       }
     };
     window.addEventListener('error', resizeObserverError);
@@ -105,7 +108,7 @@ const DataTable = ({ data, columns }) => {
   );
 };
 
-
+// PropTypes for DataTable
 DataTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
   columns: PropTypes.arrayOf(
