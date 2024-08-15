@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
-import PlotArea from '../components/ui/PlotArea';
 import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
 import Papa from 'papaparse';
@@ -17,8 +16,7 @@ const Analysis = () => {
     const [currentPlot, setCurrentPlot] = useState('pca_3d.html');
     const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
-    const [isCheckedRadioButton, setIsCheckedRadioButton] = useState(false);
-    const [selectedRadio, setSelectedRadio] = useState(null);
+    const [setSelectedRadio] = useState(null);
     const tableContainerRef = useRef(null);
 
     const file_to_display_name = {
@@ -134,9 +132,9 @@ const Analysis = () => {
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-                <AnalysisInputForm setIsVisible={setIsVisible} isCheckedRadioButton={isCheckedRadioButton} setSelectedRadio={setSelectedRadio} selectedRadio={selectedRadio} />
+            <AnalysisInputForm setIsVisible={setIsVisible} />
             </div>
-            <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} setIsCheckedRadioButton={setIsCheckedRadioButton} setSelectedRadio={setSelectedRadio} selectedRadio={selectedRadio} />
+            <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} setSelectedRadio={setSelectedRadio} />
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
                     <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />
