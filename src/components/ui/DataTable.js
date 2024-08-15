@@ -3,31 +3,6 @@ import DataGrid from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 import PropTypes from 'prop-types';
 
-// Error boundary component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.log('Error caught by ErrorBoundary:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <h1>Something went wrong. Please try refreshing the page.</h1>;
-    }
-
-    return this.props.children; 
-  }
-}
-
-
 const DataTable = ({ data, columns }) => {
   const [sortColumns, setSortColumns] = useState([]);
 
@@ -85,26 +60,23 @@ const DataTable = ({ data, columns }) => {
   }, []);
 
   return (
-    <ErrorBoundary>
-      <DataGrid
-        columns={gridColumns}
-        rows={sortedRows}
-        rowKeyGetter={rowKeyGetter}
-        sortColumns={sortColumns}
-        onSortColumnsChange={setSortColumns}
-        className="fill-grid"
-        defaultColumnOptions={{
-          resizable: true,
-          sortable: true,
-        }}
-        style={{
-          height: 'calc(100% - 40px)',
-        }}
-      />
-    </ErrorBoundary>
+    <DataGrid
+      columns={gridColumns}
+      rows={sortedRows}
+      rowKeyGetter={rowKeyGetter}
+      sortColumns={sortColumns}
+      onSortColumnsChange={setSortColumns}
+      className="fill-grid"
+      defaultColumnOptions={{
+        resizable: true,
+        sortable: true,
+      }}
+      style={{
+        height: 'calc(100% - 40px)',
+      }}
+    />
   );
 };
-
 
 DataTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,

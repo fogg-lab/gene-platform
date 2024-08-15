@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
 import Papa from 'papaparse';
@@ -21,7 +22,7 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        onDrop: (acceptedFiles, rejectedFiles) => {
+        onDrop: (acceptedFiles) => {
             const validFiles = acceptedFiles.filter(file => file.type === 'text/tab-separated-values' || file.type === 'text/csv');
             onDrop(validFiles);
         },
@@ -48,7 +49,7 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     );
 };
 
-const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
+const AnalysisInput = ({ setIsVisible }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
     const [referenceLevels, setReferenceLevels] = useState({
@@ -88,14 +89,6 @@ const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
             reader.readAsText(file);
         }
     }, []);
-
-    const handleRadioChange = (event) => {
-        if (event.target.value === 'external') {
-            setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
-        } else {
-            setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
-        }
-    };
 
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {
@@ -186,6 +179,16 @@ const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
             </div>
         </div>
     );
+};
+
+FileDropArea.propTypes = {
+    title: PropTypes.string.isRequired,
+    onDrop: PropTypes.func.isRequired,
+    fileName: PropTypes.string.isRequired,
+};
+
+AnalysisInput.propTypes = {
+    setIsVisible: PropTypes.func.isRequired,
 };
 
 export default AnalysisInput;

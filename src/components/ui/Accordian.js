@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 const Accordion = ({ data }) => {
     const [activeIndex, setActiveIndex] = useState(null);
@@ -66,6 +67,13 @@ const Accordion = ({ data }) => {
                     <div
                         style={headerStyle}
                         onClick={() => handleAccordionClick(index)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                handleAccordionClick(index);
+                            }
+                        }}
+                        role="button"
+                        tabIndex={0}
                     >
                         <div
                             style={activeIndex !== index ? questionBarStyle : questionBarHoverStyle}
@@ -89,6 +97,15 @@ const Accordion = ({ data }) => {
             ))}
         </div>
     );
+};
+
+Accordion.propTypes = {
+    data: PropTypes.arrayOf(
+        PropTypes.shape({
+            question: PropTypes.string.isRequired,
+            answer: PropTypes.string.isRequired,
+        })
+    ).isRequired,
 };
 
 export default Accordion;
