@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import closeIcon from '../../assets/icons/close.svg';
 import IconButton from '../ui/IconButton';
+import terminal from '../../assets/icons/terminal.png';
 
 const DatabasePopup = ({ setIsVisible, isVisible, isCheckedRadioButton, setSelectedRadio, selectedRadio }) => {
   let iconSrc;
@@ -35,7 +36,7 @@ const DatabasePopup = ({ setIsVisible, isVisible, isCheckedRadioButton, setSelec
             <p>selected datasets will go here</p>
           </div>
           <div className='databasePopupButton'>
-            <IconButton iconFilename="terminal.png" label="Select dataset" />
+            <IconButton icon={terminal} label="Select dataset" />
           </div>
         </div>
       ) : (
