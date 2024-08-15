@@ -1,5 +1,5 @@
 {
-  "name": "electron_app",
+  "name": "gene-platform",
   "version": "1.0.0",
   "description": "Standalone desktop ver. of Fogg Lab's Gene Platform",
   "main": "main.js",
