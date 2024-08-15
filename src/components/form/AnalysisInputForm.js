@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
 import Papa from 'papaparse';
+import terminal from '../../assets/icons/terminal.png';
 
 const FileDropArea = ({ title, onDrop, fileName }) => {
     const [isFileTypeValid, setIsFileTypeValid] = useState(true);
@@ -181,7 +182,7 @@ const AnalysisInput = ({ setIsVisible, isCheckedRadioButton }) => {
                 </label>
             </div>
             <div id="runAnalysisContainer">
-                <IconButton iconFilename="terminal.png" label="Run Analysis" />
+                <IconButton icon={terminal} label="Run Analysis" />
             </div>
         </div>
     );

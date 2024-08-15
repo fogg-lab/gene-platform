@@ -16,6 +16,9 @@ const Analysis = () => {
     const [currentTable, setCurrentTable] = useState('coldata.csv');
     const [currentPlot, setCurrentPlot] = useState('pca_3d.html');
     const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+    const [isCheckedRadioButton, setIsCheckedRadioButton] = useState(false);
+    const [selectedRadio, setSelectedRadio] = useState(null);
     const tableContainerRef = useRef(null);
 
     const file_to_display_name = {
@@ -68,7 +71,7 @@ const Analysis = () => {
     };
 
     const loadTableData = (filename) => {
-        fetch(`data/${filename}`)
+        fetch(`${process.env.PUBLIC_URL}/data/${filename}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -127,10 +130,6 @@ const Analysis = () => {
     if (error) {
         return <div>Error: {error}</div>;
     }
-
-    const [isVisible, setIsVisible] = useState(false);
-    const [isCheckedRadioButton, setIsCheckedRadioButton] = useState(false);
-    const [selectedRadio, setSelectedRadio] = useState(null); // Manage the selected radio button
 
     return (
         <div id="analysis_container">
@@ -213,7 +212,7 @@ const Analysis = () => {
                             }}>
                                 {shouldDisplayPlot && (
                                     <iframe
-                                        src={`plots/${currentPlot}`}
+                                        src={`${process.env.PUBLIC_URL}/plots/${currentPlot}`}
                                         style={{
                                             position: 'absolute',
                                             top: 0,
