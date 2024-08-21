@@ -132,7 +132,7 @@ const Analysis = () => {
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-            <AnalysisInputForm setIsVisible={setIsVisible} />
+                <AnalysisInputForm setIsVisible={setIsVisible} />
             </div>
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} setSelectedRadio={setSelectedRadio} />
             <div id="analysis_visualization_section">
@@ -180,7 +180,8 @@ const Analysis = () => {
                                         left: 0,
                                         width: '100%',
                                         height: '100%',
-                                        border: 'none'
+                                        border: 'none',
+                                        padding: '10px'
                                     }}
                                 >
                                     {tableData.length > 0 && tableColumns.length > 0 ? (
@@ -227,7 +228,7 @@ const Analysis = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
