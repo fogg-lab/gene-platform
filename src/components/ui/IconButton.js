@@ -1,16 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const IconButton = ({ iconFilename, label, onClick }) => {
-	let iconSrc;
-
-	try {
-		iconSrc = require(`../../assets/icons/${iconFilename}`).default;
-	} catch (error) {
-		console.error(`Icon ${iconFilename} not found in assets/icons`);
-		return null;
-	}
-
+const IconButton = ({ icon, label, onClick }) => {
 	const iconStyle = {
 		width: '24px',
 		height: '24px',
@@ -32,15 +23,16 @@ const IconButton = ({ iconFilename, label, onClick }) => {
 
 	return (
 		<button className="icon-button" style={buttonStyle} onClick={onClick}>
-			<img src={iconSrc} alt={label} style={iconStyle} />
+			<img src={icon} alt={label} style={iconStyle} />
 			<span>{label}</span>
 		</button>
 	);
 };
 
 IconButton.propTypes = {
-	iconFilename: PropTypes.string.isRequired,
+	icon: PropTypes.string.isRequired,
 	label: PropTypes.string.isRequired,
+	onClick: PropTypes.func.isRequired,
 };
 
 export default IconButton;

@@ -1,6 +1,5 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-extension-installer');
 
 let mainWindow;
 
@@ -29,14 +28,22 @@ async function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  if (isDev) {
+    try {
+      const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-extension-installer');
+      await installExtension(REACT_DEVELOPER_TOOLS, {
+        loadExtensionOptions: {
+          allowFileAccess: true,
+        },
+      });
+    } catch (e) {
+      console.error('Failed to install extension:', e);
+    }
+  }
 }
 
 app.on("ready", async () => {
-  await installExtension(REACT_DEVELOPER_TOOLS, {
-    loadExtensionOptions: {
-      allowFileAccess: true,
-    },
-  });
   createWindow();
 });
 
