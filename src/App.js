@@ -7,6 +7,16 @@ import ViewRuns from './pages/ViewRuns'
 import './assets/styles.css';
 import logo from './assets/fogg_logo.png';
 
+const getPublicUrl = () => {
+	if (window.electron) {
+		// We're in Electron
+		return window.electron.getAppPath();
+	} else {
+		// We're in a web browser (including GitHub Pages)
+		return process.env.PUBLIC_URL || '';
+	}
+};
+
 const App = () => {
 	return (
 		<Router>
