@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/gene-platform/static/css/main.21704a6e.css",
-    "main.js": "/gene-platform/static/js/main.ca2c3edf.js",
+    "main.css": "/gene-platform/static/css/main.5a27a2a4.css",
+    "main.js": "/gene-platform/static/js/main.9340e32f.js",
     "static/media/Stratum2-Thin.otf": "/gene-platform/static/media/Stratum2-Thin.29a748af2d0fcd5a3276.otf",
     "static/media/KievitOffc-Bold.ttf": "/gene-platform/static/media/KievitOffc-Bold.a9bd6c39b6c9a80734ca.ttf",
     "static/media/Stratum2-Black.otf": "/gene-platform/static/media/Stratum2-Black.f567e07083e81e0ac895.otf",
@@ -9,11 +9,11 @@
     "static/media/fogg_logo.svg": "/gene-platform/static/media/fogg_logo.6cc261dc2e6bbb9e1f08e57a989e3390.svg",
     "index.html": "/gene-platform/index.html",
     "static/media/close.svg": "/gene-platform/static/media/close.c0a059236c4bc52272e932945a8a26e5.svg",
-    "main.21704a6e.css.map": "/gene-platform/static/css/main.21704a6e.css.map",
-    "main.ca2c3edf.js.map": "/gene-platform/static/js/main.ca2c3edf.js.map"
+    "main.5a27a2a4.css.map": "/gene-platform/static/css/main.5a27a2a4.css.map",
+    "main.9340e32f.js.map": "/gene-platform/static/js/main.9340e32f.js.map"
   },
   "entrypoints": [
-    "static/css/main.21704a6e.css",
-    "static/js/main.ca2c3edf.js"
+    "static/css/main.5a27a2a4.css",
+    "static/js/main.9340e32f.js"
   ]
 }
