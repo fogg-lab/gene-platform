@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
-import PlotArea from '../components/ui/PlotArea';
 import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
 import Papa from 'papaparse';
+import { getPublicUrl } from '../utils/environment';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -16,6 +16,8 @@ const Analysis = () => {
     const [currentTable, setCurrentTable] = useState('coldata.csv');
     const [currentPlot, setCurrentPlot] = useState('pca_3d.html');
     const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+    const [setSelectedRadio] = useState(null);
     const tableContainerRef = useRef(null);
 
     const file_to_display_name = {
@@ -68,7 +70,7 @@ const Analysis = () => {
     };
 
     const loadTableData = (filename) => {
-        fetch(`data/${filename}`)
+        fetch(`${getPublicUrl()}/data/${filename}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -128,16 +130,12 @@ const Analysis = () => {
         return <div>Error: {error}</div>;
     }
 
-    const [isVisible, setIsVisible] = useState(false);
-    const [isCheckedRadioButton, setIsCheckedRadioButton] = useState(false);
-    const [selectedRadio, setSelectedRadio] = useState(null); // Manage the selected radio button
-
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-                <AnalysisInputForm setIsVisible={setIsVisible} isCheckedRadioButton={isCheckedRadioButton} setSelectedRadio={setSelectedRadio} selectedRadio={selectedRadio} />
+                <AnalysisInputForm setIsVisible={setIsVisible} />
             </div>
-            <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} setIsCheckedRadioButton={setIsCheckedRadioButton} setSelectedRadio={setSelectedRadio} selectedRadio={selectedRadio} />
+            <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} setSelectedRadio={setSelectedRadio} />
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
                     <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />
@@ -183,7 +181,8 @@ const Analysis = () => {
                                         left: 0,
                                         width: '100%',
                                         height: '100%',
-                                        border: 'none'
+                                        border: 'none',
+                                        padding: '10px'
                                     }}
                                 >
                                     {tableData.length > 0 && tableColumns.length > 0 ? (
@@ -213,7 +212,7 @@ const Analysis = () => {
                             }}>
                                 {shouldDisplayPlot && (
                                     <iframe
-                                        src={`plots/${currentPlot}`}
+                                        src={`${getPublicUrl()}/plots/${currentPlot}`}
                                         style={{
                                             position: 'absolute',
                                             top: 0,
@@ -230,7 +229,7 @@ const Analysis = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

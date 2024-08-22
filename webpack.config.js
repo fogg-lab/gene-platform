@@ -59,11 +59,7 @@ module.exports = {
       "process": require.resolve('process/browser'),
       "path": require.resolve("path-browserify"),
       "crypto": require.resolve("crypto-browserify"),
-      "fs": false
     }
-  },
-  node: {
-    global: true, fs: 'empty'
   },
   plugins: [
     new webpack.ProvidePlugin({
