@@ -1,3 +1,7 @@
+import pako from 'pako';
+import Papa from 'papaparse';
+import { loadPyodide } from 'pyodide';
+
 /**
  * Retrieve a dataset from an external database (GEO or GDC).
  * @param {string} dataSrc - The data source ('GEO' or 'GDC').
@@ -5,7 +9,47 @@
  * @returns {Promise<Object>} - A promise that resolves to an object containing the dataset.
  */
 export async function getExternalDataset(dataSrc, datasetID) {
-    // Implementation
+    const baseUrl = `https://docgl1or94tw4.cloudfront.net/curated-bulk-rnaseq-human-gene-expression/${dataSrc}`;
+
+    // Fetch and parse coldata
+    const coldataResponse = await fetch(`${baseUrl}/coldata/${datasetID}.csv.gz`);
+    const coldataArrayBuffer = await coldataResponse.arrayBuffer();
+    const coldataUnzipped = pako.ungzip(new Uint8Array(coldataArrayBuffer));
+    const coldataText = new TextDecoder().decode(coldataUnzipped);
+    const coldata = Papa.parse(coldataText, { header: true }).data;
+
+    // Fetch and parse genes
+    const genesResponse = await fetch(`${baseUrl}/genes/${datasetID}.csv.gz`);
+    const genesArrayBuffer = await genesResponse.arrayBuffer();
+    const genesUnzipped = pako.ungzip(new Uint8Array(genesArrayBuffer));
+    const genesText = new TextDecoder().decode(genesUnzipped);
+    const genes = Papa.parse(genesText, { header: true }).data;
+
+    // Fetch expression data
+    const expressionResponse = await fetch(`${baseUrl}/expression/${datasetID}.npy.gz`);
+    const expressionArrayBuffer = await expressionResponse.arrayBuffer();
+    const expressionUnzipped = pako.ungzip(new Uint8Array(expressionArrayBuffer));
+
+    // Use pyodide to load and process the NPY data
+    await loadPyodide();
+    const pyodide = await window.pyodide;
+    await pyodide.loadPackage('numpy');
+
+    const np = pyodide.pyimport('numpy');
+    const expressionArray = np.load(expressionUnzipped);
+
+    // Create the 'expression' 2D array (samples x genes)
+    const expression = expressionArray.toJs();
+
+    // Create the 'counts' 2D array (genes x samples)
+    const counts = np.transpose(expressionArray).toJs();
+
+    return {
+        coldata,
+        genes,
+        expression,
+        counts,
+    };
 }
 
 /**
