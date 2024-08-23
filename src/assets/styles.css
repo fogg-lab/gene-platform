@@ -496,3 +496,83 @@ a:hover {
 .dropdown-item:hover {
     background-color: #f0f0f0;
 }
+
+
+.sampleFieldContainer {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.sampleGroupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.sampleGroupHeader h3 {
+    margin: 0;
+}
+
+.squareButton {
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.groupsList {
+    background-color: white;
+    padding: 10px;
+}
+
+.groupItem {
+    margin-bottom: 15px;
+}
+
+.groupNameButton {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+.groupNameButton:hover {
+    background-color: #f0f0f0;
+}
+
+input[type="text"] {
+    font-size: 16px;
+    padding: 5px;
+    margin-bottom: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sampleFieldContainer ul {
+    list-style-type: none;
+    padding-left: 20px;
+    margin: 5px 0;
+}
+
+.sampleFieldContainer li {
+    margin-bottom: 5px;
+}
+
+.contrastReferenceFields h2 {
+    font-size: 1.2em;
+    font-family: 'KievitOffc-Bold';
+}
