@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { DataGrid, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector } from '@mui/x-data-grid';
+import { DataGridPro, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector } from '@mui/x-data-grid-pro';
 import PropTypes from 'prop-types';
 
 const CustomToolbar = () => {
@@ -54,7 +54,7 @@ const DataTable = ({ data, columns }) => {
       maxHeight: 'calc(100vh - 20px)',
       overflow: 'hidden'
     }}>
-      <DataGrid
+      <DataGridPro
         rows={filteredRows}
         columns={gridColumns}
         sortModel={sortModel}
