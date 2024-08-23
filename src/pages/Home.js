@@ -9,7 +9,6 @@ const Home = () => {
 	const navigate = useNavigate();
 
 	const handleAnalysisClick = () => {
-		console.log("HERE. handleAnalysisClick");
 		navigate('/Analysis');
 	};
 
