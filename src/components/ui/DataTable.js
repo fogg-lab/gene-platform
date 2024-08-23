@@ -2,18 +2,77 @@ import React, { useState, useMemo } from 'react';
 import { DataGrid, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import PropTypes from 'prop-types';
 
-const CustomToolbar = () => {
+const CustomToolbar = ({
+  selectedSamples,
+  contrastGroups,
+  referenceGroups,
+  onAddSamplesToGroup
+}) => {
+  const [selectedGroupType, setSelectedGroupType] = useState('contrast');
+  const [selectedGroupId, setSelectedGroupId] = useState('');
+
+  const handleAddSamples = () => {
+    if (selectedGroupId) {
+      onAddSamplesToGroup(parseInt(selectedGroupId), selectedGroupType === 'contrast');
+    }
+  };
+
   return (
     <GridToolbarContainer>
       <GridToolbarColumnsButton />
       <GridToolbarFilterButton />
       <GridToolbarDensitySelector />
       <GridToolbarExport />
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <select
+          value={selectedGroupType}
+          onChange={(e) => {
+            setSelectedGroupType(e.target.value);
+            setSelectedGroupId('');
+          }}
+          style={{ padding: '5px' }}
+        >
+          <option value="contrast">Contrast Groups</option>
+          <option value="reference">Reference Groups</option>
+        </select>
+        <select
+          value={selectedGroupId}
+          onChange={(e) => setSelectedGroupId(e.target.value)}
+          disabled={!contrastGroups.length && !referenceGroups.length}
+          style={{ padding: '5px' }}
+        >
+          <option value="">Select a group</option>
+          {(selectedGroupType === 'contrast' ? contrastGroups : referenceGroups).map(group => (
+            <option key={group.id} value={group.id}>{group.name}</option>
+          ))}
+        </select>
+        <button
+          onClick={handleAddSamples}
+          disabled={!selectedGroupId || !selectedSamples.length}
+          style={{ padding: '5px 10px', cursor: 'pointer' }}
+        >
+          Add Selected ({selectedSamples.length})
+        </button>
+      </div>
     </GridToolbarContainer>
   );
 };
 
-const DataTable = ({ data, columns }) => {
+CustomToolbar.propTypes = {
+  selectedSamples: PropTypes.array.isRequired,
+  contrastGroups: PropTypes.array.isRequired,
+  referenceGroups: PropTypes.array.isRequired,
+  onAddSamplesToGroup: PropTypes.func.isRequired,
+};
+
+const DataTable = ({
+  data,
+  columns,
+  onSelectionChange,
+  contrastGroups,
+  referenceGroups,
+  onAddSamplesToGroup
+}) => {
   const [sortModel, setSortModel] = useState([]);
   const [selectionModel, setSelectionModel] = useState([]);
   const [filterModel, setFilterModel] = useState({
@@ -44,7 +103,8 @@ const DataTable = ({ data, columns }) => {
 
   const handleSelectionModelChange = (newSelectionModel) => {
     setSelectionModel(newSelectionModel);
-    // You can add additional logic here, e.g., callback to parent component
+    const selectedRows = filteredRows.filter(row => newSelectionModel.includes(row.id));
+    onSelectionChange(selectedRows);
   };
 
   return (
@@ -79,12 +139,24 @@ const DataTable = ({ data, columns }) => {
         components={{
           Toolbar: CustomToolbar,
         }}
+        componentsProps={{
+          toolbar: {
+            selectedSamples: selectionModel,
+            contrastGroups,
+            referenceGroups,
+            onAddSamplesToGroup,
+          },
+        }}
         sx={{
           height: '100%',
           width: '100%',
           '& .MuiDataGrid-main': { overflow: 'hidden' },
           '& .MuiDataGrid-virtualScroller': { overflow: 'auto' },
           '& .MuiDataGrid-footerContainer': { overflow: 'hidden' },
+          '& .MuiDataGrid-toolbarContainer': {
+            padding: '8px',
+            justifyContent: 'space-between',
+          },
           '& .MuiDataGrid-toolbarContainer .MuiButton-root': {
             color: '#D73F09',
           },
@@ -114,6 +186,10 @@ DataTable.propTypes = {
       name: PropTypes.string.isRequired,
     })
   ).isRequired,
+  onSelectionChange: PropTypes.func.isRequired,
+  contrastGroups: PropTypes.array.isRequired,
+  referenceGroups: PropTypes.array.isRequired,
+  onAddSamplesToGroup: PropTypes.func.isRequired,
 };
 
 export default DataTable;
