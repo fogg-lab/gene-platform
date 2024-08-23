@@ -4,6 +4,7 @@ import TabButton from '../components/ui/TabButton';
 import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
 import Papa from 'papaparse';
+import { getPublicUrl } from '../utils/environment';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -122,7 +123,7 @@ const Analysis = () => {
     };
 
     const loadTableData = (filename) => {
-        fetch(`${process.env.PUBLIC_URL}/data/${filename}`)
+        fetch(`${getPublicUrl()}/data/${filename}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -279,7 +280,7 @@ const Analysis = () => {
                             }}>
                                 {shouldDisplayPlot && (
                                     <iframe
-                                        src={`${process.env.PUBLIC_URL}/plots/${currentPlot}`}
+                                        src={`${getPublicUrl()}/plots/${currentPlot}`}
                                         style={{
                                             position: 'absolute',
                                             top: 0,
