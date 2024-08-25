@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
 import DataTable from '../components/ui/DataTable';
@@ -20,6 +20,59 @@ const Analysis = () => {
     const [currentTable, setCurrentTable] = useState(null);
     const [currentPlot, setCurrentPlot] = useState(null);
     const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
+
+    const [selectedSamples, setSelectedSamples] = useState([]);
+    const [contrastGroups, setContrastGroups] = useState([]);
+    const [referenceGroups, setReferenceGroups] = useState([]);
+    const [groupCounter, setGroupCounter] = useState(1);
+
+    const handleSelectionChange = useCallback((newSelectedRows) => {
+        setSelectedSamples(newSelectedRows);
+    }, []);
+
+    const handleAddGroup = useCallback((isContrast) => {
+        const newGroup = {
+            id: groupCounter,
+            name: `Group ${groupCounter}`,
+            samples: []
+        };
+        if (isContrast) {
+            setContrastGroups([...contrastGroups, newGroup]);
+        } else {
+            setReferenceGroups([...referenceGroups, newGroup]);
+        }
+        setGroupCounter(groupCounter + 1);
+    }, [contrastGroups, referenceGroups, groupCounter]);
+
+    const handleUpdateGroup = useCallback((groupId, updates, isContrast) => {
+        const updateGroups = (groups) => groups.map(group =>
+            group.id === groupId ? { ...group, ...updates } : group
+        );
+        if (isContrast) {
+            setContrastGroups(updateGroups(contrastGroups));
+        } else {
+            setReferenceGroups(updateGroups(referenceGroups));
+        }
+    }, [contrastGroups, referenceGroups]);
+
+    const handleAddSamplesToGroup = useCallback((groupId, isContrast) => {
+        const newSamples = selectedSamples.map(sample => ({
+            id: sample.id,
+            name: sample.name || `Sample ${sample.id}`,
+        }));
+        const updateGroups = (groups) => groups.map(group =>
+            group.id === groupId
+                ? { ...group, samples: [...group.samples, ...newSamples] }
+                : group
+        );
+        if (isContrast) {
+            setContrastGroups(updateGroups(contrastGroups));
+        } else {
+            setReferenceGroups(updateGroups(referenceGroups));
+        }
+        setSelectedSamples([]);
+    }, [selectedSamples, contrastGroups, referenceGroups]);
+
 
     const file_to_display_name = {
         'coldata.csv': 'Sample Metadata',
@@ -245,7 +298,7 @@ const Analysis = () => {
                 }
                 break;
         }
-        
+
         if (tableData && tableColumns) {
             // Ensure tableData is an array of objects
             if (Array.isArray(tableData[0])) {
@@ -257,7 +310,14 @@ const Analysis = () => {
                     return obj;
                 });
             }
-            return <DataTable data={tableData} columns={tableColumns} />;
+            return <DataTable
+                data={tableData}
+                columns={tableColumns}
+                onSelectionChange={handleSelectionChange}
+                contrastGroups={contrastGroups}
+                referenceGroups={referenceGroups}
+                onAddSamplesToGroup={handleAddSamplesToGroup}
+            />;
         } else {
             return <p>No data available</p>;
         }
@@ -290,7 +350,16 @@ const Analysis = () => {
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-                <AnalysisInputForm setIsVisible={setIsVisible} onDatasetSelect={handleDatasetSelect} />
+                <AnalysisInputForm
+                    setIsVisible={setIsVisible}
+                    onDatasetSelect={handleDatasetSelect}
+                    contrastGroups={contrastGroups}
+                    referenceGroups={referenceGroups}
+                    onAddGroup={handleAddGroup}
+                    onUpdateGroup={handleUpdateGroup}
+                    selectedSamples={selectedSamples}
+                    onAddSamplesToGroup={handleAddSamplesToGroup}
+                />
             </div>
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
             <div id="analysis_visualization_section">
