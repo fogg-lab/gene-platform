@@ -4,17 +4,18 @@ import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
 import Papa from 'papaparse';
 import terminal from '../../assets/icons/terminal.png';
+import pako from 'pako'; // Import pako for gzip decompression
+
+function validFileType(filetype) {
+    return filetype.startsWith("text/") || filetype == "application/gzip" || filetype == "application/x-gzip";
+}
 
 const FileDropArea = ({ title, onDrop, fileName }) => {
     const [isFileTypeValid, setIsFileTypeValid] = useState(true);
 
     const onDragEnter = useCallback((event) => {
         const fileType = event.dataTransfer.items[0].type;
-        if (fileType !== 'text/tab-separated-values' && fileType !== 'text/csv') {
-            setIsFileTypeValid(false);
-        } else {
-            setIsFileTypeValid(true);
-        }
+        setIsFileTypeValid(validFileType(fileType));
     }, []);
 
     const onDragLeave = useCallback(() => {
@@ -23,24 +24,28 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop: (acceptedFiles) => {
-            const validFiles = acceptedFiles.filter(file => file.type === 'text/tab-separated-values' || file.type === 'text/csv');
+            const validFiles = acceptedFiles.filter(file => validFileType(file.type));
             onDrop(validFiles);
         },
         onDragEnter,
         onDragLeave,
-        accept: '.tsv, .csv'
+        accept: {
+            "text/*": [".csv", ".csv.gz", ".tsv", ".tsv.gz", ".txt", ".txt.gz"],
+            "application/gzip": [".gz"],
+            "application/x-gzip": [".gz"]
+        }
     });
 
     return (
         <div {...getRootProps()} className="filedropArea">
             <input {...getInputProps()} className="fileDrop" />
             <h4>{title}</h4>
-            <span>Drop .tsv/.csv file here or</span>
+            <span>Drop file here or</span>
             <button className="openFilesystemButton">
                 <span>Browse</span>
             </button>
             {isDragActive ? (
-                <p>{isFileTypeValid ? '' : <span style={{ color: 'red' }}>Invalid file type.</span>}</p>
+                <p>{isFileTypeValid ? <span style={{ color: 'green' }}>Drop here</span> : <span style={{ color: 'red' }}>Invalid file type</span>}</p>
             ) : (
                 <p></p>
             )}
@@ -49,7 +54,7 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     );
 };
 
-const AnalysisInput = ({ setIsVisible }) => {
+const AnalysisInput = ({ setIsVisible, onDatasetSelect }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
     const [referenceLevels, setReferenceLevels] = useState({
@@ -64,6 +69,21 @@ const AnalysisInput = ({ setIsVisible }) => {
             .filter(item => item); // Filter out empty strings or null values
     };
 
+    const decompressAndParseFile = useCallback((file, onParsed) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            let content = event.target.result;
+            if (file.name.endsWith('.gz')) {
+                // Decompress gzip content
+                const compressed = new Uint8Array(content);
+                content = pako.inflate(compressed, { to: 'string' });
+            }
+            const data = Papa.parse(content, { header: true, delimiter: '\t' }).data;
+            onParsed(data);
+        };
+        reader.readAsArrayBuffer(file);
+    }, []);
+
     const onDropCounts = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
             setCountsFileName(acceptedFiles[0].name);
@@ -74,27 +94,25 @@ const AnalysisInput = ({ setIsVisible }) => {
         if (acceptedFiles.length > 0) {
             setColdataFileName(acceptedFiles[0].name);
             const file = acceptedFiles[0];
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const text = event.target.result;
-                const data = Papa.parse(text, { header: true, delimiter: '\t' }).data;
-
+            
+            decompressAndParseFile(file, (data) => {
                 const conditions = cleanData([...new Set(data.map(item => item.condition))]);
                 const phases = cleanData([...new Set(data.map(item => item.phase))]);
                 const contrasts = [...conditions, ...phases];
 
                 setReferenceLevels({ conditions, phases });
                 setContrastLevels(cleanData(contrasts));
-            };
-            reader.readAsText(file);
+            });
         }
-    }, []);
+    }, [decompressAndParseFile]);
 
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {
             setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
         } else {
             setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
+            // Load example dataset
+            onDatasetSelect('example', null);
         }
     };
 
@@ -175,7 +193,7 @@ const AnalysisInput = ({ setIsVisible }) => {
                 </label>
             </div>
             <div id="runAnalysisContainer">
-                <IconButton icon={terminal} label="Run Analysis" />
+                <IconButton icon={terminal} label="Run Analysis" onClick={() => console.log('Run Analysis clicked')} />
             </div>
         </div>
     );
@@ -189,6 +207,7 @@ FileDropArea.propTypes = {
 
 AnalysisInput.propTypes = {
     setIsVisible: PropTypes.func.isRequired,
+    onDatasetSelect: PropTypes.func.isRequired,
 };
 
 export default AnalysisInput;
