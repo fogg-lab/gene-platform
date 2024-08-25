@@ -1,6 +1,6 @@
-import pako from 'pako';
-import Papa from 'papaparse';
-import { loadPyodide } from 'pyodide';
+import pako from "pako";
+import Papa from "papaparse";
+const { loadPyodide } = require("pyodide");
 
 /**
  * Retrieve a dataset from an external database (GEO or GDC).
@@ -10,10 +10,10 @@ import { loadPyodide } from 'pyodide';
  *   {
  *     expression: Int32Array, // 1D array representing the expression matrix (samples x genes)
  *     counts: Int32Array, // 1D array representing the transposed expression matrix (genes x samples)
- *     expressionTable: {
- *       cols: string[], // Array of column names, including 'sample_id' and gene IDs
- *       rows: string[], // Array of sample IDs
- *       data: number[][] // 2D array of expression values
+ *     countsTable: {
+ *       cols: string[], // Array of column names, including 'Ensembl gene', 'Symbol', and sample IDs
+ *       rows: string[], // Array of Ensembl gene IDs
+ *       data: number[][] // 2D array of counts values
  *     },
  *     coldataTable: {
  *       cols: string[], // Array of column names from the coldata CSV (bio)
@@ -28,8 +28,8 @@ import { loadPyodide } from 'pyodide';
  *   }
  */
 export async function getExternalDataset(dataSrc, datasetID) {
-    const baseUrl = `https://docgl1or94tw4.cloudfront.net/curated-bulk-rnaseq-human-gene-expression/${dataSrc}`;
-    
+    const baseUrl = `/api/curated-bulk-rnaseq-human-gene-expression/${dataSrc}`;
+
     // Fetch and parse coldata
     const coldataResponse = await fetch(`${baseUrl}/coldata/${datasetID}.csv.gz`);
     const coldataArrayBuffer = await coldataResponse.arrayBuffer();
@@ -50,18 +50,16 @@ export async function getExternalDataset(dataSrc, datasetID) {
     const expressionUnzipped = pako.ungzip(new Uint8Array(expressionArrayBuffer));
 
     // Use pyodide to load and process the NPY data
-    await loadPyodide();
-    const pyodide = await window.pyodide;
+    let pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
     await pyodide.loadPackage('numpy');
 
     const np = pyodide.pyimport('numpy');
-    const expressionArray = np.load(expressionUnzipped);
+    const io = pyodide.pyimport('io');
 
-    // Create the 'expression' Int32Array (samples x genes)
-    const expression = new Int32Array(expressionArray.toJs().flat());
-
-    // Create the 'counts' Int32Array (genes x samples)
-    const counts = new Int32Array(np.transpose(expressionArray).toJs().flat());
+    const expressionBuffer = io.BytesIO(pyodide.toPy(expressionUnzipped));
+    let expressionArray = np.load(expressionBuffer);
+    const expression = new Int32Array(expressionArray.flatten().toJs());
+    const counts = new Int32Array(np.transpose(expressionArray).flatten().toJs());
 
     // Create coldataTable
     const coldataCols = Object.keys(coldataData[0]);
@@ -75,21 +73,31 @@ export async function getExternalDataset(dataSrc, datasetID) {
     const genesCols = Object.keys(genesData[0]);
     const genesTable = {
         cols: genesCols,
-        rows: genesData.map(row => row.ensembl_id),
+        rows: genesData.map(row => row.ensembl_gene),
         data: genesData.map(row => genesCols.map(col => row[col]))
     };
 
-    // Create expressionTable
-    const expressionTable = {
-        cols: ['sample_id', ...genesTable.rows],
-        rows: coldataTable.rows,
-        data: expressionArray.toJs()
+    // Create countsTable
+    const countsTable = {
+        cols: ['Ensembl gene', 'Symbol', ...coldataTable.rows],
+        rows: genesTable.rows,
+        data: (() => {
+            const numSamples = coldataTable.rows.length;
+            const numGenes = genesTable.rows.length;
+            return Array.from({ length: numGenes }, (_, geneIndex) => {
+                const ensemblGene = genesTable.rows[geneIndex];
+                const symbol = genesTable.data[geneIndex][1];
+                const geneCountsStart = geneIndex * numSamples;
+                const geneCounts = counts.slice(geneCountsStart, geneCountsStart + numSamples);
+                return [ensemblGene, symbol, ...Array.from(geneCounts)];
+            });
+        })()
     };
 
     return {
         expression,
         counts,
-        expressionTable,
+        countsTable,
         coldataTable,
         genesTable
     };
