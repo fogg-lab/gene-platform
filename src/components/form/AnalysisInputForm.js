@@ -4,18 +4,19 @@ import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
 // import Papa from 'papaparse';
 import terminal from '../../assets/icons/terminal.png';
+import pako from 'pako'; // Import pako for gzip decompression
 import SampleField from '../ui/SampleField';
+
+function validFileType(filetype) {
+    return filetype.startsWith("text/") || filetype == "application/gzip" || filetype == "application/x-gzip";
+}
 
 const FileDropArea = ({ title, onDrop, fileName }) => {
     const [isFileTypeValid, setIsFileTypeValid] = useState(true);
 
     const onDragEnter = useCallback((event) => {
         const fileType = event.dataTransfer.items[0].type;
-        if (fileType !== 'text/tab-separated-values' && fileType !== 'text/csv') {
-            setIsFileTypeValid(false);
-        } else {
-            setIsFileTypeValid(true);
-        }
+        setIsFileTypeValid(validFileType(fileType));
     }, []);
 
     const onDragLeave = useCallback(() => {
@@ -24,24 +25,28 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop: (acceptedFiles) => {
-            const validFiles = acceptedFiles.filter(file => file.type === 'text/tab-separated-values' || file.type === 'text/csv');
+            const validFiles = acceptedFiles.filter(file => validFileType(file.type));
             onDrop(validFiles);
         },
         onDragEnter,
         onDragLeave,
-        accept: '.tsv, .csv'
+        accept: {
+            "text/*": [".csv", ".tsv", ".txt"],
+            "application/gzip": [".csv.gz", ".tsv.gz", ".txt.gz"],
+            "application/x-gzip": [".csv.gz", ".tsv.gz", ".txt.gz"]
+        }
     });
 
     return (
         <div {...getRootProps()} className="filedropArea">
             <input {...getInputProps()} className="fileDrop" />
             <h4>{title}</h4>
-            <span>Drop .tsv/.csv file here or</span>
+            <span>Drop file here or</span>
             <button className="openFilesystemButton">
                 <span>Browse</span>
             </button>
             {isDragActive ? (
-                <p>{isFileTypeValid ? '' : <span style={{ color: 'red' }}>Invalid file type.</span>}</p>
+                <p>{isFileTypeValid ? <span style={{ color: 'green' }}>Drop here</span> : <span style={{ color: 'red' }}>Invalid file type</span>}</p>
             ) : (
                 <p></p>
             )}
@@ -52,6 +57,7 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
 
 const AnalysisInputForm = ({
     setIsVisible,
+    onDatasetSelect,
     contrastGroups,
     referenceGroups,
     onAddGroup,
@@ -59,8 +65,8 @@ const AnalysisInputForm = ({
     selectedSamples,
     onAddSamplesToGroup
 }) => {
-    // const [countsFileName, setCountsFileName] = useState('');
-    // const [coldataFileName, setColdataFileName] = useState('');
+    const [countsFileName, setCountsFileName] = useState('');
+    const [coldataFileName, setColdataFileName] = useState('');
 
     // const cleanData = (data) => {
     //     return data
@@ -68,17 +74,50 @@ const AnalysisInputForm = ({
     //         .filter(item => item); // Filter out empty strings or null values
     // };
 
-    // const onDropCounts = useCallback((acceptedFiles) => {
-    //     if (acceptedFiles.length > 0) {
-    //         setCountsFileName(acceptedFiles[0].name);
-    //     }
-    // }, []);
+    const decompressAndParseFile = useCallback((file, onParsed) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            let content = event.target.result;
+            if (file.name.endsWith('.gz')) {
+                // Decompress gzip content
+                const compressed = new Uint8Array(content);
+                content = pako.inflate(compressed, { to: 'string' });
+            }
+            const data = Papa.parse(content, { header: true, delimiter: '\t' }).data;
+            onParsed(data);
+        };
+        reader.readAsArrayBuffer(file);
+    }, []);
+
+    const onDropCounts = useCallback((acceptedFiles) => {
+        if (acceptedFiles.length > 0) {
+            setCountsFileName(acceptedFiles[0].name);
+        }
+    }, []);
+
+    const onDropColdata = useCallback((acceptedFiles) => {
+        if (acceptedFiles.length > 0) {
+            setColdataFileName(acceptedFiles[0].name);
+            const file = acceptedFiles[0];
+
+            decompressAndParseFile(file, (data) => {
+                const conditions = cleanData([...new Set(data.map(item => item.condition))]);
+                const phases = cleanData([...new Set(data.map(item => item.phase))]);
+                const contrasts = [...conditions, ...phases];
+
+                setReferenceLevels({ conditions, phases });
+                setContrastLevels(cleanData(contrasts));
+            });
+        }
+    }, [decompressAndParseFile]);
 
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {
             setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
         } else {
             setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
+            // Load example dataset
+            onDatasetSelect('example', null);
         }
     };
 
@@ -101,8 +140,16 @@ const AnalysisInputForm = ({
                 </button>
             </div>
             <div id="filedropContainer">
-                <FileDropArea title="Counts" />
-                <FileDropArea title="Coldata" />
+                <FileDropArea 
+                    title="Counts" 
+                    onDrop={onDropCounts} 
+                    fileName={countsFileName} 
+                />
+                <FileDropArea 
+                    title="Coldata" 
+                    onDrop={onDropColdata} 
+                    fileName={coldataFileName} 
+                />
             </div>
             <h3>Configuration</h3>
             <div>
@@ -111,15 +158,8 @@ const AnalysisInputForm = ({
                     <span>Add covariates</span>
                 </label>
                 <label className="radioLabel">
-                    <span>Data type:</span>
-                    <select id="exampleDropdown" name="dataType">
-                        <option value="option1">Microarray</option>
-                        <option value="option2">RNA-Seq</option>
-                    </select>
-                </label>
-                <label className="radioLabel">
                     <span id="adjustmentSubfield">Adjustment method:</span>
-                    <select id="exampleDropdown" name="exampleDropdown">
+                    <select id="adjustmentMethod" name="adjustmentMethod">
                         <option value="option1">Bonferroni</option>
                         <option value="option2">Benjamini and Hochberg</option>
                     </select>
@@ -155,11 +195,12 @@ const AnalysisInputForm = ({
                     </div>
                 </div>
                 <label className="radioLabel">
-                    <span>Data transformation:</span>
-                    <select id="exampleDropdown" name="exampleDropdown">
-                        <option value="option1">None</option>
+                    <span>Data Exploration Transform:</span>
+                    <select id="transformationMethod" name="transformationMethod">
                         <option value="option1">VST</option>
-                        <option value="option2">rlog</option>
+                        <option value="option2">log2(counts + 1)</option>
+                        <option value="option3">ln(counts + 1)</option>
+                        <option value="option4">log10(counts + 1)</option>
                     </select>
                 </label>
                 <label className="radioLabel">
@@ -168,7 +209,7 @@ const AnalysisInputForm = ({
                 </label>
             </div>
             <div id="runAnalysisContainer">
-                <IconButton icon={terminal} label="Run Analysis" />
+                <IconButton icon={terminal} label="Run Analysis" onClick={() => console.log('Run Analysis clicked')} />
             </div>
         </div>
     );
@@ -182,6 +223,7 @@ FileDropArea.propTypes = {
 
 AnalysisInputForm.propTypes = {
     setIsVisible: PropTypes.func.isRequired,
+    onDatasetSelect: PropTypes.func.isRequired,
     contrastGroups: PropTypes.array.isRequired,
     referenceGroups: PropTypes.array.isRequired,
     onAddGroup: PropTypes.func.isRequired,
