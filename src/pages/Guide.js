@@ -19,6 +19,13 @@ const Guide = () => {
             answer: 'To change your save directory, navigate to the \'Settings\' icon located on the right side of the navigation bar. There, select \'Change save location\'',
         },
         {
+            question: 'What input data file types are accepted for upload?',
+            answer: 'The GENE Platform accepts the following file types for counts and coldata:\n\n' +
+                    '- Tab-separated values (.tsv or .txt)\n' +
+                    '- Comma-separated values (.csv)\n' +
+                    '- Gzipped versions of the above (.tsv.gz, .txt.gz, or .csv.gz)',
+        },
+        {
             question: 'What a cool application!',
             answer: '😎',
         }
@@ -30,6 +37,7 @@ const Guide = () => {
             <Accordion data={[faq[2]]} />
             <Accordion data={[faq[3]]} />
             <Accordion data={[faq[4]]} />
+            <Accordion data={[faq[5]]} />
         </div>
     );
 };

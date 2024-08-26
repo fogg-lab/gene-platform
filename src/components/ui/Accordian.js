@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import addCircle from '../../assets/icons/add_circle.png';
 
 const Accordion = ({ data }) => {
     const [activeIndex, setActiveIndex] = useState(null);
@@ -58,8 +59,6 @@ const Accordion = ({ data }) => {
         margin: '0',
     };
 
-    const iconSrc = require(`../../assets/icons/add_circle.png`).default;
-
     return (
         <div style={accordionStyle}>
             {data.map((item, index) => (
@@ -81,7 +80,7 @@ const Accordion = ({ data }) => {
                             {activeIndex !== index && <span style={questionStyle}>{item.question}</span>}
                             {activeIndex !== index && (
                                 <img
-                                    src={iconSrc}
+                                    src={addCircle}
                                     alt="Add Circle"
                                     style={iconStyle}
                                 />
