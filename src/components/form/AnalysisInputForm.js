@@ -125,9 +125,9 @@ const AnalysisInputForm = ({
                     </select>
                 </label>
                 <div className='dataSubfield'>
-                    <div className="contrastReferenceFields">
+                    <div>
                         <SampleField
-                            headerName='Contrast Groups'
+                            headerName="Contrast Groups"
                             groups={contrastGroups}
                             onAddGroup={() => onAddGroup(true)}
                             onUpdateGroup={(id, updates) => onUpdateGroup(id, updates, true)}
@@ -136,12 +136,10 @@ const AnalysisInputForm = ({
                             onClick={() => onAddSamplesToGroup(contrastGroups[0]?.id, true)}
                             disabled={!contrastGroups.length || !selectedSamples.length}
                         >
-                            Add to Contrast Group
                         </button>
-                    </div>
-                    <div className="contrastReferenceFields">
+
                         <SampleField
-                            headerName='Reference Groups'
+                            headerName="Reference Groups"
                             groups={referenceGroups}
                             onAddGroup={() => onAddGroup(false)}
                             onUpdateGroup={(id, updates) => onUpdateGroup(id, updates, false)}
@@ -150,7 +148,6 @@ const AnalysisInputForm = ({
                             onClick={() => onAddSamplesToGroup(referenceGroups[0]?.id, false)}
                             disabled={!referenceGroups.length || !selectedSamples.length}
                         >
-                            Add to Reference Group
                         </button>
                     </div>
                 </div>
