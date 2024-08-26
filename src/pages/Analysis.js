@@ -10,15 +10,16 @@ const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
     const [tableScrollPosition, setTableScrollPosition] = useState(0);
     const [currentStage, setCurrentStage] = useState('exploration');
-    const [tableData, setTableData] = useState([]);
-    const [tableColumns, setTableColumns] = useState([]);
     const [error, setError] = useState(null);
-    const [currentTable, setCurrentTable] = useState('coldata.csv');
-    const [currentPlot, setCurrentPlot] = useState('pca_3d.html');
-    const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
-    const [setSelectedRadio] = useState(null);
     const tableContainerRef = useRef(null);
+    const [dataset, setDataset] = useState(null);
+    const [edaData, setEdaData] = useState(null);
+    const [deData, setDeData] = useState(null);
+    const [gseaData, setGseaData] = useState(null);
+    const [currentTable, setCurrentTable] = useState(null);
+    const [currentPlot, setCurrentPlot] = useState(null);
+    const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
 
     const [selectedSamples, setSelectedSamples] = useState([]);
     const [contrastGroups, setContrastGroups] = useState([]);
@@ -106,12 +107,12 @@ const Analysis = () => {
     }, [currentTable]);
 
     useEffect(() => {
-        if (activeTab === 'plot') {
+        if (activeTab === 'plot' && currentPlot) {
             setShouldDisplayPlot(true);
         } else {
             setShouldDisplayPlot(false);
         }
-    }, [activeTab, currentStage]);
+    }, [activeTab, currentPlot]);
 
     useEffect(() => {
         if (activeTab === 'table' && tableContainerRef.current) {
@@ -128,32 +129,81 @@ const Analysis = () => {
     };
 
     const loadTableData = (filename) => {
-        fetch(`${getPublicUrl()}/data/${filename}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+        if (dataset && (filename === 'coldata' || filename === 'counts')) {
+            setEdaData(prevData => ({
+                ...prevData,
+                tables: {
+                    ...(prevData?.tables || {}),
+                    [filename]: dataset[`${filename}Table`]
                 }
-                return response.text();
-            })
-            .then(csvString => {
-                const result = Papa.parse(csvString, { header: true });
-                if (result.data.length > 0) {
-                    setTableData(result.data);
-                    setTableColumns(Object.keys(result.data[0]).map(field => ({ key: field, name: field })));
-                } else {
-                    setError('CSV file is empty or could not be parsed correctly.');
-                }
-            })
-            .catch(error => {
-                console.error('Error loading CSV:', error);
-                setError(`Failed to load CSV: ${error.message}`);
-            });
+            }));
+            setCurrentTable(filename);
+        } else {
+            // Existing logic for loading example data
+            fetch(`${getPublicUrl()}/data/${filename}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(csvString => {
+                    const result = Papa.parse(csvString, { header: true });
+                    if (result.data.length > 0) {
+                        setEdaData(prevData => ({
+                            ...prevData,
+                            tables: {
+                                ...(prevData?.tables || {}),
+                                [filename]: {
+                                    data: result.data,
+                                    cols: Object.keys(result.data[0])
+                                }
+                            }
+                        }));
+                        setCurrentTable(filename);
+                    } else {
+                        setError('CSV file is empty or could not be parsed correctly.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading CSV:', error);
+                    setError(`Failed to load CSV: ${error.message}`);
+                });
+        }
     };
 
     const handleStageChange = (stage) => {
         setCurrentStage(stage);
-        setCurrentTable(stages[stage].tables[0]);
-        setCurrentPlot(stages[stage].plots[0]);
+        switch (stage) {
+            case 'exploration':
+                setCurrentTable('coldata');
+                setCurrentPlot(null);
+                break;
+            case 'differential':
+                if (deData) {
+                    setCurrentTable('de_results');
+                    setCurrentPlot('volcano_plot');
+                }
+                break;
+            case 'enrichment':
+                if (gseaData) {
+                    setCurrentTable('gsea_results');
+                    setCurrentPlot('gene_concept_network');
+                }
+                break;
+        }
+    };
+
+    const runDifferentialExpression = async () => {
+        // Call API to run DE analysis
+        // Update deData state with results
+        // setDeData(results);
+    };
+
+    const runGSEA = async () => {
+        // Call API to run GSEA
+        // Update gseaData state with results
+        // setGseaData(results);
     };
 
     const handleTabChange = (tab) => {
@@ -161,27 +211,142 @@ const Analysis = () => {
     };
 
     const renderTableButtons = () => {
-        return stages[currentStage].tables.map(table => (
+        let tables = [];
+        switch (currentStage) {
+            case 'exploration':
+                tables = edaData && edaData.tables ? Object.keys(edaData.tables) : [];
+                break;
+            case 'differential':
+                tables = deData && deData.table ? ['de_results'] : [];
+                break;
+            case 'enrichment':
+                tables = gseaData && gseaData.table ? ['gsea_results'] : [];
+                break;
+        }
+        return tables.map(table => (
             <button
                 key={table}
                 onClick={() => setCurrentTable(table)}
                 className={`view-toggle-btn ${currentTable === table ? 'active' : ''}`}
             >
-                {file_to_display_name[table]}
+                {file_to_display_name[table] || table}
             </button>
         ));
     };
 
     const renderPlotButtons = () => {
-        return stages[currentStage].plots.map(plot => (
+        let plots = [];
+        switch (currentStage) {
+            case 'exploration':
+                plots = edaData && edaData.plots ? Object.keys(edaData.plots) : [];
+                break;
+            case 'differential':
+                plots = deData && deData.plots ? Object.keys(deData.plots) : [];
+                break;
+            case 'enrichment':
+                plots = gseaData && gseaData.plots ? Object.keys(gseaData.plots) : [];
+                break;
+        }
+        return plots.map(plot => (
             <button
                 key={plot}
                 onClick={() => setCurrentPlot(plot)}
                 className={`view-toggle-btn ${currentPlot === plot ? 'active' : ''}`}
             >
-                {file_to_display_name[plot]}
+                {file_to_display_name[plot] || plot}
             </button>
         ));
+    };
+
+    const handleDatasetSelect = (type, data) => {
+        if (type === 'external' && data) {
+            setDataset(data);
+            setEdaData({
+                tables: {
+                    coldata: {
+                        data: data.coldataTable.data,
+                        cols: data.coldataTable.cols
+                    },
+                    counts: {
+                        data: data.countsTable.data,
+                        cols: data.countsTable.cols
+                    }
+                },
+                plots: data.plots || {}
+            });
+            setCurrentTable('coldata');
+            setCurrentPlot(null);
+        } else if (type === 'example') {
+            // Load example dataset
+            loadTableData('coldata.csv');
+        }
+    };
+
+    const renderTable = () => {
+        let tableData, tableColumns;
+        switch (currentStage) {
+            case 'exploration':
+                if (edaData && edaData.tables && currentTable && edaData.tables[currentTable]) {
+                    tableData = edaData.tables[currentTable].data;
+                    tableColumns = edaData.tables[currentTable].cols.map(col => ({ key: col, name: col }));
+                }
+                break;
+            case 'differential':
+                if (deData && deData.table) {
+                    tableData = deData.table.data;
+                    tableColumns = deData.table.cols.map(col => ({ key: col, name: col }));
+                }
+                break;
+            case 'enrichment':
+                if (gseaData && gseaData.table) {
+                    tableData = gseaData.table.data;
+                    tableColumns = gseaData.table.cols.map(col => ({ key: col, name: col }));
+                }
+                break;
+        }
+
+        if (tableData && tableColumns) {
+            // Ensure tableData is an array of objects
+            if (Array.isArray(tableData[0])) {
+                tableData = tableData.map(row => {
+                    let obj = {};
+                    tableColumns.forEach((col, index) => {
+                        obj[col.key] = row[index];
+                    });
+                    return obj;
+                });
+            }
+            return <DataTable
+                data={tableData}
+                columns={tableColumns}
+                onSelectionChange={handleSelectionChange}
+                contrastGroups={contrastGroups}
+                referenceGroups={referenceGroups}
+                onAddSamplesToGroup={handleAddSamplesToGroup}
+            />;
+        } else {
+            return <p>No data available</p>;
+        }
+    };
+
+    const renderPlot = () => {
+        let plotData;
+        switch (currentStage) {
+            case 'exploration':
+                plotData = edaData && currentPlot ? edaData.plots[currentPlot] : null;
+                break;
+            case 'differential':
+                plotData = deData && currentPlot ? deData.plots[currentPlot] : null;
+                break;
+            case 'enrichment':
+                plotData = gseaData && currentPlot ? gseaData.plots[currentPlot] : null;
+                break;
+        }
+        return plotData ? (
+            <PlotArea data={plotData.data} layout={plotData.layout} config={plotData.config} />
+        ) : (
+            <p>No plot available</p>
+        );
     };
 
     if (error) {
@@ -193,6 +358,7 @@ const Analysis = () => {
             <div id="analysis_user_input">
                 <AnalysisInputForm
                     setIsVisible={setIsVisible}
+                    onDatasetSelect={handleDatasetSelect}
                     contrastGroups={contrastGroups}
                     referenceGroups={referenceGroups}
                     onAddGroup={handleAddGroup}
@@ -201,7 +367,7 @@ const Analysis = () => {
                     onAddSamplesToGroup={handleAddSamplesToGroup}
                 />
             </div>
-            <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} setSelectedRadio={setSelectedRadio} />
+            <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
                     <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />
@@ -212,13 +378,13 @@ const Analysis = () => {
                     <div id="view_toggle">
                         <button
                             className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
-                            onClick={() => handleTabChange('table')}
+                            onClick={() => setActiveTab('table')}
                         >
                             Table View
                         </button>
                         <button
                             className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
-                            onClick={() => handleTabChange('plot')}
+                            onClick={() => setActiveTab('plot')}
                         >
                             Plot View
                         </button>
@@ -232,39 +398,7 @@ const Analysis = () => {
                             <div id="table_toggle">
                                 {renderTableButtons()}
                             </div>
-                            <div
-                                style={{
-                                    position: 'relative',
-                                    paddingBottom: '90%',
-                                    height: 0,
-                                    overflow: 'hidden'
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%',
-                                        border: 'none',
-                                        padding: '10px'
-                                    }}
-                                >
-                                    {tableData.length > 0 && tableColumns.length > 0 ? (
-                                        <DataTable
-                                            data={tableData}
-                                            columns={tableColumns}
-                                            onSelectionChange={handleSelectionChange}
-                                            contrastGroups={contrastGroups}
-                                            referenceGroups={referenceGroups}
-                                            onAddSamplesToGroup={handleAddSamplesToGroup}
-                                        />
-                                    ) : (
-                                        <p>Loading table data...</p>
-                                    )}
-                                </div>
-                            </div>
+                            {renderTable()}
                         </div>
                         <div
                             style={{
@@ -277,27 +411,7 @@ const Analysis = () => {
                             <div id="plot_toggle">
                                 {renderPlotButtons()}
                             </div>
-                            <div style={{
-                                position: 'relative',
-                                paddingBottom: '56.25%', // 16:9 aspect ratio
-                                height: 0,
-                                overflow: 'hidden'
-                            }}>
-                                {shouldDisplayPlot && (
-                                    <iframe
-                                        src={`${getPublicUrl()}/plots/${currentPlot}`}
-                                        style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            width: '100%',
-                                            height: '100%',
-                                            border: 'none'
-                                        }}
-                                        title="Analysis Plot"
-                                    />
-                                )}
-                            </div>
+                            {renderPlot()}
                         </div>
                     </div>
                 </div>
