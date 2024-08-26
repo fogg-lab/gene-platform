@@ -562,6 +562,10 @@ input[type="text"] {
     box-sizing: border-box;
 }
 
+[style*="z-index: 100000"] {
+    opacity: 0 !important;
+}
+
 .sampleFieldContainer ul {
     list-style-type: none;
     padding-left: 20px;

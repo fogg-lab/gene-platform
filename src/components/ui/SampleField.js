@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
     const [editingId, setEditingId] = useState(null);
+    const [expandedSamples, setExpandedSamples] = useState({});
     const editInputRef = useRef(null);
 
     useEffect(() => {
@@ -29,6 +30,42 @@ function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
             const updatedSamples = group.samples.filter(sample => sample.id !== sampleId);
             onUpdateGroup(groupId, { samples: updatedSamples });
         }
+    };
+
+    const toggleSampleDetails = (sampleId) => {
+        setExpandedSamples(prev => ({
+            ...prev,
+            [sampleId]: !prev[sampleId]
+        }));
+    };
+
+    const renderSampleDetails = (sample) => {
+        const excludeKeys = ['id', 'name', 'sample'];
+        const isExpanded = expandedSamples[sample.id];
+
+        return (
+            <div className="sampleDetails">
+                <button onClick={() => toggleSampleDetails(sample.id)}>
+                    {isExpanded ? 'Collapse' : 'Expand'} Details
+                </button>
+                {isExpanded && (
+                    <div className="expandedDetails">
+                        {Object.entries(sample).map(([key, value]) => {
+                            if (!excludeKeys.includes(key)) {
+                                return (
+                                    <div key={key}>
+                                        <strong>{key}:</strong> {
+                                            typeof value === 'object' ? JSON.stringify(value) : value
+                                        }
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })}
+                    </div>
+                )}
+            </div>
+        );
     };
 
     return (
@@ -66,10 +103,11 @@ function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
                         <ul>
                             {group.samples.map((sample) => (
                                 <li key={sample.id}>
-                                    {sample.name}
+                                    <strong>{sample.sample || sample.name || `Sample ${sample.id}`}</strong>
                                     <button onClick={() => handleRemoveSample(group.id, sample.id)}>
                                         X
                                     </button>
+                                    {renderSampleDetails(sample)}
                                 </li>
                             ))}
                         </ul>
@@ -85,10 +123,7 @@ SampleField.propTypes = {
     groups: PropTypes.arrayOf(PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
-        samples: PropTypes.arrayOf(PropTypes.shape({
-            id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-            name: PropTypes.string.isRequired,
-        })).isRequired,
+        samples: PropTypes.arrayOf(PropTypes.object).isRequired,
     })).isRequired,
     onAddGroup: PropTypes.func.isRequired,
     onUpdateGroup: PropTypes.func.isRequired,

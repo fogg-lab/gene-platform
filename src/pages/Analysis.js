@@ -26,6 +26,7 @@ const Analysis = () => {
     const [groupCounter, setGroupCounter] = useState(1);
 
     const handleSelectionChange = useCallback((newSelectedRows) => {
+        console.log('Analysis - New selected rows:', newSelectedRows);
         setSelectedSamples(newSelectedRows);
     }, []);
 
@@ -36,28 +37,29 @@ const Analysis = () => {
             samples: []
         };
         if (isContrast) {
-            setContrastGroups([...contrastGroups, newGroup]);
+            setContrastGroups(prevGroups => [...prevGroups, newGroup]);
         } else {
-            setReferenceGroups([...referenceGroups, newGroup]);
+            setReferenceGroups(prevGroups => [...prevGroups, newGroup]);
         }
-        setGroupCounter(groupCounter + 1);
-    }, [contrastGroups, referenceGroups, groupCounter]);
+        setGroupCounter(prevCounter => prevCounter + 1);
+    }, [groupCounter]);
 
     const handleUpdateGroup = useCallback((groupId, updates, isContrast) => {
         const updateGroups = (groups) => groups.map(group =>
             group.id === groupId ? { ...group, ...updates } : group
         );
         if (isContrast) {
-            setContrastGroups(updateGroups(contrastGroups));
+            setContrastGroups(updateGroups);
         } else {
-            setReferenceGroups(updateGroups(referenceGroups));
+            setReferenceGroups(updateGroups);
         }
-    }, [contrastGroups, referenceGroups]);
+    }, []);
 
     const handleAddSamplesToGroup = useCallback((groupId, isContrast) => {
+        console.log('Analysis - Adding samples to group:', { groupId, isContrast, selectedSamples });
         const newSamples = selectedSamples.map(sample => ({
-            id: sample.id,
-            name: sample.name || `Sample ${sample.id}`,
+            ...sample,
+            name: sample.sample || sample.name || `Sample ${sample.id}` || 'Unknown Sample'
         }));
         const updateGroups = (groups) => groups.map(group =>
             group.id === groupId
@@ -65,13 +67,12 @@ const Analysis = () => {
                 : group
         );
         if (isContrast) {
-            setContrastGroups(updateGroups(contrastGroups));
+            setContrastGroups(updateGroups);
         } else {
-            setReferenceGroups(updateGroups(referenceGroups));
+            setReferenceGroups(updateGroups);
         }
         setSelectedSamples([]);
-    }, [selectedSamples, contrastGroups, referenceGroups]);
-
+    }, [selectedSamples]);
 
     const file_to_display_name = {
         'coldata.csv': 'Sample Metadata',
@@ -105,7 +106,6 @@ const Analysis = () => {
     }, [currentTable]);
 
     useEffect(() => {
-        // Load plot when switching to 'plot' tab or when changing stage while in 'plot' tab
         if (activeTab === 'plot') {
             setShouldDisplayPlot(true);
         } else {
@@ -118,6 +118,11 @@ const Analysis = () => {
             tableContainerRef.current.scrollTop = tableScrollPosition;
         }
     }, [activeTab, tableScrollPosition]);
+
+    useEffect(() => {
+        console.log('Analysis - Updated selectedSamples:', selectedSamples);
+    }, [selectedSamples]);
+
     const handleTableScroll = (event) => {
         setTableScrollPosition(event.target.scrollTop);
     };
@@ -297,7 +302,7 @@ const Analysis = () => {
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 
