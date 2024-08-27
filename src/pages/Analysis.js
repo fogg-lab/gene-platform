@@ -84,7 +84,7 @@ const Analysis = () => {
         'DE_results.csv': 'Differential Expression',
         'GSEA_results.csv': 'Gene Set Enrichment',
         'pca_3d.html': 'PCA 3D Embedding',
-        'umap_3d.html': 'UMAP 3D Embedding',
+        'tsne_3d.html': 't-SNE 3D Embedding',
         'sample_correlation_heatmap.html': 'Sample Correlation Heatmap',
         'mean_difference.html': 'Mean Difference Plot',
         'volcano_plot.html': 'Volcano Plot',
@@ -94,7 +94,7 @@ const Analysis = () => {
     const stages = {
         exploration: {
             tables: ['coldata.csv'],
-            plots: ['pca_3d.html', 'umap_3d.html', 'sample_correlation_heatmap.html']
+            plots: ['pca_3d.html', 'tsne_3d.html', 'sample_correlation_heatmap.html']
         },
         differential: {
             tables: ['DE_results.csv'],
@@ -360,11 +360,11 @@ const Analysis = () => {
         try {
             // EDA
             setProgress(10);
-            const transformedCounts = await WorkerManager.runTask('py', 'transform_log', { counts: dataset.counts });
+            const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', { counts: dataset.counts });
             setProgress(20);
             const pcaPlot = await WorkerManager.runTask('py', 'create_pca', { counts: transformedCounts, sample_ids: dataset.coldataTable.rows });
             setProgress(30);
-            // Add more EDA tasks...
+            const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', { counts: transformedCounts, sample_ids: dataset.coldataTable.rows });
 
             // DE Analysis
             setProgress(40);
@@ -375,6 +375,14 @@ const Analysis = () => {
                 referenceGroups
             });
             setProgress(60);
+            const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
+                data: deResults.data,
+                row_names: deResults.row_names,
+                column_names: deResults.column_names,
+                fdr: 0.05,
+                cohort_name: 'DE Analysis'
+            });
+            setProgress(65);
 
             // GSEA
             setProgress(70);
@@ -391,9 +399,9 @@ const Analysis = () => {
             setProgress(90);
 
             // Update state with results
-            setEdaData({ plots: { pca: pcaPlot /* Add more plots */ } });
-            setDeData({ table: deResults, plots: { /* Add DE plots */ } });
-            setGseaData({ table: gseaResults, plots: { /* Add GSEA plots */ } });
+            setEdaData({ plots: { pca: pcaPlot, tsne: tsnePlot } });
+            setDeData({ table: deResults, plots: { meanDifference: meanDifferencePlot } });
+            setGseaData({ table: gseaResults, plots: {} });
 
             setProgress(100);
         } catch (error) {
