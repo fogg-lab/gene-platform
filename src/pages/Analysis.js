@@ -5,6 +5,7 @@ import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
 import Papa from 'papaparse';
 import { getPublicUrl } from '../utils/environment';
+import WorkerManager from '../utils/Workers';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -25,6 +26,9 @@ const Analysis = () => {
     const [contrastGroups, setContrastGroups] = useState([]);
     const [referenceGroups, setReferenceGroups] = useState([]);
     const [groupCounter, setGroupCounter] = useState(1);
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     const handleSelectionChange = useCallback((newSelectedRows) => {
         console.log('Analysis - New selected rows:', newSelectedRows);
@@ -349,6 +353,57 @@ const Analysis = () => {
         );
     };
 
+    const runAnalysis = async () => {
+        setIsLoading(true);
+        setProgress(0);
+
+        try {
+            // EDA
+            setProgress(10);
+            const transformedCounts = await WorkerManager.runTask('py', 'transform_log', { counts: dataset.counts });
+            setProgress(20);
+            const pcaPlot = await WorkerManager.runTask('py', 'create_pca', { counts: transformedCounts, sample_ids: dataset.coldataTable.rows });
+            setProgress(30);
+            // Add more EDA tasks...
+
+            // DE Analysis
+            setProgress(40);
+            const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
+                counts: transformedCounts,
+                coldata: dataset.coldataTable,
+                contrastGroups,
+                referenceGroups
+            });
+            setProgress(60);
+
+            // GSEA
+            setProgress(70);
+            const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
+                genes: deResults.genes,
+                metric: deResults.logFC,
+                geneSets: geneSetCollections,
+                weight: 1,
+                minSize: 15,
+                maxSize: 500,
+                nperm: 1000,
+                seed: Date.now()
+            });
+            setProgress(90);
+
+            // Update state with results
+            setEdaData({ plots: { pca: pcaPlot /* Add more plots */ } });
+            setDeData({ table: deResults, plots: { /* Add DE plots */ } });
+            setGseaData({ table: gseaResults, plots: { /* Add GSEA plots */ } });
+
+            setProgress(100);
+        } catch (error) {
+            console.error('Analysis error:', error);
+            setError(`An error occurred during analysis: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     if (error) {
         return <div>Error: {error}</div>;
     }
@@ -416,6 +471,10 @@ const Analysis = () => {
                     </div>
                 </div>
             </div>
+            <button onClick={runAnalysis} disabled={isLoading}>
+                Run Analysis
+            </button>
+            {isLoading && <ProgressBar progress={progress} />}
         </div>
     );
 };
