@@ -15,6 +15,8 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
   const itemsPerPage = 50;
   const wrapperRef = useRef(null);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     import(`../../assets/external_data_index/${dataSrc}.json`)
       .then(data => setDatasets(Object.entries(data.datasets)))
@@ -39,8 +41,8 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
     setSearchTerm(value);
     setCurrentPage(1);
     if (value.length > 0) {
-      const filtered = datasets.filter(([id, info]) => 
-        id.toLowerCase().includes(value.toLowerCase()) || 
+      const filtered = datasets.filter(([id, info]) =>
+        id.toLowerCase().includes(value.toLowerCase()) ||
         info.title.toLowerCase().includes(value.toLowerCase())
       );
       setSuggestions(filtered);
@@ -68,12 +70,17 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
 
   const handleLoadDataset = async () => {
     if (selectedDataset) {
+      setIsLoading(true);
+      console.log("Attempting to search dataset")
       try {
         const data = await getExternalDataset(dataSrc, selectedDataset[0]);
         onDatasetSelect('external', data);
+        console.log("Dataset received.")
         setIsVisible(false);
       } catch (error) {
         console.error('Error fetching external dataset:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -133,14 +140,14 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
                   </ul>
                   {totalPages > 1 && (
                     <div className="pagination">
-                      <button 
+                      <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
                       >
                         Previous
                       </button>
                       <span>{currentPage} / {totalPages}</span>
-                      <button 
+                      <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
                       >
@@ -158,12 +165,16 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
             )}
           </div>
           <div className='databasePopupButton'>
-            <IconButton 
-              icon={terminal}
-              label="Select dataset" 
-              onClick={handleLoadDataset}
-              disabled={!selectedDataset}
-            />
+            {isLoading ? (
+              <div className="loader"></div>
+            ) : (
+              <IconButton
+                icon={terminal}
+                label="Select dataset"
+                onClick={handleLoadDataset}
+                disabled={!selectedDataset}
+              />
+            )}
           </div>
         </div>
       )}
