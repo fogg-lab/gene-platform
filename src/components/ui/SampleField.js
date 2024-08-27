@@ -12,6 +12,16 @@ function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
         }
     }, [editingId]);
 
+    useEffect(() => {
+        // Log the full structure of groups
+        console.log('Groups data:', groups);
+
+        // Log each group's samples for more detail
+        groups.forEach(group => {
+            console.log(`Group ${group.id} - ${group.name}:`, group.samples);
+        });
+    }, [groups]);
+
     const startEditing = (id) => {
         setEditingId(id);
     };
@@ -49,7 +59,7 @@ function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
                     {isExpanded ? 'Collapse' : 'Expand'} Details
                 </button>
                 {isExpanded && (
-                    <div className="expandedDetails">
+                    <div className="">
                         {Object.entries(sample).map(([key, value]) => {
                             if (!excludeKeys.includes(key)) {
                                 return (
@@ -101,20 +111,28 @@ function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
                             </button>
                         )}
                         <ul>
-                            {group.samples.map((sample) => (
-                                <li key={sample.id}>
-                                    <strong>{sample.sample || sample.name || `Sample ${sample.id}`}</strong>
-                                    <button onClick={() => handleRemoveSample(group.id, sample.id)}>
-                                        X
-                                    </button>
-                                    {renderSampleDetails(sample)}
-                                </li>
-                            ))}
+                            {group.samples.map((sample) => {
+                                // Get the first key-value pair from the sample object
+                                const firstEntry = Object.entries(sample)[0]; // This returns an array like [key, value]
+                                const [firstKey, firstValue] = firstEntry || []; // Destructure to get the key and value
+
+                                return (
+                                    <li key={sample.id} className='sampleListElement'>
+                                        <span className="sampleText">
+                                            {/* Display the first key-value pair */}
+                                            <strong>{firstValue}</strong>
+                                        </span>
+                                        <button className="removeButton" onClick={() => handleRemoveSample(group.id, sample.id)}>
+                                            X
+                                        </button>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 ))}
             </div>
-        </div>
+        </div >
     );
 }
 
