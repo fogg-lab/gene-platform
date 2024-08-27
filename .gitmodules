@@ -1,0 +1,3 @@
+[submodule "gene-platform-utils"]
+	path = gene-platform-utils
+	url = git@github.com:fogg-lab/gene-platform-utils.git
