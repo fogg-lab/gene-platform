@@ -63,7 +63,8 @@ const AnalysisInputForm = ({
     onAddGroup,
     onUpdateGroup,
     selectedSamples,
-    onAddSamplesToGroup
+    onAddSamplesToGroup,
+    runAnalysis
 }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
@@ -206,7 +207,7 @@ const AnalysisInputForm = ({
                 </label>
             </div>
             <div id="runAnalysisContainer">
-                <IconButton icon={terminal} label="Run Analysis" onClick={() => console.log('Run Analysis clicked')} />
+                <IconButton icon={terminal} label="Run Analysis" onClick={runAnalysis} />
             </div>
         </div>
     );
@@ -227,6 +228,7 @@ AnalysisInputForm.propTypes = {
     onUpdateGroup: PropTypes.func.isRequired,
     selectedSamples: PropTypes.array.isRequired,
     onAddSamplesToGroup: PropTypes.func.isRequired,
+    runAnalysis: PropTypes.func.isRequired,
 };
 
 

@@ -28,29 +28,56 @@ self.onmessage = async function(event) {
   try {
     let result;
     switch (action) {
-      case 'transform_log':
+        case 'transform_vst':
+          result = await pyodide.runPythonAsync(`
+            import numpy as np
+            from gene_platform_utils.transformation import vst
+            counts = ${data.counts}
+            transformed = vst(counts)
+            transformed.tolist()
+          `);
+          break;
+      case 'transform_log2':
         result = await pyodide.runPythonAsync(`
           import numpy as np
           from gene_platform_utils.transformation import log2_1p
-          counts = np.array(${JSON.stringify(data.counts)})
+          counts = ${data.counts}
           transformed = log2_1p(counts)
           transformed.tolist()
         `);
         break;
-      case 'transform_vst':
+      case 'transform_ln':
         result = await pyodide.runPythonAsync(`
           import numpy as np
-          from gene_platform_utils.transformation import vst
-          counts = np.array(${JSON.stringify(data.counts)})
-          transformed = vst(counts)
+          from gene_platform_utils.transformation import ln_1p
+          counts = ${data.counts}
+          transformed = ln_1p(counts)
           transformed.tolist()
+        `);
+        break;
+      case 'transform_log10':
+        result = await pyodide.runPythonAsync(`
+          import numpy as np
+          from gene_platform_utils.transformation import log10_1p
+          counts = ${data.counts}
+          transformed = log10_1p(counts)
+          transformed.tolist()
+        `);
+        break;
+      case 'create_heatmap':
+        result = await pyodide.runPythonAsync(`
+          import numpy as np
+          from gene_platform_utils.plot_eda import create_correlation_heatmap
+          counts = ${data.counts}
+          sample_ids = ${JSON.stringify(data.sample_ids)}
+          create_correlation_heatmap(counts, sample_ids)
         `);
         break;
       case 'create_pca':
         result = await pyodide.runPythonAsync(`
           import numpy as np
           from gene_platform_utils.plot_eda import create_pca_plot
-          counts = np.array(${JSON.stringify(data.counts)})
+          counts = ${data.counts}
           sample_ids = ${JSON.stringify(data.sample_ids)}
           create_pca_plot(counts, sample_ids)
         `);
@@ -59,7 +86,7 @@ self.onmessage = async function(event) {
         result = await pyodide.runPythonAsync(`
           import numpy as np
           from gene_platform_utils.plot_eda import create_tsne_plot
-          counts = np.array(${JSON.stringify(data.counts)})
+          counts = ${data.counts}
           sample_ids = ${JSON.stringify(data.sample_ids)}
           create_tsne_plot(counts, sample_ids)
         `);
@@ -68,7 +95,7 @@ self.onmessage = async function(event) {
         result = await pyodide.runPythonAsync(`
           import numpy as np
           from gene_platform_utils.plot_de import create_volcano_plot
-          data = np.array(${JSON.stringify(data.data)})
+          data = ${data.data}
           row_names = ${JSON.stringify(data.row_names)}
           column_names = ${JSON.stringify(data.column_names)}
           lfc_thresh = ${data.lfc_thresh}
@@ -81,7 +108,7 @@ self.onmessage = async function(event) {
         result = await pyodide.runPythonAsync(`
           import numpy as np
           from gene_platform_utils.plot_de import create_mean_difference_plot
-          data = np.array(${JSON.stringify(data.data)})
+          data = ${data.data}
           row_names = ${JSON.stringify(data.row_names)}
           column_names = ${JSON.stringify(data.column_names)}
           fdr = ${data.fdr}
