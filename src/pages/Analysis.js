@@ -21,8 +21,8 @@ const Analysis = () => {
     const [currentPlot, setCurrentPlot] = useState(null);
 
     const [selectedSamples, setSelectedSamples] = useState([]);
-    const [contrastGroups, setContrastGroups] = useState([]);
-    const [referenceGroups, setReferenceGroups] = useState([]);
+    const [contrastGroup, setContrastGroup] = useState([]);
+    const [referenceGroup, setReferenceGroup] = useState([]);
     const [groupCounter, setGroupCounter] = useState(1);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -36,25 +36,23 @@ const Analysis = () => {
     const handleAddGroup = useCallback((isContrast) => {
         const newGroup = {
             id: groupCounter,
-            name: `Group ${groupCounter}`,
+            name: isContrast ? "Contrast Group" : "Reference Group",
             samples: []
         };
         if (isContrast) {
-            setContrastGroups(prevGroups => [...prevGroups, newGroup]);
+            setContrastGroup([newGroup]);
         } else {
-            setReferenceGroups(prevGroups => [...prevGroups, newGroup]);
+            setReferenceGroup([newGroup]);
         }
         setGroupCounter(prevCounter => prevCounter + 1);
     }, [groupCounter]);
 
     const handleUpdateGroup = useCallback((groupId, updates, isContrast) => {
-        const updateGroups = (groups) => groups.map(group =>
-            group.id === groupId ? { ...group, ...updates } : group
-        );
+        const updateGroup = (group) => group.id === groupId ? { ...group, ...updates } : group;
         if (isContrast) {
-            setContrastGroups(updateGroups);
+            setContrastGroup(prevGroup => [updateGroup(prevGroup[0])]);
         } else {
-            setReferenceGroups(updateGroups);
+            setReferenceGroup(prevGroup => [updateGroup(prevGroup[0])]);
         }
     }, []);
 
@@ -64,15 +62,14 @@ const Analysis = () => {
             ...sample,
             name: sample.sample || sample.name || `Sample ${sample.id}` || 'Unknown Sample'
         }));
-        const updateGroups = (groups) => groups.map(group =>
-            group.id === groupId
-                ? { ...group, samples: [...group.samples, ...newSamples] }
-                : group
-        );
+        const updateGroup = (group) => ({
+            ...group,
+            samples: [...group.samples, ...newSamples]
+        });
         if (isContrast) {
-            setContrastGroups(updateGroups);
+            setContrastGroup(prevGroup => [updateGroup(prevGroup[0])]);
         } else {
-            setReferenceGroups(updateGroups);
+            setReferenceGroup(prevGroup => [updateGroup(prevGroup[0])]);
         }
         setSelectedSamples([]);
     }, [selectedSamples]);
@@ -226,8 +223,8 @@ const Analysis = () => {
                 data={tableData}
                 columns={tableColumns}
                 onSelectionChange={handleSelectionChange}
-                contrastGroups={contrastGroups}
-                referenceGroups={referenceGroups}
+                contrastGroup={contrastGroup}
+                referenceGroup={referenceGroup}
                 onAddSamplesToGroup={handleAddSamplesToGroup}
             />;
         } else {
@@ -282,8 +279,8 @@ const Analysis = () => {
             const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
                 counts: transformedCounts,
                 coldata: dataset.coldataTable,
-                contrastGroups,
-                referenceGroups
+                contrastGroup,
+                referenceGroup
             });
             setProgress(50);
             const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
@@ -350,8 +347,8 @@ const Analysis = () => {
                 <AnalysisInputForm
                     setIsVisible={setIsVisible}
                     onDatasetSelect={handleDatasetSelect}
-                    contrastGroups={contrastGroups}
-                    referenceGroups={referenceGroups}
+                    contrastGroup={contrastGroup}
+                    referenceGroup={referenceGroup}
                     onAddGroup={handleAddGroup}
                     onUpdateGroup={handleUpdateGroup}
                     selectedSamples={selectedSamples}

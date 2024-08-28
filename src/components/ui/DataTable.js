@@ -2,13 +2,13 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { DataGrid, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import PropTypes from 'prop-types';
 
-const CustomToolbar = ({ selectedSamples, contrastGroups, referenceGroups, onAddSamplesToGroup }) => {
+const CustomToolbar = ({ selectedSamples, contrastGroup, referenceGroup, onAddSamplesToGroup }) => {
   const [selectedGroupType, setSelectedGroupType] = useState('contrast');
-  const [selectedGroupId, setSelectedGroupId] = useState('');
 
   const handleAddSamples = () => {
-    if (selectedGroupId) {
-      onAddSamplesToGroup(parseInt(selectedGroupId), selectedGroupType === 'contrast');
+    const groupId = selectedGroupType === 'contrast' ? contrastGroup[0]?.id : referenceGroup[0]?.id;
+    if (groupId) {
+      onAddSamplesToGroup(groupId, selectedGroupType === 'contrast');
     }
   };
 
@@ -20,27 +20,14 @@ const CustomToolbar = ({ selectedSamples, contrastGroups, referenceGroups, onAdd
       <GridToolbarExport />
       <select
         value={selectedGroupType}
-        onChange={(e) => {
-          setSelectedGroupType(e.target.value);
-          setSelectedGroupId('');
-        }}
+        onChange={(e) => setSelectedGroupType(e.target.value)}
       >
-        <option value="contrast">Contrast Groups</option>
-        <option value="reference">Reference Groups</option>
-      </select>
-      <select
-        value={selectedGroupId}
-        onChange={(e) => setSelectedGroupId(e.target.value)}
-        disabled={!contrastGroups.length && !referenceGroups.length}
-      >
-        <option value="">Select a group</option>
-        {(selectedGroupType === 'contrast' ? contrastGroups : referenceGroups).map(group => (
-          <option key={group.id} value={group.id}>{group.name}</option>
-        ))}
+        <option value="contrast">Contrast Group</option>
+        <option value="reference">Reference Group</option>
       </select>
       <button
         onClick={handleAddSamples}
-        disabled={!selectedGroupId || selectedSamples.length === 0}
+        disabled={selectedSamples.length === 0 || (selectedGroupType === 'contrast' ? !contrastGroup.length : !referenceGroup.length)}
       >
         Add Selected ({selectedSamples.length})
       </button>
@@ -48,7 +35,7 @@ const CustomToolbar = ({ selectedSamples, contrastGroups, referenceGroups, onAdd
   );
 };
 
-const DataTable = ({ data, columns, onSelectionChange, contrastGroups, referenceGroups, onAddSamplesToGroup }) => {
+const DataTable = ({ data, columns, onSelectionChange, contrastGroup, referenceGroup, onAddSamplesToGroup }) => {
   const [sortModel, setSortModel] = useState([]);
   const [selectionModel, setSelectionModel] = useState([]);
   const [filterModel, setFilterModel] = useState({ items: [] });
@@ -141,8 +128,8 @@ const DataTable = ({ data, columns, onSelectionChange, contrastGroups, reference
         componentsProps={{
           toolbar: {
             selectedSamples: filteredRows.filter(row => selectionModel.includes(row.id)),
-            contrastGroups,
-            referenceGroups,
+            contrastGroup,
+            referenceGroup,
             onAddSamplesToGroup,
           },
         }}
@@ -192,8 +179,8 @@ DataTable.propTypes = {
     })
   ).isRequired,
   onSelectionChange: PropTypes.func.isRequired,
-  contrastGroups: PropTypes.array.isRequired,
-  referenceGroups: PropTypes.array.isRequired,
+  contrastGroup: PropTypes.array.isRequired,
+  referenceGroup: PropTypes.array.isRequired,
   onAddSamplesToGroup: PropTypes.func.isRequired,
 };
 
