@@ -58,8 +58,8 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
 const AnalysisInputForm = ({
     setIsVisible,
     onDatasetSelect,
-    contrastGroups,
-    referenceGroups,
+    contrastGroup,
+    referenceGroup,
     onAddGroup,
     onUpdateGroup,
     selectedSamples,
@@ -168,27 +168,29 @@ const AnalysisInputForm = ({
                 <div className='dataSubfieldSampleField'>
                     <div>
                         <SampleField
-                            headerName="Contrast Groups"
-                            groups={contrastGroups}
+                            headerName="Contrast Group"
+                            groups={contrastGroup}
                             onAddGroup={() => onAddGroup(true)}
                             onUpdateGroup={(id, updates) => onUpdateGroup(id, updates, true)}
                         />
                         <button
-                            onClick={() => onAddSamplesToGroup(contrastGroups[0]?.id, true)}
-                            disabled={!contrastGroups.length || !selectedSamples.length}
+                            onClick={() => onAddSamplesToGroup(contrastGroup[0]?.id, true)}
+                            disabled={!contrastGroup.length || !selectedSamples.length}
                         >
+                            Add Samples to Contrast Group
                         </button>
 
                         <SampleField
-                            headerName="Reference Groups"
-                            groups={referenceGroups}
+                            headerName="Reference Group"
+                            groups={referenceGroup}
                             onAddGroup={() => onAddGroup(false)}
                             onUpdateGroup={(id, updates) => onUpdateGroup(id, updates, false)}
                         />
                         <button
-                            onClick={() => onAddSamplesToGroup(referenceGroups[0]?.id, false)}
-                            disabled={!referenceGroups.length || !selectedSamples.length}
+                            onClick={() => onAddSamplesToGroup(referenceGroup[0]?.id, false)}
+                            disabled={!referenceGroup.length || !selectedSamples.length}
                         >
+                            Add Samples to Reference Group
                         </button>
                     </div>
                 </div>
@@ -222,8 +224,8 @@ FileDropArea.propTypes = {
 AnalysisInputForm.propTypes = {
     setIsVisible: PropTypes.func.isRequired,
     onDatasetSelect: PropTypes.func.isRequired,
-    contrastGroups: PropTypes.array.isRequired,
-    referenceGroups: PropTypes.array.isRequired,
+    contrastGroup: PropTypes.array.isRequired,
+    referenceGroup: PropTypes.array.isRequired,
     onAddGroup: PropTypes.func.isRequired,
     onUpdateGroup: PropTypes.func.isRequired,
     selectedSamples: PropTypes.array.isRequired,
