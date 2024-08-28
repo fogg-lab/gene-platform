@@ -140,15 +140,15 @@ const AnalysisInputForm = ({
                 </button>
             </div>
             <div id="filedropContainer">
-                <FileDropArea 
-                    title="Counts" 
-                    onDrop={onDropCounts} 
-                    fileName={countsFileName} 
+                <FileDropArea
+                    title="Counts"
+                    onDrop={onDropCounts}
+                    fileName={countsFileName}
                 />
-                <FileDropArea 
-                    title="Coldata" 
-                    onDrop={onDropColdata} 
-                    fileName={coldataFileName} 
+                <FileDropArea
+                    title="Coldata"
+                    onDrop={onDropColdata}
+                    fileName={coldataFileName}
                 />
             </div>
             <h3>Configuration</h3>
@@ -164,7 +164,7 @@ const AnalysisInputForm = ({
                         <option value="option2">Benjamini and Hochberg</option>
                     </select>
                 </label>
-                <div className='dataSubfield'>
+                <div className='dataSubfieldSampleField'>
                     <div>
                         <SampleField
                             headerName="Contrast Groups"

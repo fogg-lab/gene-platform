@@ -88,7 +88,7 @@ const DataTable = ({ data, columns, onSelectionChange, contrastGroups, reference
   const handleHeaderClick = useCallback((params) => {
     if (params.field === '__check__') {
       console.log("Select-all header clicked");
-      const newSelectionModel = selectionModel.length === filteredRows.length ? [] : filteredRows.map(row => row.id);
+      const newSelectionModel = selectionModel.length > 0 ? [] : filteredRows.map(row => row.id);
       setSelectionModel(newSelectionModel);
       updateSelectedRows(newSelectionModel);
     }
@@ -166,6 +166,16 @@ const DataTable = ({ data, columns, onSelectionChange, contrastGroups, reference
           },
           '& .MuiDataGrid-columnHeader .MuiDataGrid-filterIcon': {
             color: '#D73F09',
+          },
+          // New styles for checkboxes
+          '& .MuiCheckbox-root': {
+            color: '#D73F09',
+          },
+          '& .MuiCheckbox-root.Mui-checked': {
+            color: '#D73F09',
+          },
+          '& .MuiCheckbox-root:hover': {
+            backgroundColor: 'rgba(215, 63, 9, 0.04)',
           },
         }}
       />
