@@ -1,6 +1,6 @@
-import PyWorker from 'worker-loader!./PyWorker.js';
-import RWorker from 'worker-loader!./RWorker.js';
-import RustWorker from 'worker-loader!./RustWorker.js';
+import PyWorker from './PyWorker.worker';
+import RWorker from './RWorker.worker';
+import RustWorker from './RustWorker.worker';
 
 class WorkerManager {
     constructor() {

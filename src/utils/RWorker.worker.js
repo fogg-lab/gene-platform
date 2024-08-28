@@ -1,4 +1,4 @@
-importScripts('https://webr.r-wasm.org/latest/webr.mjs');
+import { WebR } from 'webr';
 
 let webR;
 

@@ -1,10 +1,12 @@
-importScripts('./pkg/gsea_rs.js');
-
 let wasm;
 
 async function initializeWasm() {
-  wasm = await import('./pkg/gsea_rs.js');
-  await wasm.default();
+  const wasmUrl = 'https://github.com/wigginno/gsea-rs/releases/download/latest/gsea_rs_bg.wasm';
+  const jsUrl = 'https://github.com/wigginno/gsea-rs/releases/download/latest/gsea_rs.js';
+
+  const wasmModule = await WebAssembly.instantiateStreaming(fetch(wasmUrl));
+  const js = await import(jsUrl);
+  wasm = js.default(wasmModule.instance.exports);
 }
 
 self.onmessage = async function(event) {
