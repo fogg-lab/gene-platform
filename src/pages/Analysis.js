@@ -182,18 +182,42 @@ const Analysis = () => {
         let tableData, tableColumns;
         if (currentTable === 'coldata' || currentTable === 'counts') {
             if (edaData && edaData.tables && edaData.tables[currentTable]) {
-                tableData = edaData.tables[currentTable].data;
-                tableColumns = edaData.tables[currentTable].cols.map(col => ({ key: col, name: col }));
+                const rawData = edaData.tables[currentTable].data;
+                const cols = edaData.tables[currentTable].cols;
+                tableData = rawData.map(row => {
+                    const obj = {};
+                    cols.forEach((col, index) => {
+                        obj[col] = row[index];
+                    });
+                    return obj;
+                });
+                tableColumns = cols.map(col => ({ key: col, name: col }));
             }
         } else if (currentTable === 'de_results') {
             if (deData && deData.table) {
-                tableData = deData.table.data;
-                tableColumns = deData.table.cols.map(col => ({ key: col, name: col }));
+                const rawData = deData.table.data;
+                const cols = deData.table.cols;
+                tableData = rawData.map(row => {
+                    const obj = {};
+                    cols.forEach((col, index) => {
+                        obj[col] = row[index];
+                    });
+                    return obj;
+                });
+                tableColumns = cols.map(col => ({ key: col, name: col }));
             }
         } else if (currentTable === 'gsea_results') {
             if (gseaData && gseaData.table) {
-                tableData = gseaData.table.data;
-                tableColumns = gseaData.table.cols.map(col => ({ key: col, name: col }));
+                const rawData = gseaData.table.data;
+                const cols = gseaData.table.cols;
+                tableData = rawData.map(row => {
+                    const obj = {};
+                    cols.forEach((col, index) => {
+                        obj[col] = row[index];
+                    });
+                    return obj;
+                });
+                tableColumns = cols.map(col => ({ key: col, name: col }));
             }
         }
 
