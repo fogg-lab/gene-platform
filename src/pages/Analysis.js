@@ -3,15 +3,13 @@ import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
 import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
-import Papa from 'papaparse';
-import { getPublicUrl } from '../utils/environment';
 import WorkerManager from '../utils/Workers';
 import PlotArea from '../components/ui/PlotArea';
+import ProgressBar from '../components/ui/ProgressBar';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
     const [tableScrollPosition, setTableScrollPosition] = useState(0);
-    const [currentStage, setCurrentStage] = useState('exploration');
     const [error, setError] = useState(null);
     const [isVisible, setIsVisible] = useState(false);
     const tableContainerRef = useRef(null);
@@ -79,36 +77,18 @@ const Analysis = () => {
         setSelectedSamples([]);
     }, [selectedSamples]);
 
-    const file_to_display_name = {
-        'coldata.csv': 'Sample Metadata',
-        'DE_results.csv': 'Differential Expression',
-        'GSEA_results.csv': 'Gene Set Enrichment',
-        'pca_3d.html': 'PCA 3D Embedding',
-        'tsne_3d.html': 't-SNE 3D Embedding',
-        'sample_correlation_heatmap.html': 'Sample Correlation Heatmap',
-        'mean_difference.html': 'Mean Difference Plot',
-        'volcano_plot.html': 'Volcano Plot',
-        'gene_concept_network.html': 'Gene Concept Network'
-    };
-
-    const stages = {
-        exploration: {
-            tables: ['coldata.csv'],
-            plots: ['pca_3d.html', 'tsne_3d.html', 'sample_correlation_heatmap.html']
-        },
-        differential: {
-            tables: ['DE_results.csv'],
-            plots: ['mean_difference.html', 'volcano_plot.html']
-        },
-        enrichment: {
-            tables: ['GSEA_results.csv'],
-            plots: ['gene_concept_network.html']
-        }
-    };
-
     useEffect(() => {
-        loadTableData(currentTable);
-    }, [currentTable]);
+        if (dataset) {
+            setEdaData({
+                tables: {
+                    coldata: dataset.coldataTable,
+                    counts: dataset.countsTable
+                },
+                plots: {}
+            });
+            setCurrentTable('coldata');
+        }
+    }, [dataset]);
 
     useEffect(() => {
         if (activeTab === 'table' && tableContainerRef.current) {
@@ -124,52 +104,16 @@ const Analysis = () => {
         setTableScrollPosition(event.target.scrollTop);
     };
 
-    const loadTableData = (filename) => {
-        if (dataset && (filename === 'coldata' || filename === 'counts')) {
-            setEdaData(prevData => ({
-                ...prevData,
-                tables: {
-                    ...(prevData?.tables || {}),
-                    [filename]: dataset[`${filename}Table`]
-                }
-            }));
-            setCurrentTable(filename);
-        } else {
-            // Existing logic for loading example data
-            fetch(`${getPublicUrl()}/data/${filename}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.text();
-                })
-                .then(csvString => {
-                    const result = Papa.parse(csvString, { header: true });
-                    if (result.data.length > 0) {
-                        setEdaData(prevData => ({
-                            ...prevData,
-                            tables: {
-                                ...(prevData?.tables || {}),
-                                [filename]: {
-                                    data: result.data,
-                                    cols: Object.keys(result.data[0])
-                                }
-                            }
-                        }));
-                        setCurrentTable(filename);
-                    } else {
-                        setError('CSV file is empty or could not be parsed correctly.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading CSV:', error);
-                    setError(`Failed to load CSV: ${error.message}`);
-                });
+    const handleDatasetSelect = (type, data) => {
+        if (type === 'external' || type === 'upload') {
+            setDataset(data);
+        } else if (type === 'example') {
+            // Load example dataset (you may need to implement this)
+            loadExampleDataset();
         }
     };
 
     const handleStageChange = (stage) => {
-        setCurrentStage(stage);
         switch (stage) {
             case 'exploration':
                 setCurrentTable('coldata');
@@ -192,16 +136,14 @@ const Analysis = () => {
 
     const renderTableButtons = () => {
         let tables = [];
-        switch (currentStage) {
-            case 'exploration':
-                tables = edaData && edaData.tables ? Object.keys(edaData.tables) : [];
-                break;
-            case 'differential':
-                tables = deData && deData.table ? ['de_results'] : [];
-                break;
-            case 'enrichment':
-                tables = gseaData && gseaData.table ? ['gsea_results'] : [];
-                break;
+        if (edaData && edaData.tables) {
+            tables = Object.keys(edaData.tables);
+        }
+        if (deData && deData.table) {
+            tables.push('de_results');
+        }
+        if (gseaData && gseaData.table) {
+            tables.push('gsea_results');
         }
         return tables.map(table => (
             <button
@@ -209,23 +151,21 @@ const Analysis = () => {
                 onClick={() => setCurrentTable(table)}
                 className={`view-toggle-btn ${currentTable === table ? 'active' : ''}`}
             >
-                {file_to_display_name[table] || table}
+                {table}
             </button>
         ));
     };
 
     const renderPlotButtons = () => {
         let plots = [];
-        switch (currentStage) {
-            case 'exploration':
-                plots = edaData && edaData.plots ? Object.keys(edaData.plots) : [];
-                break;
-            case 'differential':
-                plots = deData && deData.plots ? Object.keys(deData.plots) : [];
-                break;
-            case 'enrichment':
-                plots = gseaData && gseaData.plots ? Object.keys(gseaData.plots) : [];
-                break;
+        if (edaData && edaData.plots) {
+            plots = Object.keys(edaData.plots);
+        }
+        if (deData && deData.plots) {
+            plots = [...plots, ...Object.keys(deData.plots)];
+        }
+        if (gseaData && gseaData.plots) {
+            plots = [...plots, ...Object.keys(gseaData.plots)];
         }
         return plots.map(plot => (
             <button
@@ -233,69 +173,31 @@ const Analysis = () => {
                 onClick={() => setCurrentPlot(plot)}
                 className={`view-toggle-btn ${currentPlot === plot ? 'active' : ''}`}
             >
-                {file_to_display_name[plot] || plot}
+                {plot}
             </button>
         ));
     };
 
-    const handleDatasetSelect = (type, data) => {
-        if (type === 'external' && data) {
-            setDataset(data);
-            setEdaData({
-                tables: {
-                    coldata: {
-                        data: data.coldataTable.data,
-                        cols: data.coldataTable.cols
-                    },
-                    counts: {
-                        data: data.countsTable.data,
-                        cols: data.countsTable.cols
-                    }
-                },
-                plots: data.plots || {}
-            });
-            setCurrentTable('coldata');
-            setCurrentPlot(null);
-        } else if (type === 'example') {
-            // Load example dataset
-            loadTableData('coldata.csv');
-        }
-    };
-
     const renderTable = () => {
         let tableData, tableColumns;
-        switch (currentStage) {
-            case 'exploration':
-                if (edaData && edaData.tables && currentTable && edaData.tables[currentTable]) {
-                    tableData = edaData.tables[currentTable].data;
-                    tableColumns = edaData.tables[currentTable].cols.map(col => ({ key: col, name: col }));
-                }
-                break;
-            case 'differential':
-                if (deData && deData.table) {
-                    tableData = deData.table.data;
-                    tableColumns = deData.table.cols.map(col => ({ key: col, name: col }));
-                }
-                break;
-            case 'enrichment':
-                if (gseaData && gseaData.table) {
-                    tableData = gseaData.table.data;
-                    tableColumns = gseaData.table.cols.map(col => ({ key: col, name: col }));
-                }
-                break;
+        if (currentTable === 'coldata' || currentTable === 'counts') {
+            if (edaData && edaData.tables && edaData.tables[currentTable]) {
+                tableData = edaData.tables[currentTable].data;
+                tableColumns = edaData.tables[currentTable].cols.map(col => ({ key: col, name: col }));
+            }
+        } else if (currentTable === 'de_results') {
+            if (deData && deData.table) {
+                tableData = deData.table.data;
+                tableColumns = deData.table.cols.map(col => ({ key: col, name: col }));
+            }
+        } else if (currentTable === 'gsea_results') {
+            if (gseaData && gseaData.table) {
+                tableData = gseaData.table.data;
+                tableColumns = gseaData.table.cols.map(col => ({ key: col, name: col }));
+            }
         }
 
         if (tableData && tableColumns) {
-            // Ensure tableData is an array of objects
-            if (Array.isArray(tableData[0])) {
-                tableData = tableData.map(row => {
-                    let obj = {};
-                    tableColumns.forEach((col, index) => {
-                        obj[col.key] = row[index];
-                    });
-                    return obj;
-                });
-            }
             return <DataTable
                 data={tableData}
                 columns={tableColumns}
@@ -311,16 +213,12 @@ const Analysis = () => {
 
     const renderPlot = () => {
         let plotHtml;
-        switch (currentStage) {
-            case 'exploration':
-                plotHtml = edaData && currentPlot ? edaData.plots[currentPlot] : null;
-                break;
-            case 'differential':
-                plotHtml = deData && currentPlot ? deData.plots[currentPlot] : null;
-                break;
-            case 'enrichment':
-                plotHtml = gseaData && currentPlot ? gseaData.plots[currentPlot] : null;
-                break;
+        if (edaData && edaData.plots && edaData.plots[currentPlot]) {
+            plotHtml = edaData.plots[currentPlot];
+        } else if (deData && deData.plots && deData.plots[currentPlot]) {
+            plotHtml = deData.plots[currentPlot];
+        } else if (gseaData && gseaData.plots && gseaData.plots[currentPlot]) {
+            plotHtml = gseaData.plots[currentPlot];
         }
         return plotHtml ? (
             <PlotArea htmlContent={plotHtml} />
@@ -336,11 +234,24 @@ const Analysis = () => {
         try {
             // EDA
             setProgress(10);
-            const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', { counts: dataset.counts });
+            const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
+                counts: dataset.counts
+            });
             setProgress(20);
-            const pcaPlot = await WorkerManager.runTask('py', 'create_pca', { counts: transformedCounts, sample_ids: dataset.coldataTable.rows });
-            setProgress(30);
-            const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', { counts: transformedCounts, sample_ids: dataset.coldataTable.rows });
+            const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
+                counts: transformedCounts,
+                sample_ids: dataset.coldataTable.rows
+            });
+            setProgress(27);
+            const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
+                counts: transformedCounts,
+                sample_ids: dataset.coldataTable.rows
+            });
+            setProgress(34);
+            const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
+                counts: transformedCounts,
+                sample_ids: dataset.coldataTable.rows
+            });
 
             // DE Analysis
             setProgress(40);
@@ -350,6 +261,14 @@ const Analysis = () => {
                 contrastGroups,
                 referenceGroups
             });
+            setProgress(50);
+            const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
+                data: deResults.data,
+                row_names: deResults.row_names,
+                column_names: deResults.column_names,
+                fdr: 0.05,
+                cohort_name: 'DE Analysis'
+            });
             setProgress(60);
             const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
                 data: deResults.data,
@@ -358,7 +277,6 @@ const Analysis = () => {
                 fdr: 0.05,
                 cohort_name: 'DE Analysis'
             });
-            setProgress(65);
 
             // GSEA
             setProgress(70);
@@ -372,12 +290,22 @@ const Analysis = () => {
                 nperm: 1000,
                 seed: Date.now()
             });
+            setProgress(80);
+            const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
+                gsea_res: gseaResults,
+                de_res: deResults,
+                ensembl_to_symbol: ensemblToSymbol,
+                color_metric: 'P.Value',
+                pvalue_threshold: 0.05,
+                layout_seed: Date.now(),
+                color_seed: Date.now()
+            });
             setProgress(90);
 
             // Update state with results
-            setEdaData({ plots: { pca: pcaPlot, tsne: tsnePlot } });
-            setDeData({ table: deResults, plots: { meanDifference: meanDifferencePlot } });
-            setGseaData({ table: gseaResults, plots: {} });
+            setEdaData({ plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap } });
+            setDeData({ table: deResults, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
+            setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
 
             setProgress(100);
         } catch (error) {
@@ -404,6 +332,7 @@ const Analysis = () => {
                     onUpdateGroup={handleUpdateGroup}
                     selectedSamples={selectedSamples}
                     onAddSamplesToGroup={handleAddSamplesToGroup}
+                    runAnalysis={runAnalysis}
                 />
             </div>
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
