@@ -5,7 +5,7 @@ let pyodide;
 async function initializePyodide() {
   pyodide = await loadPyodide();
   await pyodide.loadPackage(['numpy', 'scipy', 'scikit-learn']);
-  
+
   // Install gene-platform-utils
   await pyodide.runPythonAsync(`
     import micropip

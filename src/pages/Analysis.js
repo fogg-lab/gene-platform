@@ -6,6 +6,7 @@ import DatabasePopup from '../components/ui/DatabasePopup';
 import Papa from 'papaparse';
 import { getPublicUrl } from '../utils/environment';
 import WorkerManager from '../utils/Workers';
+import PlotArea from '../components/ui/PlotArea';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -20,7 +21,6 @@ const Analysis = () => {
     const [gseaData, setGseaData] = useState(null);
     const [currentTable, setCurrentTable] = useState(null);
     const [currentPlot, setCurrentPlot] = useState(null);
-    const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
 
     const [selectedSamples, setSelectedSamples] = useState([]);
     const [contrastGroups, setContrastGroups] = useState([]);
@@ -111,14 +111,6 @@ const Analysis = () => {
     }, [currentTable]);
 
     useEffect(() => {
-        if (activeTab === 'plot' && currentPlot) {
-            setShouldDisplayPlot(true);
-        } else {
-            setShouldDisplayPlot(false);
-        }
-    }, [activeTab, currentPlot]);
-
-    useEffect(() => {
         if (activeTab === 'table' && tableContainerRef.current) {
             tableContainerRef.current.scrollTop = tableScrollPosition;
         }
@@ -196,22 +188,6 @@ const Analysis = () => {
                 }
                 break;
         }
-    };
-
-    const runDifferentialExpression = async () => {
-        // Call API to run DE analysis
-        // Update deData state with results
-        // setDeData(results);
-    };
-
-    const runGSEA = async () => {
-        // Call API to run GSEA
-        // Update gseaData state with results
-        // setGseaData(results);
-    };
-
-    const handleTabChange = (tab) => {
-        setActiveTab(tab);
     };
 
     const renderTableButtons = () => {
@@ -334,20 +310,20 @@ const Analysis = () => {
     };
 
     const renderPlot = () => {
-        let plotData;
+        let plotHtml;
         switch (currentStage) {
             case 'exploration':
-                plotData = edaData && currentPlot ? edaData.plots[currentPlot] : null;
+                plotHtml = edaData && currentPlot ? edaData.plots[currentPlot] : null;
                 break;
             case 'differential':
-                plotData = deData && currentPlot ? deData.plots[currentPlot] : null;
+                plotHtml = deData && currentPlot ? deData.plots[currentPlot] : null;
                 break;
             case 'enrichment':
-                plotData = gseaData && currentPlot ? gseaData.plots[currentPlot] : null;
+                plotHtml = gseaData && currentPlot ? gseaData.plots[currentPlot] : null;
                 break;
         }
-        return plotData ? (
-            <PlotArea data={plotData.data} layout={plotData.layout} config={plotData.config} />
+        return plotHtml ? (
+            <PlotArea htmlContent={plotHtml} />
         ) : (
             <p>No plot available</p>
         );
