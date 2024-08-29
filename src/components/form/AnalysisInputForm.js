@@ -75,6 +75,22 @@ const AnalysisInputForm = ({
     //         .filter(item => item); // Filter out empty strings or null values
     // };
 
+    const handleRemoveContrastSample = (sampleId) => {
+        const updatedContrastGroup = {
+            ...contrastGroup,
+            samples: contrastGroup.samples.filter((sample) => sample.id !== sampleId),
+        };
+        setContrastGroup(updatedContrastGroup);
+    };
+
+    const handleRemoveReferenceSample = (sampleId) => {
+        const updatedReferenceGroup = {
+            ...referenceGroup,
+            samples: referenceGroup.samples.filter((sample) => sample.id !== sampleId),
+        };
+        setReferenceGroup(updatedReferenceGroup);
+    };
+
     const decompressAndParseFile = useCallback((file, onParsed) => {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -166,33 +182,16 @@ const AnalysisInputForm = ({
                     </select>
                 </label>
                 <div className='dataSubfieldSampleField'>
-                    <div>
-                        <SampleField
-                            headerName="Contrast Group"
-                            groups={contrastGroup}
-                            onAddGroup={() => onAddGroup(true)}
-                            onUpdateGroup={(id, updates) => onUpdateGroup(id, updates, true)}
-                        />
-                        <button
-                            onClick={() => onAddSamplesToGroup(contrastGroup[0]?.id, true)}
-                            disabled={!contrastGroup.length || !selectedSamples.length}
-                        >
-                            Add Samples to Contrast Group
-                        </button>
-
-                        <SampleField
-                            headerName="Reference Group"
-                            groups={referenceGroup}
-                            onAddGroup={() => onAddGroup(false)}
-                            onUpdateGroup={(id, updates) => onUpdateGroup(id, updates, false)}
-                        />
-                        <button
-                            onClick={() => onAddSamplesToGroup(referenceGroup[0]?.id, false)}
-                            disabled={!referenceGroup.length || !selectedSamples.length}
-                        >
-                            Add Samples to Reference Group
-                        </button>
-                    </div>
+                    <SampleField
+                        headerName="Reference Group"
+                        samples={referenceGroup.samples}
+                        onRemoveSample={handleRemoveReferenceSample}
+                    />
+                    <SampleField
+                        headerName="Contrast Group"
+                        samples={contrastGroup.samples}
+                        onRemoveSample={handleRemoveContrastSample}
+                    />
                 </div>
                 <label className="radioLabel">
                     <span>Data Exploration Transform:</span>
@@ -224,8 +223,8 @@ FileDropArea.propTypes = {
 AnalysisInputForm.propTypes = {
     setIsVisible: PropTypes.func.isRequired,
     onDatasetSelect: PropTypes.func.isRequired,
-    contrastGroup: PropTypes.array.isRequired,
-    referenceGroup: PropTypes.array.isRequired,
+    contrastGroup: PropTypes.object.isRequired,
+    referenceGroup: PropTypes.object.isRequired,
     onAddGroup: PropTypes.func.isRequired,
     onUpdateGroup: PropTypes.func.isRequired,
     selectedSamples: PropTypes.array.isRequired,
