@@ -6,6 +6,7 @@ import DatabasePopup from '../components/ui/DatabasePopup';
 import WorkerManager from '../utils/Workers';
 import PlotArea from '../components/ui/PlotArea';
 import ProgressBar from '../components/ui/ProgressBar';
+import { getExternalDataset } from '../services/api';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -99,12 +100,51 @@ const Analysis = () => {
         setTableScrollPosition(event.target.scrollTop);
     };
 
-    const handleDatasetSelect = (type, data) => {
+    const handleDatasetSelect = async (type, data) => {
         if (type === 'external' || type === 'upload') {
             setDataset(data);
         } else if (type === 'example') {
-            // Load example dataset (you may need to implement this)
-            loadExampleDataset();
+            setIsLoading(true);
+            try {
+                const exampleData = await getExternalDataset('GDC', 'CDDP_EAGLE-1');
+                setDataset(exampleData);
+                
+                // Set reference group
+                const referenceGroup = {
+                    id: 1,
+                    name: "Reference Group",
+                    samples: exampleData.coldataTable.data
+                        .filter(row => row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')] === '0.0')
+                        .map((row, index) => ({
+                            id: `ref_${index}`,
+                            name: row[exampleData.coldataTable.cols.indexOf('sample_id')] || `Sample ${index + 1}`,
+                            ...Object.fromEntries(exampleData.coldataTable.cols.map((col, i) => [col, row[i]]))
+                        }))
+                };
+                setReferenceGroup([referenceGroup]);
+
+                // Set contrast group
+                const contrastGroup = {
+                    id: 2,
+                    name: "Contrast Group",
+                    samples: exampleData.coldataTable.data
+                        .filter(row => {
+                            const packYears = parseFloat(row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')]);
+                            return !isNaN(packYears) && packYears >= 50;
+                        })
+                        .map((row, index) => ({
+                            id: `contrast_${index}`,
+                            name: row[exampleData.coldataTable.cols.indexOf('sample_id')] || `Sample ${index + 1}`,
+                            ...Object.fromEntries(exampleData.coldataTable.cols.map((col, i) => [col, row[i]]))
+                        }))
+                };
+                setContrastGroup([contrastGroup]);
+            } catch (error) {
+                console.error('Error loading example dataset:', error);
+                setError('Failed to load example dataset');
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -352,6 +392,7 @@ const Analysis = () => {
                     selectedSamples={selectedSamples}
                     onAddSamplesToGroup={handleAddSamplesToGroup}
                     runAnalysis={runAnalysis}
+                    isLoading={isLoading}
                 />
             </div>
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
