@@ -1,8 +1,11 @@
+import { getPublicUrl } from '../utils/environment';
+
 let wasm;
 
 async function initializeWasm() {
-  const wasmUrl = 'https://github.com/wigginno/gsea-rs/releases/download/latest/gsea_rs_bg.wasm';
-  const jsUrl = 'https://github.com/wigginno/gsea-rs/releases/download/latest/gsea_rs.js';
+  const publicUrl = getPublicUrl();
+  const wasmUrl = `${publicUrl}/wasm/gsea_rs_bg.wasm`;
+  const jsUrl = `${publicUrl}/wasm/gsea_rs.js`;
 
   const wasmModule = await WebAssembly.instantiateStreaming(fetch(wasmUrl));
   const js = await import(jsUrl);

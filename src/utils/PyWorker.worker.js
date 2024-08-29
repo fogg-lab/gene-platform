@@ -1,19 +1,18 @@
+import { getPublicUrl } from '../utils/environment';
 import { loadPyodide } from 'pyodide';
 
 let pyodide;
 
 async function initializePyodide() {
-  pyodide = await loadPyodide();
-  await pyodide.loadPackage(['numpy', 'scipy', 'scikit-learn']);
+  pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
+  await pyodide.loadPackage(['numpy', 'scipy', 'scikit-learn', 'micropip']);
 
   // Install gene-platform-utils
   await pyodide.runPythonAsync(`
     import micropip
     await micropip.install('networkx')
     await micropip.install('plotly')
-    await micropip.install([
-      'https://github.com/fogg-lab/gene-platform-utils/releases/download/latest/gene_platform_utils-0.0.1-py3-none-any.whl'
-    ])
+    await micropip.install('${getPublicUrl()}/py-wheels/gene_platform_utils-0.0.1-py3-none-any.whl')
     from gene_platform_utils import transformation, plot_de, plot_eda, plot_gsea
   `);
 }
