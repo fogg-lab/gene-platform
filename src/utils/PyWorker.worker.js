@@ -3,8 +3,8 @@ import { loadPyodide } from 'pyodide';
 let pyodide;
 
 async function initializePyodide() {
-  pyodide = await loadPyodide();
-  await pyodide.loadPackage(['numpy', 'scipy', 'scikit-learn']);
+  pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
+  await pyodide.loadPackage(['numpy', 'scipy', 'scikit-learn', 'micropip']);
 
   // Install gene-platform-utils
   await pyodide.runPythonAsync(`
