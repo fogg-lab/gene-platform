@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { PyodidePlugin } = require("@pyodide/webpack-plugin");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/index.js',
@@ -82,6 +83,12 @@ module.exports = {
     }),
     new webpack.HotModuleReplacementPlugin(),
     new PyodidePlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'public/py-wheels', to: 'py-wheels' },
+        { from: 'public/wasm', to: 'wasm' }
+      ],
+    }),
   ],
   devServer: {
     static: {

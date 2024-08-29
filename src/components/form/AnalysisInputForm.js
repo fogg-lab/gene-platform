@@ -64,7 +64,8 @@ const AnalysisInputForm = ({
     onUpdateGroup,
     selectedSamples,
     onAddSamplesToGroup,
-    runAnalysis
+    runAnalysis,
+    isLoading
 }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
@@ -126,19 +127,24 @@ const AnalysisInputForm = ({
         <div id="analysisInputContainer_comp">
             <h3>Data</h3>
             <div className='dataSubfield'>
-                {/* Load example data / External dataset */}
-                <button
-                    className="analysisInputButton"
-                    onClick={() => handleButtonClick('example')}
-                >
-                    Use Example Dataset
-                </button>
-                <button
-                    className="analysisInputButton"
-                    onClick={() => handleButtonClick('external')}
-                >
-                    Use External Dataset
-                </button>
+                {isLoading ? (
+                    <div className="loader"></div>
+                ) : (
+                    <>
+                        <button
+                            className="analysisInputButton"
+                            onClick={() => onDatasetSelect('example')}
+                        >
+                            Use Example Dataset
+                        </button>
+                        <button
+                            className="analysisInputButton"
+                            onClick={() => handleButtonClick('external')}
+                        >
+                            Use External Dataset
+                        </button>
+                    </>
+                )}
             </div>
             <div id="filedropContainer">
                 <FileDropArea
@@ -231,7 +237,7 @@ AnalysisInputForm.propTypes = {
     selectedSamples: PropTypes.array.isRequired,
     onAddSamplesToGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
+    isLoading: PropTypes.bool.isRequired,
 };
-
 
 export default AnalysisInputForm;

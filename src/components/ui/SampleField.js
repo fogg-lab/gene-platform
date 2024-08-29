@@ -112,19 +112,15 @@ function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
                         )}
                         <ul>
                             {group.samples.map((sample) => {
-                                // Get the first key-value pair from the sample object
-                                const firstEntry = Object.entries(sample)[0]; // This returns an array like [key, value]
-                                const [firstKey, firstValue] = firstEntry || []; // Destructure to get the key and value
-
                                 return (
                                     <li key={sample.id} className='sampleListElement'>
                                         <span className="sampleText">
-                                            {/* Display the first key-value pair */}
-                                            <strong>{firstValue}</strong>
+                                            <strong>{sample.name}</strong>
                                         </span>
                                         <button className="removeButton" onClick={() => handleRemoveSample(group.id, sample.id)}>
                                             X
                                         </button>
+                                        {renderSampleDetails(sample)}
                                     </li>
                                 );
                             })}
