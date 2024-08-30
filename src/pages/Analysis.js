@@ -21,55 +21,50 @@ const Analysis = () => {
     const [currentTable, setCurrentTable] = useState(null);
     const [currentPlot, setCurrentPlot] = useState(null);
 
-    const [selectedSamples, setSelectedSamples] = useState([]);
     const [contrastGroup, setContrastGroup] = useState({ samples: [] });
     const [referenceGroup, setReferenceGroup] = useState({ samples: [] });
-    const [groupCounter, setGroupCounter] = useState(1);
 
     const [isLoading, setIsLoading] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    const handleSelectionChange = useCallback((newSelectedRows) => {
-        console.log('Analysis - New selected rows:', newSelectedRows);
-        setSelectedSamples(newSelectedRows);
+    const handleAddSamplesToGroup = useCallback((isContrast, samplesToAdd) => {
+        setContrastGroup(prevContrastGroup => {
+            const updatedContrastGroup = isContrast
+                ? [...new Set([...prevContrastGroup.samples, ...samplesToAdd.filter(sample => 
+                    !prevContrastGroup.samples.some(s => s.id === sample.id)
+                  )])]
+                : prevContrastGroup.samples.filter(sample => !samplesToAdd.some(s => s.id === sample.id));
+            return { ...prevContrastGroup, samples: updatedContrastGroup };
+        });
+        setReferenceGroup(prevReferenceGroup => {
+            const updatedReferenceGroup = !isContrast
+                ? [...new Set([...prevReferenceGroup.samples, ...samplesToAdd.filter(sample => 
+                    !prevReferenceGroup.samples.some(s => s.id === sample.id)
+                  )])]
+                : prevReferenceGroup.samples.filter(sample => !samplesToAdd.some(s => s.id === sample.id));
+            return { ...prevReferenceGroup, samples: updatedReferenceGroup };
+        });
     }, []);
 
-    const handleAddGroup = useCallback((isContrast) => {
-        const newGroup = {
-            id: groupCounter,
-            name: isContrast ? "Contrast Group" : "Reference Group",
-            samples: []
-        };
-        if (isContrast) {
-            setContrastGroup(newGroup);
-        } else {
-            setReferenceGroup(newGroup);
-        }
-        setGroupCounter(prevCounter => prevCounter + 1);
-    }, [groupCounter]);
-
-    const handleUpdateGroup = useCallback((groupId, updates, isContrast) => {
-        const updateGroup = (group) => ({ ...group, ...updates });
-        if (isContrast) {
-            setContrastGroup(updateGroup);
-        } else {
-            setReferenceGroup(updateGroup);
-        }
-    }, []);
-
-    const handleAddSamplesToGroup = useCallback((groupId, isContrast, samplesToAdd) => {
-        console.log("Adding samples to group:", { groupId, isContrast, samplesToAdd });
-
+    const handleRemoveSamplesFromGroup = useCallback((isContrast, sampleIdsToRemove) => {
         if (isContrast) {
             setContrastGroup(prevGroup => ({
                 ...prevGroup,
-                samples: [...prevGroup.samples, ...samplesToAdd]
+                samples: prevGroup.samples.filter(sample => !sampleIdsToRemove.includes(sample.id))
             }));
         } else {
             setReferenceGroup(prevGroup => ({
                 ...prevGroup,
-                samples: [...prevGroup.samples, ...samplesToAdd]
+                samples: prevGroup.samples.filter(sample => !sampleIdsToRemove.includes(sample.id))
             }));
+        }
+    }, []);
+
+    const handleClearGroup = useCallback((isContrast) => {
+        if (isContrast) {
+            setContrastGroup({ samples: [] });
+        } else {
+            setReferenceGroup({ samples: [] });
         }
     }, []);
 
@@ -92,10 +87,6 @@ const Analysis = () => {
         }
     }, [activeTab, tableScrollPosition]);
 
-    useEffect(() => {
-        console.log('Analysis - Updated selectedSamples:', selectedSamples);
-    }, [selectedSamples]);
-
     const handleTableScroll = (event) => {
         setTableScrollPosition(event.target.scrollTop);
     };
@@ -108,37 +99,34 @@ const Analysis = () => {
             try {
                 const exampleData = await getExternalDataset('GDC', 'CDDP_EAGLE-1');
                 setDataset(exampleData);
-                
-                // Set reference group
-                const referenceGroup = {
-                    id: 1,
-                    name: "Reference Group",
-                    samples: exampleData.coldataTable.data
-                        .filter(row => row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')] === '0.0')
-                        .map((row, index) => ({
-                            id: `ref_${index}`,
-                            name: row[exampleData.coldataTable.cols.indexOf('sample_id')] || `Sample ${index + 1}`,
-                            ...Object.fromEntries(exampleData.coldataTable.cols.map((col, i) => [col, row[i]]))
-                        }))
-                };
-                setReferenceGroup([referenceGroup]);
 
-                // Set contrast group
-                const contrastGroup = {
-                    id: 2,
-                    name: "Contrast Group",
-                    samples: exampleData.coldataTable.data
-                        .filter(row => {
-                            const packYears = parseFloat(row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')]);
-                            return !isNaN(packYears) && packYears >= 50;
-                        })
-                        .map((row, index) => ({
-                            id: `contrast_${index}`,
-                            name: row[exampleData.coldataTable.cols.indexOf('sample_id')] || `Sample ${index + 1}`,
-                            ...Object.fromEntries(exampleData.coldataTable.cols.map((col, i) => [col, row[i]]))
-                        }))
-                };
-                setContrastGroup([contrastGroup]);
+                handleClearGroup(true);
+                handleClearGroup(false);
+
+                setReferenceGroup(
+                    {
+                        samples: exampleData.coldataTable.data
+                            .filter(row => row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')] === '0.0')
+                            .map(row => ({
+                                id: row[exampleData.coldataTable.cols.indexOf('sample_id')],
+                                [exampleData.coldataTable.cols[0]]: row[0]
+                            }))
+                    }
+                );
+
+                setContrastGroup(
+                    {
+                        samples: exampleData.coldataTable.data
+                            .filter(row => {
+                                const packYears = parseFloat(row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')]);
+                                return !isNaN(packYears) && packYears >= 50;
+                            })
+                            .map(row => ({
+                                id: row[exampleData.coldataTable.cols.indexOf('sample_id')],
+                                [exampleData.coldataTable.cols[0]]: row[0]
+                            }))
+                    }
+                );
             } catch (error) {
                 console.error('Error loading example dataset:', error);
                 setError('Failed to load example dataset');
@@ -260,7 +248,6 @@ const Analysis = () => {
             return <DataTable
                 data={tableData}
                 columns={tableColumns}
-                onSelectionChange={handleSelectionChange}
                 contrastGroup={contrastGroup}
                 referenceGroup={referenceGroup}
                 onAddSamplesToGroup={handleAddSamplesToGroup}
@@ -391,10 +378,7 @@ const Analysis = () => {
                     onDatasetSelect={handleDatasetSelect}
                     contrastGroup={contrastGroup}
                     referenceGroup={referenceGroup}
-                    onAddGroup={handleAddGroup}
-                    onUpdateGroup={handleUpdateGroup}
-                    selectedSamples={selectedSamples}
-                    onAddSamplesToGroup={handleAddSamplesToGroup}
+                    onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                     runAnalysis={runAnalysis}
                     isLoading={isLoading}
                 />

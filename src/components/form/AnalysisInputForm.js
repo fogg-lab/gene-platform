@@ -2,9 +2,8 @@ import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
-// import Papa from 'papaparse';
 import terminal from '../../assets/icons/terminal.png';
-import pako from 'pako'; // Import pako for gzip decompression
+import pako from 'pako';
 import SampleField from '../ui/SampleField';
 
 function validFileType(filetype) {
@@ -60,37 +59,15 @@ const AnalysisInputForm = ({
     onDatasetSelect,
     contrastGroup,
     referenceGroup,
-    onAddGroup,
-    onUpdateGroup,
-    selectedSamples,
-    onAddSamplesToGroup,
+    onRemoveSamplesFromGroup,
     runAnalysis,
     isLoading
 }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
 
-    // const cleanData = (data) => {
-    //     return data
-    //         .map(item => item && item.trim()) // Trim whitespace
-    //         .filter(item => item); // Filter out empty strings or null values
-    // };
-
-    const handleRemoveContrastSample = (sampleId) => {
-        const updatedContrastGroup = {
-            ...contrastGroup,
-            samples: contrastGroup.samples.filter((sample) => sample.id !== sampleId),
-        };
-        setContrastGroup(updatedContrastGroup);
-    };
-
-    const handleRemoveReferenceSample = (sampleId) => {
-        const updatedReferenceGroup = {
-            ...referenceGroup,
-            samples: referenceGroup.samples.filter((sample) => sample.id !== sampleId),
-        };
-        setReferenceGroup(updatedReferenceGroup);
-    };
+    const handleRemoveContrastSample = (sample) => { onRemoveSamplesFromGroup(true, [sample.id]); };
+    const handleRemoveReferenceSample = (sample) => { onRemoveSamplesFromGroup(false, [sample.id]); };
 
     const decompressAndParseFile = useCallback((file, onParsed) => {
         const reader = new FileReader();
@@ -111,23 +88,15 @@ const AnalysisInputForm = ({
         if (acceptedFiles.length > 0) {
             setCountsFileName(acceptedFiles[0].name);
         }
+        console.log("AnalysisInputForm.js:onDropCounts requires further implementation");
     }, []);
 
     const onDropColdata = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
             setColdataFileName(acceptedFiles[0].name);
-            const file = acceptedFiles[0];
-
-            decompressAndParseFile(file, (data) => {
-                const conditions = cleanData([...new Set(data.map(item => item.condition))]);
-                const phases = cleanData([...new Set(data.map(item => item.phase))]);
-                const contrasts = [...conditions, ...phases];
-
-                setReferenceLevels({ conditions, phases });
-                setContrastLevels(cleanData(contrasts));
-            });
         }
-    }, [decompressAndParseFile]);
+        console.log("AnalysisInputForm.js:onDropColdata requires further implementation");
+    }, []);
 
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {
@@ -231,10 +200,7 @@ AnalysisInputForm.propTypes = {
     onDatasetSelect: PropTypes.func.isRequired,
     contrastGroup: PropTypes.object.isRequired,
     referenceGroup: PropTypes.object.isRequired,
-    onAddGroup: PropTypes.func.isRequired,
-    onUpdateGroup: PropTypes.func.isRequired,
-    selectedSamples: PropTypes.array.isRequired,
-    onAddSamplesToGroup: PropTypes.func.isRequired,
+    onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
 };
