@@ -292,89 +292,93 @@ const Analysis = () => {
         setIsLoading(true);
         setProgress(0);
 
-        try {
-            // EDA
-            setProgress(10);
-            const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
-                counts: dataset.counts
-            });
-            setProgress(20);
-            const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
-                counts: transformedCounts,
-                sample_ids: dataset.coldataTable.rows
-            });
-            setProgress(27);
-            const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
-                counts: transformedCounts,
-                sample_ids: dataset.coldataTable.rows
-            });
-            setProgress(34);
-            const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
-                counts: transformedCounts,
-                sample_ids: dataset.coldataTable.rows
-            });
+        // EDA
+        setProgress(10);
+        const transformedCounts = await WorkerManager.runTask('py', 'transform_log2', {
+            counts: dataset.counts,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1
+        });
+        setProgress(20);
+        const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
+            counts: transformedCounts,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1,
+            sample_ids: dataset.coldataTable.rows
+        });
+        setProgress(27);
+        const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
+            counts: transformedCounts,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1,
+            sample_ids: dataset.coldataTable.rows
+        });
+        setProgress(34);
+        const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
+            counts: transformedCounts,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1,
+            sample_ids: dataset.coldataTable.rows
+        });
 
-            // DE Analysis
-            setProgress(40);
-            const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
-                counts: transformedCounts,
-                coldata: dataset.coldataTable,
-                contrastGroup,
-                referenceGroup
-            });
-            setProgress(50);
-            const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
-                data: deResults.data,
-                row_names: deResults.row_names,
-                column_names: deResults.column_names,
-                fdr: 0.05,
-                cohort_name: 'DE Analysis'
-            });
-            setProgress(60);
-            const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
-                data: deResults.data,
-                row_names: deResults.row_names,
-                column_names: deResults.column_names,
-                fdr: 0.05,
-                cohort_name: 'DE Analysis'
-            });
+        // DE Analysis
+        setProgress(40);
+        const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
+            counts: transformedCounts,
+            coldata: dataset.coldataTable,
+            contrastGroup,
+            referenceGroup,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1
+        });
+        setProgress(50);
+        const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
+            data: deResults.data,
+            row_names: deResults.row_names,
+            column_names: deResults.column_names,
+            fdr: 0.05,
+            cohort_name: 'DE Analysis'
+        });
+        setProgress(60);
+        const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
+            data: deResults.data,
+            row_names: deResults.row_names,
+            column_names: deResults.column_names,
+            fdr: 0.05,
+            cohort_name: 'DE Analysis'
+        });
 
-            // GSEA
-            setProgress(70);
-            const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
-                genes: deResults.genes,
-                metric: deResults.logFC,
-                geneSets: geneSetCollections,
-                weight: 1,
-                minSize: 15,
-                maxSize: 500,
-                nperm: 1000,
-                seed: Date.now()
-            });
-            setProgress(80);
-            const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
-                gsea_res: gseaResults,
-                de_res: deResults,
-                ensembl_to_symbol: ensemblToSymbol,
-                color_metric: 'P.Value',
-                pvalue_threshold: 0.05,
-                layout_seed: Date.now(),
-                color_seed: Date.now()
-            });
-            setProgress(90);
+        // GSEA
+        setProgress(70);
+        const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
+            genes: deResults.genes,
+            metric: deResults.logFC,
+            geneSets: geneSetCollections,
+            weight: 1,
+            minSize: 15,
+            maxSize: 500,
+            nperm: 1000,
+            seed: Date.now()
+        });
+        setProgress(80);
+        const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
+            gsea_res: gseaResults,
+            de_res: deResults,
+            ensembl_to_symbol: ensemblToSymbol,
+            color_metric: 'P.Value',
+            pvalue_threshold: 0.05,
+            layout_seed: Date.now(),
+            color_seed: Date.now()
+        });
+        setProgress(90);
 
-            // Update state with results
-            setEdaData({ plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap } });
-            setDeData({ table: deResults, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
-            setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
+        // Update state with results
+        setEdaData({ plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap } });
+        setDeData({ table: deResults, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
+        setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
+        setProgress(100);
 
-            setProgress(100);
-        } catch (error) {
-            console.error('Analysis error:', error);
-            setError(`An error occurred during analysis: ${error.message}`);
-        } finally {
-            setIsLoading(false);
-        }
+        setIsLoading(false);
     };
 
     if (error) {

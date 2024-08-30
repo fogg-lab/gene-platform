@@ -99,6 +99,6 @@ export async function getExternalDataset(dataSrc, datasetID) {
         counts,
         countsTable,
         coldataTable,
-        genesTable
+        genesTable,
     };
 }

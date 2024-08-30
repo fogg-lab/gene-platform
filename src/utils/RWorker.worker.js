@@ -16,28 +16,47 @@ self.onmessage = async function(event) {
   }
 
   const { action, data } = event.data;
+  for (const key in data) {
+    self[key] = data[key];
+  }
 
   try {
     let result;
     switch (action) {
       case 'run_de_analysis':
+        // Bind variables to the R environment
+        for (const varName in ['counts', 'contrastGroup', 'referenceGroup', 'numSamples', 'numGenes']) {
+          // counts is a TypedArray, specifically an Int32Array
+          // coldata is an object with keys col, rows, and data
+          // coldata.col is an array of strings (column names) starting with 'sample_id'
+          // coldata.data is an array of arrays containing [sample_id, ...values] for each sample
+          // contrastGroup is an array of strings (sample ids)
+          // referenceGroup is an array of strings (sample ids)
+          // numSamples is an integer
+          // numGenes is an integer
+          await webR.objs.globalEnv.bind(varName, self[varName]);
+        }
+        await webR.objs.globalEnv.bind('coldata_cols', coldata.cols);
+        await webR.objs.globalEnv.bind('coldata_data', coldata.data);
+
         result = await webR.evalR(`
           library(limma)
           library(statmod)
 
-          # Prepare data
-          counts <- matrix(c(${data.counts}), nrow = ${data.geneCount}, ncol = ${data.sampleCount}, byrow = TRUE)
-          rownames(counts) <- c(${data.geneNames.map(name => `"${name}"`).join(', ')}))
-          colnames(counts) <- c(${data.sampleNames.map(name => `"${name}"`).join(', ')})
+          # Convert counts (initially a 1D raw vector) to a numGenes x numSamples matrix
+          counts <- matrix(counts, nrow = numGenes, ncol = numSamples)
+          rownames(counts) <- paste0("gene", 1:numGenes)
+          colnames(counts) <- coldata_cols[1]
 
           # Create design matrix
-          group <- factor(c(${data.groups.map(g => `"${g}"`).join(', ')}))
+          group <- factor(c(rep("contrast", length(contrastGroup)), rep("reference", length(referenceGroup))))
           design <- model.matrix(~0+group)
           colnames(design) <- levels(group)
 
           # Add covariates to the design matrix
-          covariates <- data.frame(${data.covariates.map(cov => `${cov} = c(${data.coldataTable[cov].join(', ')})`).join(', ')}))
-          design <- cbind(design, covariates)
+          covariates <- data.frame(matrix(unlist(coldata_data), nrow=length(coldata_data), byrow=TRUE))
+          colnames(covariates) <- coldata_cols[-1]  # Exclude the first column (sample_id)
+          design <- cbind(design, covariates[,-1])  # Exclude the first column (sample_id) from covariates
 
           # Normalize and transform data
           dge <- DGEList(counts = counts)
@@ -51,7 +70,7 @@ self.onmessage = async function(event) {
 
           # Define contrasts
           contrasts <- makeContrasts(
-            ${data.contrastName} = ${data.contrastGroup} - ${data.referenceGroup},
+            contrast = contrastGroup - referenceGroup,
             levels = colnames(design)
           )
 
@@ -65,7 +84,6 @@ self.onmessage = async function(event) {
           results_list
         `);
         break;
-      // other R functions can be added here
     }
     self.postMessage({ status: 'success', result });
   } catch (error) {
