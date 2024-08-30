@@ -1,16 +1,29 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { DataGrid, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector } from '@mui/x-data-grid';
+import React, { useState, useMemo, useCallback } from 'react';
+import { DataGrid, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext } from '@mui/x-data-grid';
 import PropTypes from 'prop-types';
 
-const CustomToolbar = ({ selectedSamples, contrastGroups, referenceGroups, onAddSamplesToGroup }) => {
-  const [selectedGroupType, setSelectedGroupType] = useState('contrast');
-  const [selectedGroupId, setSelectedGroupId] = useState('');
+const getFilteredRows = ({ apiRef }) => gridExpandedSortedRowIdsSelector(apiRef);
+const getIntersectingRows = (filteredRows, selectionModel) => {
+  return selectionModel.filter(id => filteredRows.includes(id));
+};
+
+const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows }) => {
+  const [selectedGroupType, setSelectedGroupType] = useState('reference');
+  const apiRef = useGridApiContext();
 
   const handleAddSamples = () => {
-    if (selectedGroupId) {
-      onAddSamplesToGroup(parseInt(selectedGroupId), selectedGroupType === 'contrast');
-    }
+    const filteredSelectionModel = getIntersectingRows(getFilteredRows({ apiRef }), selectionModel);
+    const selectedSamples = filteredSelectionModel.map(id => {
+      const row = rows.find(r => r.id === id);
+      return {
+        id: row.sample_id || row.id,
+        [Object.keys(row)[0]]: row[Object.keys(row)[0]]
+      };
+    });
+    onAddSamplesToGroup(selectedGroupType === 'contrast', selectedSamples);
   };
+
+  const numSelectedFiltered = getIntersectingRows(getFilteredRows({ apiRef }), selectionModel).length;
 
   return (
     <GridToolbarContainer>
@@ -20,35 +33,22 @@ const CustomToolbar = ({ selectedSamples, contrastGroups, referenceGroups, onAdd
       <GridToolbarExport />
       <select
         value={selectedGroupType}
-        onChange={(e) => {
-          setSelectedGroupType(e.target.value);
-          setSelectedGroupId('');
-        }}
+        onChange={(e) => setSelectedGroupType(e.target.value)}
       >
-        <option value="contrast">Contrast Groups</option>
-        <option value="reference">Reference Groups</option>
-      </select>
-      <select
-        value={selectedGroupId}
-        onChange={(e) => setSelectedGroupId(e.target.value)}
-        disabled={!contrastGroups.length && !referenceGroups.length}
-      >
-        <option value="">Select a group</option>
-        {(selectedGroupType === 'contrast' ? contrastGroups : referenceGroups).map(group => (
-          <option key={group.id} value={group.id}>{group.name}</option>
-        ))}
+        <option value="contrast">Contrast Group</option>
+        <option value="reference">Reference Group</option>
       </select>
       <button
         onClick={handleAddSamples}
-        disabled={!selectedGroupId || selectedSamples.length === 0}
+        disabled={numSelectedFiltered === 0}
       >
-        Add Selected ({selectedSamples.length})
+        Add Selected ({numSelectedFiltered})
       </button>
     </GridToolbarContainer>
   );
 };
 
-const DataTable = ({ data, columns, onSelectionChange, contrastGroups, referenceGroups, onAddSamplesToGroup }) => {
+const DataTable = ({ data, columns, onAddSamplesToGroup }) => {
   const [sortModel, setSortModel] = useState([]);
   const [selectionModel, setSelectionModel] = useState([]);
   const [filterModel, setFilterModel] = useState({ items: [] });
@@ -80,26 +80,13 @@ const DataTable = ({ data, columns, onSelectionChange, contrastGroups, reference
     }));
   }, [data]);
 
-  const updateSelectedRows = useCallback((newSelectionModel) => {
-    const newSelectedRows = filteredRows.filter(row => newSelectionModel.includes(row.id));
-    onSelectionChange(newSelectedRows);
-  }, [filteredRows, onSelectionChange]);
-
   const handleHeaderClick = useCallback((params) => {
     if (params.field === '__check__') {
       console.log("Select-all header clicked");
       const newSelectionModel = selectionModel.length > 0 ? [] : filteredRows.map(row => row.id);
       setSelectionModel(newSelectionModel);
-      updateSelectedRows(newSelectionModel);
     }
-  }, [selectionModel, filteredRows, updateSelectedRows]);
-
-  const handleSelectionModelChange = useCallback((newSelectionModel) => {
-    setSelectionModel(newSelectionModel);
-    updateSelectedRows(newSelectionModel);
-    console.log('Selection changed. New selection:', newSelectionModel);
-    console.log('Number of selected rows:', newSelectionModel.length);
-  }, [updateSelectedRows]);
+  }, [selectionModel, filteredRows]);
 
   const handleCellClick = useCallback((params) => {
     const { id } = params;
@@ -108,12 +95,7 @@ const DataTable = ({ data, columns, onSelectionChange, contrastGroups, reference
       : [...selectionModel, id];
 
     setSelectionModel(newSelectionModel);
-    updateSelectedRows(newSelectionModel);
-
-    console.log('Clicked row data:', params.row);
-    console.log('Clicked cell value:', params.value);
-    console.log('Clicked column field:', params.field);
-  }, [selectionModel, updateSelectedRows]);
+  }, [selectionModel]);
 
   return (
     <div style={{ height: '80vh', width: '100%', maxHeight: 'calc(100vh - 20px)', overflow: 'hidden' }}>
@@ -131,7 +113,6 @@ const DataTable = ({ data, columns, onSelectionChange, contrastGroups, reference
         getRowId={(row) => row.id}
         onColumnHeaderClick={handleHeaderClick}
         selectionModel={selectionModel}
-        onSelectionModelChange={handleSelectionModelChange}
         onCellClick={handleCellClick}
         pagination
         paginationMode="client"
@@ -140,10 +121,9 @@ const DataTable = ({ data, columns, onSelectionChange, contrastGroups, reference
         components={{ Toolbar: CustomToolbar }}
         componentsProps={{
           toolbar: {
-            selectedSamples: filteredRows.filter(row => selectionModel.includes(row.id)),
-            contrastGroups,
-            referenceGroups,
             onAddSamplesToGroup,
+            selectionModel,
+            rows: filteredRows,
           },
         }}
         sx={{
@@ -191,9 +171,6 @@ DataTable.propTypes = {
       name: PropTypes.string.isRequired,
     })
   ).isRequired,
-  onSelectionChange: PropTypes.func.isRequired,
-  contrastGroups: PropTypes.array.isRequired,
-  referenceGroups: PropTypes.array.isRequired,
   onAddSamplesToGroup: PropTypes.func.isRequired,
 };
 

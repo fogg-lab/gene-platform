@@ -2,9 +2,8 @@ import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
-// import Papa from 'papaparse';
 import terminal from '../../assets/icons/terminal.png';
-import pako from 'pako'; // Import pako for gzip decompression
+import pako from 'pako';
 import SampleField from '../ui/SampleField';
 
 function validFileType(filetype) {
@@ -58,21 +57,17 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
 const AnalysisInputForm = ({
     setIsVisible,
     onDatasetSelect,
-    contrastGroups,
-    referenceGroups,
-    onAddGroup,
-    onUpdateGroup,
-    selectedSamples,
-    onAddSamplesToGroup
+    contrastGroup,
+    referenceGroup,
+    onRemoveSamplesFromGroup,
+    runAnalysis,
+    isLoading
 }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
 
-    // const cleanData = (data) => {
-    //     return data
-    //         .map(item => item && item.trim()) // Trim whitespace
-    //         .filter(item => item); // Filter out empty strings or null values
-    // };
+    const handleRemoveContrastSample = (sample) => { onRemoveSamplesFromGroup(true, [sample.id]); };
+    const handleRemoveReferenceSample = (sample) => { onRemoveSamplesFromGroup(false, [sample.id]); };
 
     const decompressAndParseFile = useCallback((file, onParsed) => {
         const reader = new FileReader();
@@ -93,23 +88,15 @@ const AnalysisInputForm = ({
         if (acceptedFiles.length > 0) {
             setCountsFileName(acceptedFiles[0].name);
         }
+        console.log("AnalysisInputForm.js:onDropCounts requires further implementation");
     }, []);
 
     const onDropColdata = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
             setColdataFileName(acceptedFiles[0].name);
-            const file = acceptedFiles[0];
-
-            decompressAndParseFile(file, (data) => {
-                const conditions = cleanData([...new Set(data.map(item => item.condition))]);
-                const phases = cleanData([...new Set(data.map(item => item.phase))]);
-                const contrasts = [...conditions, ...phases];
-
-                setReferenceLevels({ conditions, phases });
-                setContrastLevels(cleanData(contrasts));
-            });
         }
-    }, [decompressAndParseFile]);
+        console.log("AnalysisInputForm.js:onDropColdata requires further implementation");
+    }, []);
 
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {
@@ -125,19 +112,24 @@ const AnalysisInputForm = ({
         <div id="analysisInputContainer_comp">
             <h3>Data</h3>
             <div className='dataSubfield'>
-                {/* Load example data / External dataset */}
-                <button
-                    className="analysisInputButton"
-                    onClick={() => handleButtonClick('example')}
-                >
-                    Use Example Dataset
-                </button>
-                <button
-                    className="analysisInputButton"
-                    onClick={() => handleButtonClick('external')}
-                >
-                    Use External Dataset
-                </button>
+                {isLoading ? (
+                    <div className="loader"></div>
+                ) : (
+                    <>
+                        <button
+                            className="analysisInputButton"
+                            onClick={() => onDatasetSelect('example')}
+                        >
+                            Use Example Dataset
+                        </button>
+                        <button
+                            className="analysisInputButton"
+                            onClick={() => handleButtonClick('external')}
+                        >
+                            Use External Dataset
+                        </button>
+                    </>
+                )}
             </div>
             <div id="filedropContainer">
                 <FileDropArea
@@ -165,31 +157,16 @@ const AnalysisInputForm = ({
                     </select>
                 </label>
                 <div className='dataSubfieldSampleField'>
-                    <div>
-                        <SampleField
-                            headerName="Contrast Groups"
-                            groups={contrastGroups}
-                            onAddGroup={() => onAddGroup(true)}
-                            onUpdateGroup={(id, updates) => onUpdateGroup(id, updates, true)}
-                        />
-                        <button
-                            onClick={() => onAddSamplesToGroup(contrastGroups[0]?.id, true)}
-                            disabled={!contrastGroups.length || !selectedSamples.length}
-                        >
-                        </button>
-
-                        <SampleField
-                            headerName="Reference Groups"
-                            groups={referenceGroups}
-                            onAddGroup={() => onAddGroup(false)}
-                            onUpdateGroup={(id, updates) => onUpdateGroup(id, updates, false)}
-                        />
-                        <button
-                            onClick={() => onAddSamplesToGroup(referenceGroups[0]?.id, false)}
-                            disabled={!referenceGroups.length || !selectedSamples.length}
-                        >
-                        </button>
-                    </div>
+                    <SampleField
+                        headerName="Reference Group"
+                        samples={referenceGroup.samples}
+                        onRemoveSample={handleRemoveReferenceSample}
+                    />
+                    <SampleField
+                        headerName="Contrast Group"
+                        samples={contrastGroup.samples}
+                        onRemoveSample={handleRemoveContrastSample}
+                    />
                 </div>
                 <label className="radioLabel">
                     <span>Data Exploration Transform:</span>
@@ -206,7 +183,7 @@ const AnalysisInputForm = ({
                 </label>
             </div>
             <div id="runAnalysisContainer">
-                <IconButton icon={terminal} label="Run Analysis" onClick={() => console.log('Run Analysis clicked')} />
+                <IconButton icon={terminal} label="Run Analysis" onClick={runAnalysis} />
             </div>
         </div>
     );
@@ -221,13 +198,11 @@ FileDropArea.propTypes = {
 AnalysisInputForm.propTypes = {
     setIsVisible: PropTypes.func.isRequired,
     onDatasetSelect: PropTypes.func.isRequired,
-    contrastGroups: PropTypes.array.isRequired,
-    referenceGroups: PropTypes.array.isRequired,
-    onAddGroup: PropTypes.func.isRequired,
-    onUpdateGroup: PropTypes.func.isRequired,
-    selectedSamples: PropTypes.array.isRequired,
-    onAddSamplesToGroup: PropTypes.func.isRequired,
+    contrastGroup: PropTypes.object.isRequired,
+    referenceGroup: PropTypes.object.isRequired,
+    onRemoveSamplesFromGroup: PropTypes.func.isRequired,
+    runAnalysis: PropTypes.func.isRequired,
+    isLoading: PropTypes.bool.isRequired,
 };
-
 
 export default AnalysisInputForm;

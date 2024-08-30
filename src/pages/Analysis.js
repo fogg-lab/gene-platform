@@ -3,13 +3,14 @@ import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
 import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
-import Papa from 'papaparse';
-import { getPublicUrl } from '../utils/environment';
+import WorkerManager from '../utils/Workers';
+import PlotArea from '../components/ui/PlotArea';
+import ProgressBar from '../components/ui/ProgressBar';
+import { getExternalDataset } from '../services/api';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
     const [tableScrollPosition, setTableScrollPosition] = useState(0);
-    const [currentStage, setCurrentStage] = useState('exploration');
     const [error, setError] = useState(null);
     const [isVisible, setIsVisible] = useState(false);
     const tableContainerRef = useRef(null);
@@ -19,100 +20,66 @@ const Analysis = () => {
     const [gseaData, setGseaData] = useState(null);
     const [currentTable, setCurrentTable] = useState(null);
     const [currentPlot, setCurrentPlot] = useState(null);
-    const [shouldDisplayPlot, setShouldDisplayPlot] = useState(false);
 
-    const [selectedSamples, setSelectedSamples] = useState([]);
-    const [contrastGroups, setContrastGroups] = useState([]);
-    const [referenceGroups, setReferenceGroups] = useState([]);
-    const [groupCounter, setGroupCounter] = useState(1);
+    const [contrastGroup, setContrastGroup] = useState({ samples: [] });
+    const [referenceGroup, setReferenceGroup] = useState({ samples: [] });
 
-    const handleSelectionChange = useCallback((newSelectedRows) => {
-        console.log('Analysis - New selected rows:', newSelectedRows);
-        setSelectedSamples(newSelectedRows);
+    const [isLoading, setIsLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
+
+    const handleAddSamplesToGroup = useCallback((isContrast, samplesToAdd) => {
+        setContrastGroup(prevContrastGroup => {
+            const updatedContrastGroup = isContrast
+                ? [...new Set([...prevContrastGroup.samples, ...samplesToAdd.filter(sample => 
+                    !prevContrastGroup.samples.some(s => s.id === sample.id)
+                  )])]
+                : prevContrastGroup.samples.filter(sample => !samplesToAdd.some(s => s.id === sample.id));
+            return { ...prevContrastGroup, samples: updatedContrastGroup };
+        });
+        setReferenceGroup(prevReferenceGroup => {
+            const updatedReferenceGroup = !isContrast
+                ? [...new Set([...prevReferenceGroup.samples, ...samplesToAdd.filter(sample => 
+                    !prevReferenceGroup.samples.some(s => s.id === sample.id)
+                  )])]
+                : prevReferenceGroup.samples.filter(sample => !samplesToAdd.some(s => s.id === sample.id));
+            return { ...prevReferenceGroup, samples: updatedReferenceGroup };
+        });
     }, []);
 
-    const handleAddGroup = useCallback((isContrast) => {
-        const newGroup = {
-            id: groupCounter,
-            name: `Group ${groupCounter}`,
-            samples: []
-        };
+    const handleRemoveSamplesFromGroup = useCallback((isContrast, sampleIdsToRemove) => {
         if (isContrast) {
-            setContrastGroups(prevGroups => [...prevGroups, newGroup]);
+            setContrastGroup(prevGroup => ({
+                ...prevGroup,
+                samples: prevGroup.samples.filter(sample => !sampleIdsToRemove.includes(sample.id))
+            }));
         } else {
-            setReferenceGroups(prevGroups => [...prevGroups, newGroup]);
-        }
-        setGroupCounter(prevCounter => prevCounter + 1);
-    }, [groupCounter]);
-
-    const handleUpdateGroup = useCallback((groupId, updates, isContrast) => {
-        const updateGroups = (groups) => groups.map(group =>
-            group.id === groupId ? { ...group, ...updates } : group
-        );
-        if (isContrast) {
-            setContrastGroups(updateGroups);
-        } else {
-            setReferenceGroups(updateGroups);
+            setReferenceGroup(prevGroup => ({
+                ...prevGroup,
+                samples: prevGroup.samples.filter(sample => !sampleIdsToRemove.includes(sample.id))
+            }));
         }
     }, []);
 
-    const handleAddSamplesToGroup = useCallback((groupId, isContrast) => {
-        console.log('Analysis - Adding samples to group:', { groupId, isContrast, selectedSamples });
-        const newSamples = selectedSamples.map(sample => ({
-            ...sample,
-            name: sample.sample || sample.name || `Sample ${sample.id}` || 'Unknown Sample'
-        }));
-        const updateGroups = (groups) => groups.map(group =>
-            group.id === groupId
-                ? { ...group, samples: [...group.samples, ...newSamples] }
-                : group
-        );
+    const handleClearGroup = useCallback((isContrast) => {
         if (isContrast) {
-            setContrastGroups(updateGroups);
+            setContrastGroup({ samples: [] });
         } else {
-            setReferenceGroups(updateGroups);
+            setReferenceGroup({ samples: [] });
         }
-        setSelectedSamples([]);
-    }, [selectedSamples]);
-
-    const file_to_display_name = {
-        'coldata.csv': 'Sample Metadata',
-        'DE_results.csv': 'Differential Expression',
-        'GSEA_results.csv': 'Gene Set Enrichment',
-        'pca_3d.html': 'PCA 3D Embedding',
-        'umap_3d.html': 'UMAP 3D Embedding',
-        'sample_correlation_heatmap.html': 'Sample Correlation Heatmap',
-        'mean_difference.html': 'Mean Difference Plot',
-        'volcano_plot.html': 'Volcano Plot',
-        'gene_concept_network.html': 'Gene Concept Network'
-    };
-
-    const stages = {
-        exploration: {
-            tables: ['coldata.csv'],
-            plots: ['pca_3d.html', 'umap_3d.html', 'sample_correlation_heatmap.html']
-        },
-        differential: {
-            tables: ['DE_results.csv'],
-            plots: ['mean_difference.html', 'volcano_plot.html']
-        },
-        enrichment: {
-            tables: ['GSEA_results.csv'],
-            plots: ['gene_concept_network.html']
-        }
-    };
+    }, []);
 
     useEffect(() => {
-        loadTableData(currentTable);
-    }, [currentTable]);
-
-    useEffect(() => {
-        if (activeTab === 'plot' && currentPlot) {
-            setShouldDisplayPlot(true);
-        } else {
-            setShouldDisplayPlot(false);
+        if (dataset) {
+            setEdaData({
+                tables: {
+                    coldata: dataset.coldataTable,
+                    counts: dataset.countsTable
+                },
+                plots: {}
+            });
+            setCurrentTable('coldata');
         }
-    }, [activeTab, currentPlot]);
+    }, [dataset]);
 
     useEffect(() => {
         if (activeTab === 'table' && tableContainerRef.current) {
@@ -120,60 +87,56 @@ const Analysis = () => {
         }
     }, [activeTab, tableScrollPosition]);
 
-    useEffect(() => {
-        console.log('Analysis - Updated selectedSamples:', selectedSamples);
-    }, [selectedSamples]);
-
     const handleTableScroll = (event) => {
         setTableScrollPosition(event.target.scrollTop);
     };
 
-    const loadTableData = (filename) => {
-        if (dataset && (filename === 'coldata' || filename === 'counts')) {
-            setEdaData(prevData => ({
-                ...prevData,
-                tables: {
-                    ...(prevData?.tables || {}),
-                    [filename]: dataset[`${filename}Table`]
-                }
-            }));
-            setCurrentTable(filename);
-        } else {
-            // Existing logic for loading example data
-            fetch(`${getPublicUrl()}/data/${filename}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+    const handleDatasetSelect = async (type, data) => {
+        if (type === 'external' || type === 'upload') {
+            setDataset(data);
+        } else if (type === 'example') {
+            setIsLoading(true);
+            try {
+                const exampleData = await getExternalDataset('GDC', 'CDDP_EAGLE-1');
+                setDataset(exampleData);
+
+                handleClearGroup(true);
+                handleClearGroup(false);
+
+                setReferenceGroup(
+                    {
+                        samples: exampleData.coldataTable.data
+                            .filter(row => row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')] === '0.0')
+                            .map(row => ({
+                                id: row[exampleData.coldataTable.cols.indexOf('sample_id')],
+                                [exampleData.coldataTable.cols[0]]: row[0]
+                            }))
                     }
-                    return response.text();
-                })
-                .then(csvString => {
-                    const result = Papa.parse(csvString, { header: true });
-                    if (result.data.length > 0) {
-                        setEdaData(prevData => ({
-                            ...prevData,
-                            tables: {
-                                ...(prevData?.tables || {}),
-                                [filename]: {
-                                    data: result.data,
-                                    cols: Object.keys(result.data[0])
-                                }
-                            }
-                        }));
-                        setCurrentTable(filename);
-                    } else {
-                        setError('CSV file is empty or could not be parsed correctly.');
+                );
+
+                setContrastGroup(
+                    {
+                        samples: exampleData.coldataTable.data
+                            .filter(row => {
+                                const packYears = parseFloat(row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')]);
+                                return !isNaN(packYears) && packYears >= 50;
+                            })
+                            .map(row => ({
+                                id: row[exampleData.coldataTable.cols.indexOf('sample_id')],
+                                [exampleData.coldataTable.cols[0]]: row[0]
+                            }))
                     }
-                })
-                .catch(error => {
-                    console.error('Error loading CSV:', error);
-                    setError(`Failed to load CSV: ${error.message}`);
-                });
+                );
+            } catch (error) {
+                console.error('Error loading example dataset:', error);
+                setError('Failed to load example dataset');
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
     const handleStageChange = (stage) => {
-        setCurrentStage(stage);
         switch (stage) {
             case 'exploration':
                 setCurrentTable('coldata');
@@ -194,34 +157,16 @@ const Analysis = () => {
         }
     };
 
-    const runDifferentialExpression = async () => {
-        // Call API to run DE analysis
-        // Update deData state with results
-        // setDeData(results);
-    };
-
-    const runGSEA = async () => {
-        // Call API to run GSEA
-        // Update gseaData state with results
-        // setGseaData(results);
-    };
-
-    const handleTabChange = (tab) => {
-        setActiveTab(tab);
-    };
-
     const renderTableButtons = () => {
         let tables = [];
-        switch (currentStage) {
-            case 'exploration':
-                tables = edaData && edaData.tables ? Object.keys(edaData.tables) : [];
-                break;
-            case 'differential':
-                tables = deData && deData.table ? ['de_results'] : [];
-                break;
-            case 'enrichment':
-                tables = gseaData && gseaData.table ? ['gsea_results'] : [];
-                break;
+        if (edaData && edaData.tables) {
+            tables = Object.keys(edaData.tables);
+        }
+        if (deData && deData.table) {
+            tables.push('de_results');
+        }
+        if (gseaData && gseaData.table) {
+            tables.push('gsea_results');
         }
         return tables.map(table => (
             <button
@@ -229,23 +174,21 @@ const Analysis = () => {
                 onClick={() => setCurrentTable(table)}
                 className={`view-toggle-btn ${currentTable === table ? 'active' : ''}`}
             >
-                {file_to_display_name[table] || table}
+                {table}
             </button>
         ));
     };
 
     const renderPlotButtons = () => {
         let plots = [];
-        switch (currentStage) {
-            case 'exploration':
-                plots = edaData && edaData.plots ? Object.keys(edaData.plots) : [];
-                break;
-            case 'differential':
-                plots = deData && deData.plots ? Object.keys(deData.plots) : [];
-                break;
-            case 'enrichment':
-                plots = gseaData && gseaData.plots ? Object.keys(gseaData.plots) : [];
-                break;
+        if (edaData && edaData.plots) {
+            plots = Object.keys(edaData.plots);
+        }
+        if (deData && deData.plots) {
+            plots = [...plots, ...Object.keys(deData.plots)];
+        }
+        if (gseaData && gseaData.plots) {
+            plots = [...plots, ...Object.keys(gseaData.plots)];
         }
         return plots.map(plot => (
             <button
@@ -253,75 +196,60 @@ const Analysis = () => {
                 onClick={() => setCurrentPlot(plot)}
                 className={`view-toggle-btn ${currentPlot === plot ? 'active' : ''}`}
             >
-                {file_to_display_name[plot] || plot}
+                {plot}
             </button>
         ));
     };
 
-    const handleDatasetSelect = (type, data) => {
-        if (type === 'external' && data) {
-            setDataset(data);
-            setEdaData({
-                tables: {
-                    coldata: {
-                        data: data.coldataTable.data,
-                        cols: data.coldataTable.cols
-                    },
-                    counts: {
-                        data: data.countsTable.data,
-                        cols: data.countsTable.cols
-                    }
-                },
-                plots: data.plots || {}
-            });
-            setCurrentTable('coldata');
-            setCurrentPlot(null);
-        } else if (type === 'example') {
-            // Load example dataset
-            loadTableData('coldata.csv');
-        }
-    };
-
     const renderTable = () => {
         let tableData, tableColumns;
-        switch (currentStage) {
-            case 'exploration':
-                if (edaData && edaData.tables && currentTable && edaData.tables[currentTable]) {
-                    tableData = edaData.tables[currentTable].data;
-                    tableColumns = edaData.tables[currentTable].cols.map(col => ({ key: col, name: col }));
-                }
-                break;
-            case 'differential':
-                if (deData && deData.table) {
-                    tableData = deData.table.data;
-                    tableColumns = deData.table.cols.map(col => ({ key: col, name: col }));
-                }
-                break;
-            case 'enrichment':
-                if (gseaData && gseaData.table) {
-                    tableData = gseaData.table.data;
-                    tableColumns = gseaData.table.cols.map(col => ({ key: col, name: col }));
-                }
-                break;
-        }
-
-        if (tableData && tableColumns) {
-            // Ensure tableData is an array of objects
-            if (Array.isArray(tableData[0])) {
-                tableData = tableData.map(row => {
-                    let obj = {};
-                    tableColumns.forEach((col, index) => {
-                        obj[col.key] = row[index];
+        if (currentTable === 'coldata' || currentTable === 'counts') {
+            if (edaData && edaData.tables && edaData.tables[currentTable]) {
+                const rawData = edaData.tables[currentTable].data;
+                const cols = edaData.tables[currentTable].cols;
+                tableData = rawData.map(row => {
+                    const obj = {};
+                    cols.forEach((col, index) => {
+                        obj[col] = row[index];
                     });
                     return obj;
                 });
+                tableColumns = cols.map(col => ({ key: col, name: col }));
             }
+        } else if (currentTable === 'de_results') {
+            if (deData && deData.table) {
+                const rawData = deData.table.data;
+                const cols = deData.table.cols;
+                tableData = rawData.map(row => {
+                    const obj = {};
+                    cols.forEach((col, index) => {
+                        obj[col] = row[index];
+                    });
+                    return obj;
+                });
+                tableColumns = cols.map(col => ({ key: col, name: col }));
+            }
+        } else if (currentTable === 'gsea_results') {
+            if (gseaData && gseaData.table) {
+                const rawData = gseaData.table.data;
+                const cols = gseaData.table.cols;
+                tableData = rawData.map(row => {
+                    const obj = {};
+                    cols.forEach((col, index) => {
+                        obj[col] = row[index];
+                    });
+                    return obj;
+                });
+                tableColumns = cols.map(col => ({ key: col, name: col }));
+            }
+        }
+
+        if (tableData && tableColumns) {
             return <DataTable
                 data={tableData}
                 columns={tableColumns}
-                onSelectionChange={handleSelectionChange}
-                contrastGroups={contrastGroups}
-                referenceGroups={referenceGroups}
+                contrastGroup={contrastGroup}
+                referenceGroup={referenceGroup}
                 onAddSamplesToGroup={handleAddSamplesToGroup}
             />;
         } else {
@@ -330,23 +258,112 @@ const Analysis = () => {
     };
 
     const renderPlot = () => {
-        let plotData;
-        switch (currentStage) {
-            case 'exploration':
-                plotData = edaData && currentPlot ? edaData.plots[currentPlot] : null;
-                break;
-            case 'differential':
-                plotData = deData && currentPlot ? deData.plots[currentPlot] : null;
-                break;
-            case 'enrichment':
-                plotData = gseaData && currentPlot ? gseaData.plots[currentPlot] : null;
-                break;
+        let plotHtml;
+        if (edaData && edaData.plots && edaData.plots[currentPlot]) {
+            plotHtml = edaData.plots[currentPlot];
+        } else if (deData && deData.plots && deData.plots[currentPlot]) {
+            plotHtml = deData.plots[currentPlot];
+        } else if (gseaData && gseaData.plots && gseaData.plots[currentPlot]) {
+            plotHtml = gseaData.plots[currentPlot];
         }
-        return plotData ? (
-            <PlotArea data={plotData.data} layout={plotData.layout} config={plotData.config} />
+        return plotHtml ? (
+            <PlotArea htmlContent={plotHtml} />
         ) : (
             <p>No plot available</p>
         );
+    };
+
+    const runAnalysis = async () => {
+        setIsLoading(true);
+        setProgress(0);
+
+        // EDA
+        setProgress(10);
+        const transformedCounts = await WorkerManager.runTask('py', 'transform_log2', {
+            counts: dataset.counts,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1
+        });
+        setProgress(20);
+        const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
+            counts: transformedCounts,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1,
+            sample_ids: dataset.coldataTable.rows
+        });
+        setProgress(27);
+        const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
+            counts: transformedCounts,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1,
+            sample_ids: dataset.coldataTable.rows
+        });
+        setProgress(34);
+        const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
+            counts: transformedCounts,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1,
+            sample_ids: dataset.coldataTable.rows
+        });
+
+        // DE Analysis
+        setProgress(40);
+        const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
+            counts: transformedCounts,
+            coldata: dataset.coldataTable,
+            contrastGroup,
+            referenceGroup,
+            numSamples: dataset.coldataTable.rows.length - 1,
+            numGenes: dataset.countsTable.rows.length - 1
+        });
+        setProgress(50);
+        const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
+            data: deResults.data,
+            row_names: deResults.row_names,
+            column_names: deResults.column_names,
+            fdr: 0.05,
+            cohort_name: 'DE Analysis'
+        });
+        setProgress(60);
+        const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
+            data: deResults.data,
+            row_names: deResults.row_names,
+            column_names: deResults.column_names,
+            fdr: 0.05,
+            cohort_name: 'DE Analysis'
+        });
+
+        // GSEA
+        setProgress(70);
+        const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
+            genes: deResults.genes,
+            metric: deResults.logFC,
+            geneSets: geneSetCollections,
+            weight: 1,
+            minSize: 15,
+            maxSize: 500,
+            nperm: 1000,
+            seed: Date.now()
+        });
+        setProgress(80);
+        const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
+            gsea_res: gseaResults,
+            de_res: deResults,
+            ensembl_to_symbol: ensemblToSymbol,
+            color_metric: 'P.Value',
+            pvalue_threshold: 0.05,
+            layout_seed: Date.now(),
+            color_seed: Date.now()
+        });
+        setProgress(90);
+
+        // Update state with results
+        setEdaData({ plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap } });
+        setDeData({ table: deResults, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
+        setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
+        setProgress(100);
+
+        setIsLoading(false);
     };
 
     if (error) {
@@ -359,12 +376,11 @@ const Analysis = () => {
                 <AnalysisInputForm
                     setIsVisible={setIsVisible}
                     onDatasetSelect={handleDatasetSelect}
-                    contrastGroups={contrastGroups}
-                    referenceGroups={referenceGroups}
-                    onAddGroup={handleAddGroup}
-                    onUpdateGroup={handleUpdateGroup}
-                    selectedSamples={selectedSamples}
-                    onAddSamplesToGroup={handleAddSamplesToGroup}
+                    contrastGroup={contrastGroup}
+                    referenceGroup={referenceGroup}
+                    onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                    runAnalysis={runAnalysis}
+                    isLoading={isLoading}
                 />
             </div>
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
@@ -416,8 +432,14 @@ const Analysis = () => {
                     </div>
                 </div>
             </div>
+            <button onClick={runAnalysis} disabled={isLoading}>
+                Run Analysis
+            </button>
+            {isLoading && <ProgressBar progress={progress} />}
         </div>
     );
 };
+
+
 
 export default Analysis;
