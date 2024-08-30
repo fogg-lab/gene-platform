@@ -3,13 +3,11 @@ import { DataGrid, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFi
 import PropTypes from 'prop-types';
 
 const CustomToolbar = ({ selectedSamples, contrastGroup, referenceGroup, onAddSamplesToGroup }) => {
-  const [selectedGroupType, setSelectedGroupType] = useState('contrast');
+  const [selectedGroupType, setSelectedGroupType] = useState('reference');
 
   const handleAddSamples = () => {
-    const groupId = selectedGroupType === 'contrast' ? contrastGroup[0]?.id : referenceGroup[0]?.id;
-    if (groupId) {
-      onAddSamplesToGroup(groupId, selectedGroupType === 'contrast');
-    }
+    const groupId = selectedGroupType === 'contrast' ? 1 : 2; // Assuming 1 for contrast, 2 for reference
+    onAddSamplesToGroup(groupId, selectedGroupType === 'contrast', selectedSamples);
   };
 
   return (
@@ -27,7 +25,7 @@ const CustomToolbar = ({ selectedSamples, contrastGroup, referenceGroup, onAddSa
       </select>
       <button
         onClick={handleAddSamples}
-        disabled={selectedSamples.length === 0 || (selectedGroupType === 'contrast' ? !contrastGroup.length : !referenceGroup.length)}
+        disabled={selectedSamples.length === 0}
       >
         Add Selected ({selectedSamples.length})
       </button>
@@ -83,10 +81,10 @@ const DataTable = ({ data, columns, onSelectionChange, contrastGroup, referenceG
 
   const handleSelectionModelChange = useCallback((newSelectionModel) => {
     setSelectionModel(newSelectionModel);
-    updateSelectedRows(newSelectionModel);
-    console.log('Selection changed. New selection:', newSelectionModel);
-    console.log('Number of selected rows:', newSelectionModel.length);
-  }, [updateSelectedRows]);
+    const selectedRows = data.filter(row => newSelectionModel.includes(row.id));
+    onSelectionChange(selectedRows);
+  }, [data, onSelectionChange]);
+
 
   const handleCellClick = useCallback((params) => {
     const { id } = params;
@@ -179,8 +177,8 @@ DataTable.propTypes = {
     })
   ).isRequired,
   onSelectionChange: PropTypes.func.isRequired,
-  contrastGroup: PropTypes.array.isRequired,
-  referenceGroup: PropTypes.array.isRequired,
+  contrastGroup: PropTypes.object.isRequired,
+  referenceGroup: PropTypes.object.isRequired,
   onAddSamplesToGroup: PropTypes.func.isRequired,
 };
 

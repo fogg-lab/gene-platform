@@ -22,8 +22,8 @@ const Analysis = () => {
     const [currentPlot, setCurrentPlot] = useState(null);
 
     const [selectedSamples, setSelectedSamples] = useState([]);
-    const [contrastGroup, setContrastGroup] = useState([]);
-    const [referenceGroup, setReferenceGroup] = useState([]);
+    const [contrastGroup, setContrastGroup] = useState({ samples: [] });
+    const [referenceGroup, setReferenceGroup] = useState({ samples: [] });
     const [groupCounter, setGroupCounter] = useState(1);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -41,39 +41,37 @@ const Analysis = () => {
             samples: []
         };
         if (isContrast) {
-            setContrastGroup([newGroup]);
+            setContrastGroup(newGroup);
         } else {
-            setReferenceGroup([newGroup]);
+            setReferenceGroup(newGroup);
         }
         setGroupCounter(prevCounter => prevCounter + 1);
     }, [groupCounter]);
 
     const handleUpdateGroup = useCallback((groupId, updates, isContrast) => {
-        const updateGroup = (group) => group.id === groupId ? { ...group, ...updates } : group;
+        const updateGroup = (group) => ({ ...group, ...updates });
         if (isContrast) {
-            setContrastGroup(prevGroup => [updateGroup(prevGroup[0])]);
+            setContrastGroup(updateGroup);
         } else {
-            setReferenceGroup(prevGroup => [updateGroup(prevGroup[0])]);
+            setReferenceGroup(updateGroup);
         }
     }, []);
 
-    const handleAddSamplesToGroup = useCallback((groupId, isContrast) => {
-        console.log('Analysis - Adding samples to group:', { groupId, isContrast, selectedSamples });
-        const newSamples = selectedSamples.map(sample => ({
-            ...sample,
-            name: sample.sample || sample.name || `Sample ${sample.id}` || 'Unknown Sample'
-        }));
-        const updateGroup = (group) => ({
-            ...group,
-            samples: [...group.samples, ...newSamples]
-        });
+    const handleAddSamplesToGroup = useCallback((groupId, isContrast, samplesToAdd) => {
+        console.log("Adding samples to group:", { groupId, isContrast, samplesToAdd });
+
         if (isContrast) {
-            setContrastGroup(prevGroup => [updateGroup(prevGroup[0])]);
+            setContrastGroup(prevGroup => ({
+                ...prevGroup,
+                samples: [...prevGroup.samples, ...samplesToAdd]
+            }));
         } else {
-            setReferenceGroup(prevGroup => [updateGroup(prevGroup[0])]);
+            setReferenceGroup(prevGroup => ({
+                ...prevGroup,
+                samples: [...prevGroup.samples, ...samplesToAdd]
+            }));
         }
-        setSelectedSamples([]);
-    }, [selectedSamples]);
+    }, []);
 
     useEffect(() => {
         if (dataset) {
@@ -457,5 +455,7 @@ const Analysis = () => {
         </div>
     );
 };
+
+
 
 export default Analysis;
