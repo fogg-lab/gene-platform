@@ -13,7 +13,6 @@ async function initializePyodide() {
     await micropip.install('networkx')
     await micropip.install('plotly')
     await micropip.install('${getPublicUrl()}/py-wheels/gene_platform_utils-0.0.1-py3-none-any.whl')
-    from gene_platform_utils import transformation, plot_de, plot_eda, plot_gsea
   `);
 }
 
@@ -23,108 +22,94 @@ self.onmessage = async function(event) {
   }
 
   const { action, data } = event.data;
+  for (const key in data) {
+    self[key] = data[key];
+  }
 
   try {
     let result;
     switch (action) {
-        case 'transform_vst':
-          result = await pyodide.runPythonAsync(`
-            import numpy as np
-            from gene_platform_utils.transformation import vst
-            counts = ${data.counts}
-            transformed = vst(counts)
-            transformed.tolist()
-          `);
-          break;
+      case 'transform_vst':
+        result = (await pyodide.runPythonAsync(`
+          from js import expression, numSamples, numGenes
+          import numpy as np
+          from gene_platform_utils.transformation import vst
+          counts = np.asarray(expression).reshape(numSamples, numGenes)
+          vst(counts)
+        `)).toJs();
+        break;
       case 'transform_log2':
-        result = await pyodide.runPythonAsync(`
+        result = (await pyodide.runPythonAsync(`
+          from js import counts, numGenes, numSamples
           import numpy as np
           from gene_platform_utils.transformation import log2_1p
-          counts = ${data.counts}
-          transformed = log2_1p(counts)
-          transformed.tolist()
-        `);
+          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          log2_1p(counts_2d)
+        `)).toJs();
         break;
       case 'transform_ln':
-        result = await pyodide.runPythonAsync(`
+        result = (await pyodide.runPythonAsync(`
+          from js import counts, numGenes, numSamples
           import numpy as np
           from gene_platform_utils.transformation import ln_1p
-          counts = ${data.counts}
-          transformed = ln_1p(counts)
-          transformed.tolist()
-        `);
+          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          ln_1p(counts_2d)
+        `)).toJs();
         break;
       case 'transform_log10':
-        result = await pyodide.runPythonAsync(`
+        result = (await pyodide.runPythonAsync(`
+          from js import counts, numGenes, numSamples
           import numpy as np
           from gene_platform_utils.transformation import log10_1p
-          counts = ${data.counts}
-          transformed = log10_1p(counts)
-          transformed.tolist()
-        `);
+          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          log10_1p(counts_2d)
+        `)).toJs();
         break;
       case 'create_heatmap':
         result = await pyodide.runPythonAsync(`
+          from js import counts, numGenes, numSamples, sample_ids
           import numpy as np
           from gene_platform_utils.plot_eda import create_correlation_heatmap
-          counts = ${data.counts}
-          sample_ids = ${JSON.stringify(data.sample_ids)}
-          create_correlation_heatmap(counts, sample_ids)
+          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          create_correlation_heatmap(counts_2d, sample_ids)
         `);
         break;
       case 'create_pca':
         result = await pyodide.runPythonAsync(`
-          import numpy as np
           from gene_platform_utils.plot_eda import create_pca_plot
-          counts = ${data.counts}
-          sample_ids = ${JSON.stringify(data.sample_ids)}
-          create_pca_plot(counts, sample_ids)
+          from js import counts, numGenes, numSamples, sample_ids
+          import numpy as np
+          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          create_pca_plot(counts_2d, sample_ids)
         `);
         break;
       case 'create_tsne':
         result = await pyodide.runPythonAsync(`
-          import numpy as np
           from gene_platform_utils.plot_eda import create_tsne_plot
-          counts = ${data.counts}
-          sample_ids = ${JSON.stringify(data.sample_ids)}
-          create_tsne_plot(counts, sample_ids)
+          from js import counts, numGenes, numSamples, sample_ids
+          import numpy as np
+          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          create_tsne_plot(counts_2d, sample_ids)
         `);
         break;
       case 'create_volcano_plot':
         result = await pyodide.runPythonAsync(`
-          import numpy as np
           from gene_platform_utils.plot_de import create_volcano_plot
-          data = ${data.data}
-          row_names = ${JSON.stringify(data.row_names)}
-          column_names = ${JSON.stringify(data.column_names)}
-          lfc_thresh = ${data.lfc_thresh}
-          pval_thresh = ${data.pval_thresh}
-          cohort_name = ${JSON.stringify(data.cohort_name)}
+          from js import data, fdr, lfc_thresh, pval_thresh, cohort_name, row_names, column_names
           create_volcano_plot(data, row_names, column_names, lfc_thresh, pval_thresh, cohort_name)
         `);
         break;
       case 'create_mean_difference_plot':
         result = await pyodide.runPythonAsync(`
-          import numpy as np
           from gene_platform_utils.plot_de import create_mean_difference_plot
-          data = ${data.data}
-          row_names = ${JSON.stringify(data.row_names)}
-          column_names = ${JSON.stringify(data.column_names)}
-          fdr = ${data.fdr}
-          cohort_name = ${JSON.stringify(data.cohort_name)}
+          from js import data, cohort_name, fdr, row_names, column_names
           create_mean_difference_plot(data, row_names, column_names, fdr, cohort_name)
         `);
         break;
       case 'create_gene_concept_network':
         result = await pyodide.runPythonAsync(`
           from gene_platform_utils.plot_gsea import gene_concept_network_plot
-          gsea_res = ${JSON.stringify(data.gsea_res)}
-          de_res = ${JSON.stringify(data.de_res)}
-          ensembl_to_symbol = ${JSON.stringify(data.ensembl_to_symbol)}
-          color_metric = ${JSON.stringify(data.color_metric)}
-          pvalue_threshold = ${data.pvalue_threshold}
-          layout_seed = ${data.layout_seed}
-          color_seed = ${data.color_seed}
+          from js import gsea_res, de_res, ensembl_to_symbol, color_metric, pvalue_threshold, layout_seed, color_seed
           gene_concept_network_plot(gsea_res, de_res, ensembl_to_symbol, color_metric, pvalue_threshold, layout_seed, color_seed)
         `);
         break;
