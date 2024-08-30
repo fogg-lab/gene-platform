@@ -1,45 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
-    const [editingId, setEditingId] = useState(null);
+function SampleField({ headerName, samples, onRemoveSample }) {
     const [expandedSamples, setExpandedSamples] = useState({});
-    const editInputRef = useRef(null);
 
-    useEffect(() => {
-        if (editingId !== null && editInputRef.current) {
-            editInputRef.current.focus();
-        }
-    }, [editingId]);
-
-    useEffect(() => {
-        // Log the full structure of groups
-        console.log('Groups data:', groups);
-
-        // Log each group's samples for more detail
-        groups.forEach(group => {
-            console.log(`Group ${group.id} - ${group.name}:`, group.samples);
-        });
-    }, [groups]);
-
-    const startEditing = (id) => {
-        setEditingId(id);
-    };
-
-    const handleNameChange = (id, newName) => {
-        onUpdateGroup(id, { name: newName });
-    };
-
-    const stopEditing = () => {
-        setEditingId(null);
-    };
-
-    const handleRemoveSample = (groupId, sampleId) => {
-        const group = groups.find(g => g.id === groupId);
-        if (group) {
-            const updatedSamples = group.samples.filter(sample => sample.id !== sampleId);
-            onUpdateGroup(groupId, { samples: updatedSamples });
-        }
+    const handleRemoveSample = (sampleId) => {
+        onRemoveSample(sampleId);
     };
 
     const toggleSampleDetails = (sampleId) => {
@@ -48,6 +14,7 @@ function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
             [sampleId]: !prev[sampleId]
         }));
     };
+
 
     const renderSampleDetails = (sample) => {
         const excludeKeys = ['id', 'name', 'sample'];
@@ -82,69 +49,38 @@ function SampleField({ headerName, groups, onAddGroup, onUpdateGroup }) {
         <div className='sampleFieldContainer'>
             <div className='sampleGroupHeader'>
                 <h3>{headerName}</h3>
-                <button className='squareButton' onClick={onAddGroup}>
-                    +
-                </button>
             </div>
             <div className='groupsList'>
-                {groups.map(group => (
-                    <div key={group.id} className='groupItem'>
-                        {editingId === group.id ? (
-                            <input
-                                ref={editInputRef}
-                                type="text"
-                                value={group.name}
-                                onChange={(e) => handleNameChange(group.id, e.target.value)}
-                                onBlur={stopEditing}
-                                onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                        stopEditing();
-                                    }
-                                }}
-                            />
-                        ) : (
-                            <button
-                                className="groupNameButton"
-                                onClick={() => startEditing(group.id)}
-                            >
-                                {group.name}
-                            </button>
-                        )}
-                        <ul>
-                            {group.samples.map((sample) => {
-                                // Get the first key-value pair from the sample object
-                                const firstEntry = Object.entries(sample)[0]; // This returns an array like [key, value]
-                                const [firstKey, firstValue] = firstEntry || []; // Destructure to get the key and value
+                {samples && (
+                    <ul>
 
-                                return (
-                                    <li key={sample.id} className='sampleListElement'>
-                                        <span className="sampleText">
-                                            {/* Display the first key-value pair */}
-                                            <strong>{firstValue}</strong>
-                                        </span>
-                                        <button className="removeButton" onClick={() => handleRemoveSample(group.id, sample.id)}>
-                                            X
-                                        </button>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
-                ))}
+                        {samples.map((sample) => {
+                            const firstEntry = Object.entries(sample)[0];
+                            const [firstKey, firstValue] = firstEntry || [];
+
+                            return (
+                                <li key={sample.id} className='sampleListElement'>
+                                    <span className="sampleText">
+                                        <strong>{firstValue}</strong>
+                                    </span>
+                                    <button className="removeButton" onClick={() => handleRemoveSample(sample.id)}>
+                                        X
+                                    </button>
+                                    {/* {renderSampleDetails(sample)} */}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
             </div>
-        </div >
+        </div>
     );
 }
 
 SampleField.propTypes = {
     headerName: PropTypes.string.isRequired,
-    groups: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        name: PropTypes.string.isRequired,
-        samples: PropTypes.arrayOf(PropTypes.object).isRequired,
-    })).isRequired,
-    onAddGroup: PropTypes.func.isRequired,
-    onUpdateGroup: PropTypes.func.isRequired,
+    samples: PropTypes.arrayOf(PropTypes.object).isRequired,
+    onRemoveSample: PropTypes.func.isRequired,
 };
 
 export default SampleField;

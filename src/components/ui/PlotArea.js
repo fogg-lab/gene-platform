@@ -1,33 +1,30 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
-const PlotArea = ({ data = [], layout = {}, config = {} }) => {
-    const plotRef = useRef(null);
-
-    const initializePlot = useCallback(() => {
-        if (plotRef.current) {
-            import('plotly.js').then(Plotly => {
-                Plotly.newPlot(plotRef.current, data, layout, config);
-            });
-        }
-    }, [data, layout, config]);
+const PlotArea = ({ htmlContent }) => {
+    const iframeRef = useRef(null);
 
     useEffect(() => {
-        // Delay initialization to ensure DOM is ready
-        const timer = setTimeout(() => {
-            initializePlot();
-        }, 0);
+        if (iframeRef.current && htmlContent) {
+            const iframe = iframeRef.current;
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(htmlContent);
+            iframeDoc.close();
+        }
+    }, [htmlContent]);
 
-        return () => clearTimeout(timer);
-    }, [initializePlot]);
-
-    return <div ref={plotRef} style={{ width: '100%', height: '400px' }} />;
+    return (
+        <iframe
+            ref={iframeRef}
+            style={{ width: '100%', height: '100%', border: 'none' }}
+            title="Plot"
+        />
+    );
 };
 
 PlotArea.propTypes = {
-    data: PropTypes.array,
-    layout: PropTypes.object,
-    config: PropTypes.object
+    htmlContent: PropTypes.string.isRequired,
 };
 
 export default PlotArea;
