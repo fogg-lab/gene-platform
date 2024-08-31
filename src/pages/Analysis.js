@@ -308,12 +308,41 @@ const Analysis = () => {
 
         // DE Analysis
         setProgress(40);
+        // Get the sample IDs from contrast and reference groups
+        const selectedSampleIds = new Set([
+            ...contrastGroup.samples.map(s => s.id),
+            ...referenceGroup.samples.map(s => s.id)
+        ]);
+
+        // Filter coldata to include only samples in contrast and reference groups
+        const filteredColdata = {
+            ...dataset.coldataTable,
+            data: dataset.coldataTable.data.filter(row => {
+                const sampleId = row[dataset.coldataTable.cols.indexOf('sample_id')];
+                return selectedSampleIds.has(sampleId);
+            })
+        };
+
+        // Filter counts to include only samples in contrast and reference groups
+        const filteredCountsTable = {
+            cols: ['sample_id', ...dataset.countsTable.cols.slice(1).filter(col => selectedSampleIds.has(col))],
+            data: dataset.countsTable.data.map(row => [
+                row[0],
+                ...row.slice(1).filter((_, index) => selectedSampleIds.has(dataset.countsTable.cols[index + 1]))
+            ])
+        };
+        const filteredCounts = Int32Array.from(
+            filteredCountsTable.data.flatMap(row =>
+                row.slice(2)  // skip the first two columns (Ensembl gene IDs and gene symbols)
+            )
+        )
+
         const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
-            counts: transformedCounts,
-            coldata: dataset.coldataTable,
-            contrastGroup,
-            referenceGroup,
-            numSamples: dataset.coldataTable.rows.length - 1,
+            counts: filteredCounts,
+            coldata: filteredColdata,
+            contrastGroup: contrastGroup.samples.map(sample => sample.id),
+            referenceGroup: referenceGroup.samples.map(sample => sample.id),
+            numSamples: filteredColdata.data.length,
             numGenes: dataset.countsTable.rows.length - 1
         });
         setProgress(50);
@@ -337,7 +366,7 @@ const Analysis = () => {
         setProgress(70);
         const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
             genes: deResults.genes,
-            metric: deResults.logFC,
+            metric: deResults.t,
             geneSets: geneSetCollections,
             weight: 1,
             minSize: 15,
