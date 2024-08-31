@@ -25,7 +25,8 @@ self.onmessage = async function(event) {
     switch (action) {
       case 'run_de_analysis':
         // Bind variables to the R environment
-        for (const varName in ['counts', 'contrastGroup', 'referenceGroup', 'numSamples', 'numGenes']) {
+        const varNames = ['counts', 'contrastGroup', 'referenceGroup', 'numSamples', 'numGenes'];
+        for (const varName of varNames) {
           // counts is a TypedArray, specifically an Int32Array
           // coldata is an object with keys col, rows, and data
           // coldata.col is an array of strings (column names) starting with 'sample_id'
@@ -36,8 +37,12 @@ self.onmessage = async function(event) {
           // numGenes is an integer
           await webR.objs.globalEnv.bind(varName, self[varName]);
         }
+        const coldataDataframe = Object.fromEntries(
+          coldata.cols.map(colName => [colName, coldata.data.map(row => row[coldata.cols.indexOf(colName)])])
+        );
+        await webR.objs.globalEnv.bind('coldata', coldataDataframe);
         await webR.objs.globalEnv.bind('coldata_cols', coldata.cols);
-        await webR.objs.globalEnv.bind('coldata_data', coldata.data);
+        // await webR.objs.globalEnv.bind('coldata_data', coldata.data); // OLD. Need to rewrite below to not use coldata_data
 
         result = await webR.evalR(`
           library(limma)
@@ -46,7 +51,7 @@ self.onmessage = async function(event) {
           # Convert counts (initially a 1D raw vector) to a numGenes x numSamples matrix
           counts <- matrix(counts, nrow = numGenes, ncol = numSamples)
           rownames(counts) <- paste0("gene", 1:numGenes)
-          colnames(counts) <- coldata_cols[1]
+          colnames(counts) <- coldata$sample_id
 
           # Create design matrix
           group <- factor(c(rep("contrast", length(contrastGroup)), rep("reference", length(referenceGroup))))
@@ -54,9 +59,7 @@ self.onmessage = async function(event) {
           colnames(design) <- levels(group)
 
           # Add covariates to the design matrix
-          covariates <- data.frame(matrix(unlist(coldata_data), nrow=length(coldata_data), byrow=TRUE))
-          colnames(covariates) <- coldata_cols[-1]  # Exclude the first column (sample_id)
-          design <- cbind(design, covariates[,-1])  # Exclude the first column (sample_id) from covariates
+          # TODO: Add ability to define covariates in UI that will be added here
 
           # Normalize and transform data
           dge <- DGEList(counts = counts)
