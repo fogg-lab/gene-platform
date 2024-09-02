@@ -382,7 +382,7 @@ const Analysis = () => {
         setProgress(70);
         const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
             genes: deResults.genes,
-            metric: deResults.logFC,
+            metric: deResults.t,
             geneSets: geneSetCollections,
             weight: 1,
             minSize: 15,
