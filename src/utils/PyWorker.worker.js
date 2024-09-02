@@ -34,8 +34,8 @@ self.onmessage = async function(event) {
           from js import expression, numSamples, numGenes
           import numpy as np
           from gene_platform_utils.transformation import vst
-          counts = np.asarray(expression).reshape(numSamples, numGenes)
-          vst(counts)
+          counts_2d = np.asarray(expression).reshape(numSamples, numGenes)
+          vst(counts_2d)
         `)).toJs();
         break;
       case 'transform_log2':
@@ -63,6 +63,15 @@ self.onmessage = async function(event) {
           from gene_platform_utils.transformation import log10_1p
           counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
           log10_1p(counts_2d)
+        `)).toJs();
+        break;
+      case 'compute_tmm_effective_library_sizes':
+        result = (await pyodide.runPythonAsync(`
+          from js import expression, numGenes, numSamples
+          import numpy as np
+          from gene_platform_utils.between_sample_norm import compute_tmm_effective_library_sizes
+          counts_2d = np.asarray(expression).reshape(numSamples, numGenes)
+          compute_tmm_effective_library_sizes(counts_2d)
         `)).toJs();
         break;
       case 'create_heatmap':
@@ -95,22 +104,25 @@ self.onmessage = async function(event) {
       case 'create_volcano_plot':
         result = await pyodide.runPythonAsync(`
           from gene_platform_utils.plot_de import create_volcano_plot
-          from js import data, fdr, lfc_thresh, pval_thresh, cohort_name, row_names, column_names
-          create_volcano_plot(data, row_names, column_names, lfc_thresh, pval_thresh, cohort_name)
+          from js import data, lfc_thresh, pval_thresh, cohort_name, row_names, column_names
+          data_2d = np.asarray(data).reshape(len(column_names), len(row_names)).T
+          create_volcano_plot(data_2d, row_names, column_names, lfc_thresh, pval_thresh, cohort_name)
         `);
         break;
       case 'create_mean_difference_plot':
         result = await pyodide.runPythonAsync(`
           from gene_platform_utils.plot_de import create_mean_difference_plot
           from js import data, cohort_name, fdr, row_names, column_names
-          create_mean_difference_plot(data, row_names, column_names, fdr, cohort_name)
+          data_2d = np.asarray(data).reshape(len(column_names), len(row_names)).T
+          create_mean_difference_plot(data_2d, row_names, column_names, fdr, cohort_name)
         `);
         break;
       case 'create_gene_concept_network':
         result = await pyodide.runPythonAsync(`
           from gene_platform_utils.plot_gsea import gene_concept_network_plot
           from js import gsea_res, de_res, ensembl_to_symbol, color_metric, pvalue_threshold, layout_seed, color_seed
-          gene_concept_network_plot(gsea_res, de_res, ensembl_to_symbol, color_metric, pvalue_threshold, layout_seed, color_seed)
+          de_res_2d = np.asarray(de_res).reshape(len(column_names), len(row_names)).T
+          gene_concept_network_plot(gsea_res, de_res_2d, ensembl_to_symbol, color_metric, pvalue_threshold, layout_seed, color_seed)
         `);
         break;
     }

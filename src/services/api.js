@@ -35,14 +35,20 @@ export async function getExternalDataset(dataSrc, datasetID) {
     const coldataArrayBuffer = await coldataResponse.arrayBuffer();
     const coldataUnzipped = pako.ungzip(new Uint8Array(coldataArrayBuffer));
     const coldataText = new TextDecoder().decode(coldataUnzipped);
-    const coldataData = Papa.parse(coldataText, { header: true }).data;
+    let coldataData = Papa.parse(coldataText, { header: true }).data;
+    if (coldataData.at(-1).sample_id === "") {
+        coldataData = coldataData.slice(0, -1);
+    }
 
     // Fetch and parse genes
     const genesResponse = await fetch(`${baseUrl}/genes/${datasetID}.csv.gz`);
     const genesArrayBuffer = await genesResponse.arrayBuffer();
     const genesUnzipped = pako.ungzip(new Uint8Array(genesArrayBuffer));
     const genesText = new TextDecoder().decode(genesUnzipped);
-    const genesData = Papa.parse(genesText, { header: true }).data;
+    let genesData = Papa.parse(genesText, { header: true }).data;
+    if (genesData.at(-1).ensembl_gene === "") {
+        genesData = genesData.slice(0, -1);
+    }
 
     // Fetch expression data
     const expressionResponse = await fetch(`${baseUrl}/expression/${datasetID}.npy.gz`);
