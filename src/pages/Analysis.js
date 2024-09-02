@@ -277,45 +277,89 @@ const Analysis = () => {
         setIsLoading(true);
         setProgress(0);
 
+        const numGenes = dataset.countsTable.rows.length;
+        const numSamples = dataset.coldataTable.rows.length;
+
         // EDA
         setProgress(10);
         const transformedCounts = await WorkerManager.runTask('py', 'transform_log2', {
             counts: dataset.counts,
-            numSamples: dataset.coldataTable.rows.length - 1,
-            numGenes: dataset.countsTable.rows.length - 1
+            numSamples: numSamples,
+            numGenes: numGenes
         });
         setProgress(20);
         const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
             counts: transformedCounts,
-            numSamples: dataset.coldataTable.rows.length - 1,
-            numGenes: dataset.countsTable.rows.length - 1,
-            sample_ids: dataset.coldataTable.rows
+            numSamples: numSamples,
+            numGenes: numGenes,
+            sample_ids: dataset.countsTable.cols.slice(2)
         });
         setProgress(27);
         const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
             counts: transformedCounts,
-            numSamples: dataset.coldataTable.rows.length - 1,
-            numGenes: dataset.countsTable.rows.length - 1,
-            sample_ids: dataset.coldataTable.rows
+            numSamples: numSamples,
+            numGenes: numGenes,
+            sample_ids: dataset.countsTable.cols.slice(2)
         });
         setProgress(34);
         const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
             counts: transformedCounts,
-            numSamples: dataset.coldataTable.rows.length - 1,
-            numGenes: dataset.countsTable.rows.length - 1,
-            sample_ids: dataset.coldataTable.rows
+            numSamples: numSamples,
+            numGenes: numGenes,
+            sample_ids: dataset.countsTable.cols.slice(2)
         });
 
         // DE Analysis
         setProgress(40);
-        const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
-            counts: transformedCounts,
-            coldata: dataset.coldataTable,
-            contrastGroup,
-            referenceGroup,
-            numSamples: dataset.coldataTable.rows.length - 1,
-            numGenes: dataset.countsTable.rows.length - 1
+        // Calculate effective library sizes
+        const effectiveLibSizes = Array.from(await WorkerManager.runTask('py', 'compute_tmm_effective_library_sizes', {
+            expression: dataset.expression,
+            numSamples: numSamples,
+            numGenes: numGenes
+        }));
+
+        // Get the sample IDs from contrast and reference groups
+        const selectedSampleIds = new Set([
+            ...contrastGroup.samples.map(s => s.id),
+            ...referenceGroup.samples.map(s => s.id)
+        ]);
+
+        // enforced order of samples
+        const sampleIds = dataset.countsTable.cols.slice(2).filter(col => selectedSampleIds.has(col));
+        const filteredColdata = {
+            cols: dataset.coldataTable.cols,
+            data: sampleIds.map(sampleId => {
+                const rowIndex = dataset.coldataTable.data.findIndex(row => row[0] === sampleId);
+                return dataset.coldataTable.data[rowIndex];
+            })
+        }
+
+        const countsColMask = new Array(dataset.countsTable.cols.length).fill(false);
+        countsColMask[0] = true;
+        countsColMask[1] = true;
+        sampleIds.forEach(sampleId => {
+            const index = dataset.countsTable.cols.indexOf(sampleId);
+            countsColMask[index] = true;
         });
+        const filteredCountsTable = {
+            cols: [dataset.countsTable.cols[0], dataset.countsTable.cols[1], ...sampleIds],
+            data: dataset.countsTable.data.map(row => row.filter((_, index) => countsColMask[index]))
+        }
+        const filteredCounts = Int32Array.from(filteredCountsTable.data.flatMap(row => row.slice(2)));
+        const filteredEffectiveLibSizes = effectiveLibSizes.filter((_, index) => countsColMask[index + 2]);
+        const filteredNumSamples = filteredColdata.data.length;
+
+        const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
+            counts: filteredCounts,
+            ensemblIds: dataset.countsTable.rows,
+            coldata: filteredColdata,
+            contrastGroup: contrastGroup.samples.map(sample => sample.id),
+            referenceGroup: referenceGroup.samples.map(sample => sample.id),
+            libSizes: filteredEffectiveLibSizes,
+            numSamples: filteredNumSamples,
+            numGenes: numGenes
+        });
+
         setProgress(50);
         const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
             data: deResults.data,
@@ -324,6 +368,7 @@ const Analysis = () => {
             fdr: 0.05,
             cohort_name: 'DE Analysis'
         });
+
         setProgress(60);
         const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
             data: deResults.data,
@@ -439,7 +484,5 @@ const Analysis = () => {
         </div>
     );
 };
-
-
 
 export default Analysis;
