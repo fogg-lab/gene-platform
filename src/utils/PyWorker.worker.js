@@ -34,8 +34,8 @@ self.onmessage = async function(event) {
           from js import expression, numSamples, numGenes
           import numpy as np
           from gene_platform_utils.transformation import vst
-          counts = np.asarray(expression).reshape(numSamples, numGenes)
-          vst(counts)
+          counts_2d = np.asarray(expression).reshape(numSamples, numGenes)
+          vst(counts_2d)
         `)).toJs();
         break;
       case 'transform_log2':
@@ -63,6 +63,15 @@ self.onmessage = async function(event) {
           from gene_platform_utils.transformation import log10_1p
           counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
           log10_1p(counts_2d)
+        `)).toJs();
+        break;
+      case 'compute_tmm_effective_library_sizes':
+        result = (await pyodide.runPythonAsync(`
+          from js import expression, numGenes, numSamples
+          import numpy as np
+          from gene_platform_utils.between_sample_norm import compute_tmm_effective_library_sizes
+          counts_2d = np.asarray(expression).reshape(numSamples, numGenes)
+          compute_tmm_effective_library_sizes(counts_2d)
         `)).toJs();
         break;
       case 'create_heatmap':
