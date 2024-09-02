@@ -147,10 +147,10 @@ const AnalysisInputForm = ({
             <div>
                 <label className="radioLabel">
                     <input className="radioInput" type="radio" name="covariates" />
-                    <span>Add covariates</span>
+                    <span>Add covariates (🚧)</span>
                 </label>
                 <label className="radioLabel">
-                    <span id="adjustmentSubfield">Adjustment method:</span>
+                    <span id="adjustmentSubfield">Adjustment method (🚧):</span>
                     <select id="adjustmentMethod" name="adjustmentMethod">
                         <option value="option1">Bonferroni</option>
                         <option value="option2">Benjamini and Hochberg</option>
@@ -169,7 +169,7 @@ const AnalysisInputForm = ({
                     />
                 </div>
                 <label className="radioLabel">
-                    <span>Data Exploration Transform:</span>
+                    <span>Data Exploration Transform (🚧):</span>
                     <select id="transformationMethod" name="transformationMethod">
                         <option value="option1">VST</option>
                         <option value="option2">log2(counts + 1)</option>
@@ -179,7 +179,7 @@ const AnalysisInputForm = ({
                 </label>
                 <label className="radioLabel">
                     <input className="radioInput" type="radio" name="name" />
-                    <span>Batch correction</span>
+                    <span>Batch correction (🚧)</span>
                 </label>
             </div>
             <div id="runAnalysisContainer">

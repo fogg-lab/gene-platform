@@ -282,8 +282,8 @@ const Analysis = () => {
 
         // EDA
         setProgress(10);
-        const transformedCounts = await WorkerManager.runTask('py', 'transform_log2', {
-            counts: dataset.counts,
+        const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
+            expression: dataset.expression,
             numSamples: numSamples,
             numGenes: numGenes
         });
@@ -324,7 +324,6 @@ const Analysis = () => {
             ...referenceGroup.samples.map(s => s.id)
         ]);
 
-        // enforced order of samples
         const sampleIds = dataset.countsTable.cols.slice(2).filter(col => selectedSampleIds.has(col));
         const filteredColdata = {
             cols: dataset.coldataTable.cols,
@@ -359,14 +358,19 @@ const Analysis = () => {
             numSamples: filteredNumSamples,
             numGenes: numGenes
         });
+        const deTable = {
+            cols: ['ensembl_id', 'logFC', 't', 'p_value', 'p_value_adj'],
+            data: [...Array(deResults.row_names.length)].map((_, i) => [deResults.row_names[i], deResults.logFC[i], deResults.t[i], deResults.p_value[i], deResults.p_value_adj[i]])
+        }
 
         setProgress(50);
         const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
             data: deResults.data,
             row_names: deResults.row_names,
             column_names: deResults.column_names,
-            fdr: 0.05,
-            cohort_name: 'DE Analysis'
+            pval_thresh: 0.05,   // todo: make this dynamic or allow the user to set it in the analysis input form
+            lfc_thresh: 1.5,    // todo: make this dynamic or allow the user to set it in the analysis input form
+            cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
         });
 
         setProgress(60);
@@ -374,38 +378,44 @@ const Analysis = () => {
             data: deResults.data,
             row_names: deResults.row_names,
             column_names: deResults.column_names,
-            fdr: 0.05,
-            cohort_name: 'DE Analysis'
+            fdr: 0.05,   // todo: allow this to be set by the user
+            cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
         });
 
         // GSEA
-        setProgress(70);
-        const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
-            genes: deResults.genes,
-            metric: deResults.t,
-            geneSets: geneSetCollections,
-            weight: 1,
-            minSize: 15,
-            maxSize: 500,
-            nperm: 1000,
-            seed: Date.now()
-        });
-        setProgress(80);
-        const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
-            gsea_res: gseaResults,
-            de_res: deResults,
-            ensembl_to_symbol: ensemblToSymbol,
-            color_metric: 'P.Value',
-            pvalue_threshold: 0.05,
-            layout_seed: Date.now(),
-            color_seed: Date.now()
-        });
-        setProgress(90);
+        // setProgress(70);
+        // const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
+        //     genes: deResults.row_names,
+        //     metric: deResults.t,
+        //     geneSets: geneSetCollections,
+        //     weight: 1,
+        //     minSize: 15,
+        //     maxSize: 500,
+        //     nperm: 1000,
+        //     seed: Date.now()
+        // });
+        // setProgress(80);
+        // const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
+        //     gsea_res: gseaResults,
+        //     de_res: deResults,
+        //     ensembl_to_symbol: ensemblToSymbol,
+        //     color_metric: 'P.Value',
+        //     pvalue_threshold: 0.05,
+        //     layout_seed: Date.now(),
+        //     color_seed: Date.now()
+        // });
+        // setProgress(90);
 
         // Update state with results
-        setEdaData({ plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap } });
-        setDeData({ table: deResults, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
-        setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
+        setEdaData({
+            tables: {
+                coldata: dataset.coldataTable,
+                counts: dataset.countsTable
+            },
+            plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
+        });
+        setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
+        // setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
         setProgress(100);
 
         setIsLoading(false);
