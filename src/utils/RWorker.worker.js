@@ -52,7 +52,7 @@ self.onmessage = async function(event) {
         const countsUint8Array = new Uint8Array(counts.buffer);
         await webR.objs.globalEnv.bind('counts', countsUint8Array);
 
-        result = await (await webR.evalR(`
+        const _result = await (await webR.evalR(`
           library(limma)
           library(statmod)
 
@@ -81,8 +81,19 @@ self.onmessage = async function(event) {
           contr <- makeContrasts(contrastGrp-referenceGrp, levels = colnames(coef(fit)))
           contr_fit <- contrasts.fit(fit, contr)
           contr_fit <- eBayes(contr_fit)
-          topTable(contr_fit, sort.by = "P", adjust.method = "BH", n = Inf)
+          list(res = topTable(contr_fit, sort.by = "P", adjust.method = "BH", n = Inf), row_names = rownames(counts))
         `)).toJs();
+        const res = _result.values[0];
+        result = {
+          data: Float64Array.from(res.values.flatMap(col => col.values)),
+          logFC: res.values[_result.values[0].names.indexOf('logFC')].values,
+          t: res.values[_result.values[0].names.indexOf('t')].values,
+          p_value: res.values[_result.values[0].names.indexOf('P.Value')].values,
+          p_value_adj: res.values[_result.values[0].names.indexOf('adj.P.Val')].values,
+          B: res.values[_result.values[0].names.indexOf('B')].values,
+          row_names: _result.values[1].values,
+          column_names: res.names
+        }
         break;
     }
     self.postMessage({ status: 'success', result });
