@@ -1,0 +1,198 @@
+{
+  "baseUrl": "https://data.broadinstitute.org/gsea-msigdb/msigdb/release",
+  "version": "2024.1",
+  "speciesCode": {
+    "human": "Hs",
+    "mouse": "Mm"
+  },
+  "urlTemplate": "${baseUrl}/${version}.${speciesCode}/${name}.v${version}.${speciesCode}.json",
+  "humanCollections": {
+    "C2:CGP": {
+      "numSets": 3494,
+      "title": "CGP: chemical and genetic perturbations",
+      "description": "Gene sets represent expression signatures of genetic and chemical perturbations. A number of these gene sets come in pairs: xxx_UP (and xxx_DN) gene set representing genes induced (and repressed) by the perturbation."
+    },
+    "C1": {
+      "numSets": 302,
+      "title": "C1: positional gene sets",
+      "description": "Gene sets corresponding to human chromosome cytogenetic bands."
+    },
+    "C2:CP:BIOCARTA": {
+      "numSets": 292,
+      "title": "BioCarta subset of CP",
+      "description": "Canonical Pathways gene sets derived from the BioCarta pathway database."
+    },
+    "C2:CP:KEGG_LEGACY": {
+      "numSets": 186,
+      "title": "KEGG_LEGACY subset of CP",
+      "description": "Canonical Pathways gene sets derived from the KEGG pathway database. These are considered Legacy gene sets since the introduction of the gene sets based on the more recent KEGG MEDICUS data."
+    },
+    "C2:CP:PID": {
+      "numSets": 196,
+      "title": "PID subset of CP",
+      "description": "Canonical Pathways gene sets derived from the PID pathway database."
+    },
+    "C3:MIR:MIRDB": {
+      "numSets": 2377,
+      "title": "miRDB subset of MIR",
+      "description": "Gene sets containing high-confidence gene-level predictions of human miRNA targets as catalogued by miRDB v6.0 algorithm. PMCID: PMC6943051"
+    },
+    "C3:MIR:MIR_LEGACY": {
+      "numSets": 221,
+      "title": "MIR_LEGACY subset of MIR",
+      "description": "Older gene sets that contain genes sharing putative target sites (seed matches) of human mature miRNA in their 3'-UTRs."
+    },
+    "C3:TFT:GTRD": {
+      "numSets": 505,
+      "title": "GTRD subset of TFT",
+      "description": "Genes that share GTRD (Kolmykov et al. 2021, PMID: 33231677) predicted transcription factor binding sites in the region -1000,+100 bp around the TSS for the indicated transcription factor."
+    },
+    "C3:TFT:TFT_LEGACY": {
+      "numSets": 610,
+      "title": "TFT_LEGACY subset of TFT",
+      "description": "Older gene sets that share upstream cis-regulatory motifs which can function as potential transcription factor binding sites. Based on work by Xie et al. 2005. DOI: 10.1038/nature03441"
+    },
+    "C2:CP:REACTOME": {
+      "numSets": 1736,
+      "title": "Reactome subset of CP",
+      "description": "Canonical Pathways gene sets derived from the Reactome pathway database."
+    },
+    "C2:CP:WIKIPATHWAYS": {
+      "numSets": 830,
+      "title": "WikiPathways subset of CP",
+      "description": "Canonical Pathways gene sets derived from the WikiPathways pathway database."
+    },
+    "C4:CGN": {
+      "numSets": 427,
+      "title": "CGN: cancer gene neighborhoods",
+      "description": "Gene sets defined by expression neighborhoods centered on 380 cancer-associated genes. This collection is described in Subramanian, Tamayo et al. 2005, DOI: 10.1073/pnas.050658010"
+    },
+    "C4:CM": {
+      "numSets": 431,
+      "title": "CM: cancer modules",
+      "description": "Gene sets defined by Segal et al. 2004, DOI: 10.1038/ng1434. Briefly, the authors compiled gene sets ('modules') from a variety of resources such as KEGG, GO, and others. By mining a large compendium of cancer-related microarray data, they identified 456 such modules as significantly changed in a variety of cancer conditions."
+    },
+    "C6": {
+      "numSets": 189,
+      "title": "C6: oncogenic signature gene sets",
+      "description": "Gene sets that represent signatures of cellular pathways which are often dis-regulated in cancer. The majority of signatures were generated directly from microarray data from NCBI GEO or from internal unpublished profiling experiments involving perturbation of known cancer genes."
+    },
+    "C4:3CA": {
+      "numSets": 148,
+      "title": "3CA: Curated Cancer Cell Atlas",
+      "description": "Gene sets mined from the Curated Cancer Cell Atlas (3CA) metaprograms. These sets consist of genes that are coordinately upregulated in subpopulations of cells within 24 tumor types, covering both generic and lineage specifc cellular processes. The resource underlying this collection is described in Gavish et al. 2023, DOI: 10.1038/s41586-023-06130-4"
+    },
+    "C7:IMMUNESIGDB": {
+      "numSets": 4872,
+      "title": "C7: immunologic signature gene sets",
+      "description": "Gene sets that represent cell states and perturbations within the immune system."
+    },
+    "C7:VAX": {
+      "numSets": 347,
+      "title": "VAX: vaccine response gene sets",
+      "description": "Gene sets curated by the Human Immunology Project Consortium (HIPC) describing human transcriptomic immune responses to vaccinations."
+    },
+    "C8": {
+      "numSets": 840,
+      "title": "C8: cell type signature gene sets",
+      "description": "Gene sets that contain curated cluster markers for cell types identified in single-cell sequencing studies of human tissue."
+    },
+    "C5:GO:BP": {
+      "numSets": 7608,
+      "title": "BP: subset of GO",
+      "description": "Gene sets derived from the GO Biological Process ontology."
+    },
+    "C5:GO:CC": {
+      "numSets": 1026,
+      "title": "CC: subset of GO",
+      "description": "Gene sets derived from the GO Cellular Component ontology."
+    },
+    "C5:GO:MF": {
+      "numSets": 1820,
+      "title": "MF: subset of GO",
+      "description": "Gene sets derived from the GO Molecular Function ontology."
+    },
+    "H": {
+      "numSets": 50,
+      "title": "hallmark gene sets",
+      "description": "Hallmark gene sets summarize and represent specific well-defined biological states or processes and display coherent expression. These gene sets were generated by a computational methodology based on identifying overlaps between gene sets in other MSigDB collections and retaining genes that display coordinate expression."
+    },
+    "C5:HPO": {
+      "numSets": 5653,
+      "title": "HPO: Human Phenotype Ontology",
+      "description": "Gene sets derived from the Human Phenotype ontology."
+    },
+    "C2:CP:KEGG_MEDICUS": {
+      "numSets": 658,
+      "title": "KEGG_MEDICUS subset of CP",
+      "description": "Canonical Pathways gene sets derived from the KEGG MEDICUS pathway database."
+    }
+  },
+  "mouseCollections": {
+    "M2:CGP": {
+      "numSets": 980,
+      "title": "CGP: chemical and genetic perturbations",
+      "description": "Gene sets in this collection are curated from various sources, including online pathway databases and the biomedical literature. Many sets are also contributed by individual domain experts. The gene set page for each gene set lists its source. The M2 collection is divided into the following two subcollections: Chemical and genetic perturbations (CGP) and Canonical pathways (CP)."
+    },
+    "M5:GO:BP": {
+      "numSets": 7713,
+      "title": "BP: subset of GO",
+      "description": "Gene sets derived from the GO Biological Process ontology."
+    },
+    "M3:MIRDB": {
+      "numSets": 1768,
+      "title": "",
+      "description": "Gene sets containing high-confidence gene-level predictions of mouse miRNA targets as catalogued by miRDB v6.0 algorithm from Chen and Wang, 2020, PMCID: PM6943051"
+    },
+    "M5:MPT": {
+      "numSets": 92,
+      "title": "MPT: tumor phenotype ontology",
+      "description": "A subset of ontology terms from the Mammalian Phenotype Ontology database related to cancer specific phenotype terms."
+    },
+    "M8": {
+      "numSets": 233,
+      "title": "M8: cell type signature gene sets",
+      "description": "Gene sets that contain curated cluster markers for cell types identified in single-cell sequencing studies of mouse tissue."
+    },
+    "MH": {
+      "numSets": 50,
+      "title": "MH: hallmark gene sets",
+      "description": "Hallmark gene sets summarize and represent specific well-defined biological states or processes and display coherent expression. These gene sets were generated by a computational methodology based on identifying overlaps between gene sets in other MSigDB collections and retaining genes that display coordinate expression."
+    },
+    "M2:CP:REACTOME": {
+      "numSets": 1289,
+      "title": "Reactome subset of CP",
+      "description": "Canonical Pathways gene sets derived from the Reactome pathway database."
+    },
+    "M2:CP:WIKIPATHWAYS": {
+      "numSets": 189,
+      "title": "WikiPathways subset of CP",
+      "description": "Canonical Pathways gene sets derived from the WikiPathways pathway database."
+    },
+    "M5:GO:CC": {
+      "numSets": 1028,
+      "title": "CC: subset of GO",
+      "description": "Gene sets derived from the GO Cellular Component ontology."
+    },
+    "M5:GO:MF": {
+      "numSets": 1845,
+      "title": "MF: subset of GO",
+      "description": "Gene sets derived from the GO Molecular Function ontology."
+    },
+    "M1": {
+      "numSets": 341,
+      "title": "M1: positional gene sets",
+      "description": "Gene sets in this collection are curated from various sources, including online pathway databases and the biomedical literature. Many sets are also contributed by individual domain experts. The gene set page for each gene set lists its source. The M2 collection is divided into the following two subcollections: Chemical and genetic perturbations (CGP) and Canonical pathways (CP)."
+    },
+    "M2:CP:BIOCARTA": {
+      "numSets": 252,
+      "title": "BioCarta subset of CP",
+      "description": "Canonical Pathways gene sets derived from the BioCarta pathway database."
+    },
+    "M3:GTRD": {
+      "numSets": 279,
+      "title": "GTRD gene sets",
+      "description": "Genes that share GTRD (Kolmykov et al. 2021, PMID: 33231677) predicted transcription factor binding sites in the region -1000,+100 bp around the TSS for the indicated transcription factor."
+    }
+  }
+}

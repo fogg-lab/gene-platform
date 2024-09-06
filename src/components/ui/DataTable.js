@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { DataGrid, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext } from '@mui/x-data-grid';
+import { DataGridPro, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext } from '@mui/x-data-grid-pro';
 import PropTypes from 'prop-types';
 
 const getFilteredRows = ({ apiRef }) => gridExpandedSortedRowIdsSelector(apiRef);
@@ -99,7 +99,7 @@ const DataTable = ({ data, columns, onAddSamplesToGroup }) => {
 
   return (
     <div style={{ height: '80vh', width: '100%', maxHeight: 'calc(100vh - 20px)', overflow: 'hidden' }}>
-      <DataGrid
+      <DataGridPro
         rows={filteredRows}
         columns={gridColumns}
         sortModel={sortModel}

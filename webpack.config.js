@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { PyodidePlugin } = require("@pyodide/webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
 
 module.exports = {
   entry: './src/index.js',
@@ -89,6 +90,7 @@ module.exports = {
         { from: 'public/wasm', to: 'wasm' }
       ],
     }),
+    new Dotenv(),
   ],
   devServer: {
     static: {
