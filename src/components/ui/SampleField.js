@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-function SampleField({ headerName, samples, onRemoveSample }) {
+function SampleField({ headerName, samples, onRemoveSample, isContrast }) {
     const [expandedSamples, setExpandedSamples] = useState({});
 
     const handleRemoveSample = (sampleId) => {
+        console.log("Removing sample with ID:", sampleId);
         onRemoveSample(sampleId);
     };
 
@@ -59,7 +60,10 @@ function SampleField({ headerName, samples, onRemoveSample }) {
                             const [firstKey, firstValue] = firstEntry || [];
 
                             return (
-                                <li key={sample.id} className='sampleListElement'>
+                                <li
+                                    key={sample.id}
+                                    className={`sampleListElement ${isContrast ? 'contrast-sample' : 'reference-sample'}`}
+                                >
                                     <span className="sampleText">
                                         <strong>{firstValue}</strong>
                                     </span>

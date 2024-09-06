@@ -66,8 +66,15 @@ const AnalysisInputForm = ({
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
 
-    const handleRemoveContrastSample = (sample) => { onRemoveSamplesFromGroup(true, [sample.id]); };
-    const handleRemoveReferenceSample = (sample) => { onRemoveSamplesFromGroup(false, [sample.id]); };
+    const handleRemoveContrastSample = (sampleId) => {
+        console.log("Removing contrast sample:", sampleId);
+        onRemoveSamplesFromGroup(true, [sampleId]);
+    };
+
+    const handleRemoveReferenceSample = (sampleId) => {
+        console.log("Removing reference sample:", sampleId);
+        onRemoveSamplesFromGroup(false, [sampleId]);
+    };
 
     const decompressAndParseFile = useCallback((file, onParsed) => {
         const reader = new FileReader();
@@ -160,12 +167,14 @@ const AnalysisInputForm = ({
                     <SampleField
                         headerName="Reference Group"
                         samples={referenceGroup.samples}
-                        onRemoveSample={handleRemoveReferenceSample}
+                        onRemoveSample={(sampleId) => onRemoveSamplesFromGroup(false, [sampleId])}
+                        isContrast={false}
                     />
                     <SampleField
                         headerName="Contrast Group"
                         samples={contrastGroup.samples}
-                        onRemoveSample={handleRemoveContrastSample}
+                        onRemoveSample={(sampleId) => onRemoveSamplesFromGroup(true, [sampleId])}
+                        isContrast={true}
                     />
                 </div>
                 <label className="radioLabel">

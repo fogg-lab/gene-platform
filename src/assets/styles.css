@@ -624,11 +624,20 @@ a:hover {
     padding: 5px 10px;
     margin: 0px 2px;
     border: none;
-    color: white;
+    color: black;
     cursor: pointer;
     border-radius: 20px;
     font-size: 0.6em;
     min-height: 30px;
+    border: 1px solid black;
+}
+
+.contrast-sample {
+    background-color: rgb(237, 255, 235);
+}
+
+.reference-sample {
+    background-color: rgb(235, 253, 255);
 }
 
 .sampleListElement .sampleText {
@@ -642,7 +651,7 @@ a:hover {
 .sampleListElement .removeButton {
     background: none;
     border: none;
-    color: white;
+    color: black;
     cursor: pointer;
     font-weight: bold;
     padding: 0 5px;

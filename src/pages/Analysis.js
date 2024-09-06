@@ -30,17 +30,17 @@ const Analysis = () => {
     const handleAddSamplesToGroup = useCallback((isContrast, samplesToAdd) => {
         setContrastGroup(prevContrastGroup => {
             const updatedContrastGroup = isContrast
-                ? [...new Set([...prevContrastGroup.samples, ...samplesToAdd.filter(sample => 
+                ? [...new Set([...prevContrastGroup.samples, ...samplesToAdd.filter(sample =>
                     !prevContrastGroup.samples.some(s => s.id === sample.id)
-                  )])]
+                )])]
                 : prevContrastGroup.samples.filter(sample => !samplesToAdd.some(s => s.id === sample.id));
             return { ...prevContrastGroup, samples: updatedContrastGroup };
         });
         setReferenceGroup(prevReferenceGroup => {
             const updatedReferenceGroup = !isContrast
-                ? [...new Set([...prevReferenceGroup.samples, ...samplesToAdd.filter(sample => 
+                ? [...new Set([...prevReferenceGroup.samples, ...samplesToAdd.filter(sample =>
                     !prevReferenceGroup.samples.some(s => s.id === sample.id)
-                  )])]
+                )])]
                 : prevReferenceGroup.samples.filter(sample => !samplesToAdd.some(s => s.id === sample.id));
             return { ...prevReferenceGroup, samples: updatedReferenceGroup };
         });
@@ -58,6 +58,29 @@ const Analysis = () => {
                 samples: prevGroup.samples.filter(sample => !sampleIdsToRemove.includes(sample.id))
             }));
         }
+
+        // Update row colors
+        setDataset(prevDataset => {
+            if (!prevDataset || !prevDataset.coldataTable) return prevDataset;
+
+            const updatedColdataTable = {
+                ...prevDataset.coldataTable,
+                data: prevDataset.coldataTable.data.map(row => {
+                    const sampleId = row[prevDataset.coldataTable.cols.indexOf('sample_id')];
+                    if (sampleIdsToRemove.includes(sampleId)) {
+                        return row.map((cell, index) =>
+                            index === prevDataset.coldataTable.cols.indexOf('group') ? '' : cell
+                        );
+                    }
+                    return row;
+                })
+            };
+
+            return {
+                ...prevDataset,
+                coldataTable: updatedColdataTable
+            };
+        });
     }, []);
 
     const handleClearGroup = useCallback((isContrast) => {
@@ -245,13 +268,16 @@ const Analysis = () => {
         }
 
         if (tableData && tableColumns) {
-            return <DataTable
-                data={tableData}
-                columns={tableColumns}
-                contrastGroup={contrastGroup}
-                referenceGroup={referenceGroup}
-                onAddSamplesToGroup={handleAddSamplesToGroup}
-            />;
+            return (
+                <DataTable
+                    data={tableData}
+                    columns={tableColumns}
+                    contrastGroup={contrastGroup}
+                    referenceGroup={referenceGroup}
+                    onAddSamplesToGroup={handleAddSamplesToGroup}
+                    onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                />
+            );
         } else {
             return <p>No data available</p>;
         }
@@ -439,6 +465,7 @@ const Analysis = () => {
                 />
             </div>
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
+
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
                     <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />
@@ -469,6 +496,7 @@ const Analysis = () => {
                             <div id="table_toggle">
                                 {renderTableButtons()}
                             </div>
+                            {isLoading && <ProgressBar progress={progress} />}
                             {renderTable()}
                         </div>
                         <div
@@ -487,10 +515,6 @@ const Analysis = () => {
                     </div>
                 </div>
             </div>
-            <button onClick={runAnalysis} disabled={isLoading}>
-                Run Analysis
-            </button>
-            {isLoading && <ProgressBar progress={progress} />}
         </div>
     );
 };
