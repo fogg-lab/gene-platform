@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { DataGridPro, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext } from '@mui/x-data-grid-pro';
+import { DataGridPro, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext, } from '@mui/x-data-grid-pro';
 import PropTypes from 'prop-types';
 
 const getFilteredRows = ({ apiRef }) => gridExpandedSortedRowIdsSelector(apiRef);

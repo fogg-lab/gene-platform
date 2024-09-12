@@ -7,6 +7,9 @@ import WorkerManager from '../utils/Workers';
 import PlotArea from '../components/ui/PlotArea';
 import ProgressBar from '../components/ui/ProgressBar';
 import { getExternalDataset } from '../services/api';
+import DifferentialExpressionContent from '../components/ui/DifferentialExpressionContent';
+import ExplorationContent from '../components/ui/ExplorationContent';
+import GSEAContent from '../components/ui/GSEAContent';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -26,6 +29,8 @@ const Analysis = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [progress, setProgress] = useState(0);
+
+    const [currentStage, setCurrentStage] = useState('exploration');
 
     const handleAddSamplesToGroup = useCallback((isContrast, samplesToAdd) => {
         setContrastGroup(prevContrastGroup => {
@@ -160,6 +165,7 @@ const Analysis = () => {
     };
 
     const handleStageChange = (stage) => {
+        setCurrentStage(stage);
         switch (stage) {
             case 'exploration':
                 setCurrentTable('coldata');
@@ -292,6 +298,7 @@ const Analysis = () => {
         } else if (gseaData && gseaData.plots && gseaData.plots[currentPlot]) {
             plotHtml = gseaData.plots[currentPlot];
         }
+        console.log('Plot HTML:', plotHtml);
         return plotHtml ? (
             <PlotArea htmlContent={plotHtml} />
         ) : (
@@ -334,79 +341,80 @@ const Analysis = () => {
             numGenes: numGenes,
             sample_ids: dataset.countsTable.cols.slice(2)
         });
-
-        // DE Analysis
-        setProgress(40);
-        // Calculate effective library sizes
-        const effectiveLibSizes = Array.from(await WorkerManager.runTask('py', 'compute_tmm_effective_library_sizes', {
-            expression: dataset.expression,
-            numSamples: numSamples,
-            numGenes: numGenes
-        }));
-
-        // Get the sample IDs from contrast and reference groups
-        const selectedSampleIds = new Set([
-            ...contrastGroup.samples.map(s => s.id),
-            ...referenceGroup.samples.map(s => s.id)
-        ]);
-
-        const sampleIds = dataset.countsTable.cols.slice(2).filter(col => selectedSampleIds.has(col));
-        const filteredColdata = {
-            cols: dataset.coldataTable.cols,
-            data: sampleIds.map(sampleId => {
-                const rowIndex = dataset.coldataTable.data.findIndex(row => row[0] === sampleId);
-                return dataset.coldataTable.data[rowIndex];
-            })
-        }
-
-        const countsColMask = new Array(dataset.countsTable.cols.length).fill(false);
-        countsColMask[0] = true;
-        countsColMask[1] = true;
-        sampleIds.forEach(sampleId => {
-            const index = dataset.countsTable.cols.indexOf(sampleId);
-            countsColMask[index] = true;
-        });
-        const filteredCountsTable = {
-            cols: [dataset.countsTable.cols[0], dataset.countsTable.cols[1], ...sampleIds],
-            data: dataset.countsTable.data.map(row => row.filter((_, index) => countsColMask[index]))
-        }
-        const filteredCounts = Int32Array.from(filteredCountsTable.data.flatMap(row => row.slice(2)));
-        const filteredEffectiveLibSizes = effectiveLibSizes.filter((_, index) => countsColMask[index + 2]);
-        const filteredNumSamples = filteredColdata.data.length;
-
-        const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
-            counts: filteredCounts,
-            ensemblIds: dataset.countsTable.rows,
-            coldata: filteredColdata,
-            contrastGroup: contrastGroup.samples.map(sample => sample.id),
-            referenceGroup: referenceGroup.samples.map(sample => sample.id),
-            libSizes: filteredEffectiveLibSizes,
-            numSamples: filteredNumSamples,
-            numGenes: numGenes
-        });
-        const deTable = {
-            cols: ['ensembl_id', 'logFC', 't', 'p_value', 'p_value_adj'],
-            data: [...Array(deResults.row_names.length)].map((_, i) => [deResults.row_names[i], deResults.logFC[i], deResults.t[i], deResults.p_value[i], deResults.p_value_adj[i]])
-        }
-
-        setProgress(50);
-        const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
-            data: deResults.data,
-            row_names: deResults.row_names,
-            column_names: deResults.column_names,
-            pval_thresh: 0.05,   // todo: make this dynamic or allow the user to set it in the analysis input form
-            lfc_thresh: 1.5,    // todo: make this dynamic or allow the user to set it in the analysis input form
-            cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
-        });
-
-        setProgress(60);
-        const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
-            data: deResults.data,
-            row_names: deResults.row_names,
-            column_names: deResults.column_names,
-            fdr: 0.05,   // todo: allow this to be set by the user
-            cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
-        });
+        /*
+                // DE Analysis
+                setProgress(40);
+                // Calculate effective library sizes
+                const effectiveLibSizes = Array.from(await WorkerManager.runTask('py', 'compute_tmm_effective_library_sizes', {
+                    expression: dataset.expression,
+                    numSamples: numSamples,
+                    numGenes: numGenes
+                }));
+        
+                // Get the sample IDs from contrast and reference groups
+                const selectedSampleIds = new Set([
+                    ...contrastGroup.samples.map(s => s.id),
+                    ...referenceGroup.samples.map(s => s.id)
+                ]);
+        
+                const sampleIds = dataset.countsTable.cols.slice(2).filter(col => selectedSampleIds.has(col));
+                const filteredColdata = {
+                    cols: dataset.coldataTable.cols,
+                    data: sampleIds.map(sampleId => {
+                        const rowIndex = dataset.coldataTable.data.findIndex(row => row[0] === sampleId);
+                        return dataset.coldataTable.data[rowIndex];
+                    })
+                }
+        
+                const countsColMask = new Array(dataset.countsTable.cols.length).fill(false);
+                countsColMask[0] = true;
+                countsColMask[1] = true;
+                sampleIds.forEach(sampleId => {
+                    const index = dataset.countsTable.cols.indexOf(sampleId);
+                    countsColMask[index] = true;
+                });
+                const filteredCountsTable = {
+                    cols: [dataset.countsTable.cols[0], dataset.countsTable.cols[1], ...sampleIds],
+                    data: dataset.countsTable.data.map(row => row.filter((_, index) => countsColMask[index]))
+                }
+                const filteredCounts = Int32Array.from(filteredCountsTable.data.flatMap(row => row.slice(2)));
+                const filteredEffectiveLibSizes = effectiveLibSizes.filter((_, index) => countsColMask[index + 2]);
+                const filteredNumSamples = filteredColdata.data.length;
+        
+                const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
+                    counts: filteredCounts,
+                    ensemblIds: dataset.countsTable.rows,
+                    coldata: filteredColdata,
+                    contrastGroup: contrastGroup.samples.map(sample => sample.id),
+                    referenceGroup: referenceGroup.samples.map(sample => sample.id),
+                    libSizes: filteredEffectiveLibSizes,
+                    numSamples: filteredNumSamples,
+                    numGenes: numGenes
+                });
+                const deTable = {
+                    cols: ['ensembl_id', 'logFC', 't', 'p_value', 'p_value_adj'],
+                    data: [...Array(deResults.row_names.length)].map((_, i) => [deResults.row_names[i], deResults.logFC[i], deResults.t[i], deResults.p_value[i], deResults.p_value_adj[i]])
+                }
+        
+                setProgress(50);
+                const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
+                    data: deResults.data,
+                    row_names: deResults.row_names,
+                    column_names: deResults.column_names,
+                    pval_thresh: 0.05,   // todo: make this dynamic or allow the user to set it in the analysis input form
+                    lfc_thresh: 1.5,    // todo: make this dynamic or allow the user to set it in the analysis input form
+                    cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
+                });
+        
+                setProgress(60);
+                const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
+                    data: deResults.data,
+                    row_names: deResults.row_names,
+                    column_names: deResults.column_names,
+                    fdr: 0.05,   // todo: allow this to be set by the user
+                    cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
+                });
+                */
 
         // GSEA
         // setProgress(70);
@@ -440,7 +448,7 @@ const Analysis = () => {
             },
             plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
         });
-        setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
+        // setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
         // setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
         setProgress(100);
 
@@ -488,7 +496,43 @@ const Analysis = () => {
                         </button>
                     </div>
                     <div id="view_content">
-                        <div
+                        {currentStage === 'exploration' && (
+                            <ExplorationContent
+                                data={edaData}
+                                activeTab={activeTab}
+                                onAddSamplesToGroup={handleAddSamplesToGroup}
+                                onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                                contrastGroup={contrastGroup}
+                                referenceGroup={referenceGroup}
+                                isLoading={isLoading}
+                                progress={progress}
+                            />
+                        )}
+                        {currentStage === 'differential' && (
+                            <DifferentialExpressionContent
+                                data={deData}
+                                activeTab={activeTab}
+                                onAddSamplesToGroup={handleAddSamplesToGroup}
+                                onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                                contrastGroup={contrastGroup}
+                                referenceGroup={referenceGroup}
+                                isLoading={isLoading}
+                                progress={progress}
+                            />
+                        )}
+                        {currentStage === 'enrichment' && (
+                            <GSEAContent
+                                data={gseaData}
+                                activeTab={activeTab}
+                                onAddSamplesToGroup={handleAddSamplesToGroup}
+                                onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                                contrastGroup={contrastGroup}
+                                referenceGroup={referenceGroup}
+                                isLoading={isLoading}
+                                progress={progress}
+                            />
+                        )}
+                        {/* <div
                             style={{ display: activeTab === 'table' ? 'block' : 'none', height: '100%', overflow: 'auto' }}
                             ref={tableContainerRef}
                             onScroll={handleTableScroll}
@@ -511,7 +555,7 @@ const Analysis = () => {
                                 {renderPlotButtons()}
                             </div>
                             {renderPlot()}
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>
