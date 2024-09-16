@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import DataTable from './DataTable';
 import ProgressBar from './ProgressBar';
+import PlotArea from './PlotArea';
 
-const ExplorationContent = ({
+const DifferentialExpressionContent = ({
     data,
     activeTab,
     onAddSamplesToGroup,
@@ -12,6 +13,8 @@ const ExplorationContent = ({
     isLoading,
     progress
 }) => {
+    const tableContainerRef = useRef(null);
+
     const renderTable = () => {
         if (!data || !data.tables || !data.tables.coldata) {
             return <p>No data available</p>;
@@ -44,21 +47,34 @@ const ExplorationContent = ({
         if (!data || !data.plots || !data.plots.pca) {
             return <p>No plot available</p>;
         }
-        return <div dangerouslySetInnerHTML={{ __html: data.plots.pca }} />;
+        return <PlotArea htmlContent={data.plots.pca} />;
     };
 
     return (
-        <div>
-            <p>Differential Expression</p>
+        <div id="view_content" style={{ height: '100%', width: '100%', overflow: 'hidden' }}>
             {isLoading && <ProgressBar progress={progress} />}
-            <div style={{ display: activeTab === 'table' ? 'block' : 'none' }}>
+            <div
+                style={{
+                    display: activeTab === 'table' ? 'block' : 'none',
+                    height: '100%',
+                    overflow: 'auto'
+                }}
+                ref={tableContainerRef}
+            >
                 {renderTable()}
             </div>
-            <div style={{ display: activeTab === 'plot' ? 'block' : 'none' }}>
+            <div
+                style={{
+                    display: activeTab === 'plot' ? 'block' : 'none',
+                    height: 'calc(100vh)',
+                    width: '100%',
+                    overflow: 'hidden'
+                }}
+            >
                 {renderPlot()}
             </div>
         </div>
     );
 }
 
-export default ExplorationContent;
+export default DifferentialExpressionContent;

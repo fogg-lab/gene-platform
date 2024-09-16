@@ -2,7 +2,7 @@ import React from 'react';
 import DataTable from './DataTable';
 import ProgressBar from './ProgressBar';
 
-const ExplorationContent = ({
+const GSEAContent = ({
     data,
     activeTab,
     onAddSamplesToGroup,
@@ -61,4 +61,4 @@ const ExplorationContent = ({
     );
 }
 
-export default ExplorationContent;
+export default GSEAContent;

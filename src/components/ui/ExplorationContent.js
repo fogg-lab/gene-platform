@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import DataTable from './DataTable';
 import ProgressBar from './ProgressBar';
 import PlotArea from './PlotArea';
@@ -13,7 +13,7 @@ const ExplorationContent = ({
     isLoading,
     progress
 }) => {
-    const tableContainerRef = useRef(null);
+    const [currentPlot, setCurrentPlot] = useState('pca');
 
     const renderTable = () => {
         if (!data || !data.tables || !data.tables.coldata) {
@@ -43,35 +43,45 @@ const ExplorationContent = ({
         );
     };
 
-    const renderPlot = () => {
-        if (!data || !data.plots || !data.plots.pca) {
-            return <p>No plot available</p>;
+    const renderPlotTabs = () => {
+        if (!data || !data.plots) {
+            return <p>No plots available</p>;
         }
-        return <PlotArea htmlContent={data.plots.pca} />;
+
+        const availablePlots = Object.keys(data.plots);
+
+        return (
+            <div className="plot-container">
+                <div className="plot-tabs">
+                    {availablePlots.map(plot => (
+                        <button
+                            key={plot}
+                            className={`plot-tab ${currentPlot === plot ? 'active' : ''}`}
+                            onClick={() => setCurrentPlot(plot)}
+                        >
+                            {plot.toUpperCase()}
+                        </button>
+                    ))}
+                </div>
+                <div className="plot-content">
+                    {data.plots[currentPlot] ? (
+                        <PlotArea htmlContent={data.plots[currentPlot]} />
+                    ) : (
+                        <p>No {currentPlot} plot available</p>
+                    )}
+                </div>
+            </div>
+        );
     };
 
     return (
-        <div id="view_content" style={{ height: '100%', width: '100%', overflow: 'hidden' }}>
+        <div className="exploration-content">
             {isLoading && <ProgressBar progress={progress} />}
-            <div
-                style={{
-                    display: activeTab === 'table' ? 'block' : 'none',
-                    height: '100%',
-                    overflow: 'auto'
-                }}
-                ref={tableContainerRef}
-            >
+            <div className={`table-view ${activeTab === 'table' ? 'active' : ''}`}>
                 {renderTable()}
             </div>
-            <div
-                style={{
-                    display: activeTab === 'plot' ? 'block' : 'none',
-                    height: 'calc(100vh)',
-                    width: '100%',
-                    overflow: 'hidden'
-                }}
-            >
-                {renderPlot()}
+            <div className={`plot-view ${activeTab === 'plot' ? 'active' : ''}`}>
+                {renderPlotTabs()}
             </div>
         </div>
     );
