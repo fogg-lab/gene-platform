@@ -481,7 +481,7 @@ const Analysis = () => {
                     <TabButton label="Gene Set Enrichment Analysis" onClick={() => handleStageChange('enrichment')} />
                 </div>
                 <div id="analysis_content">
-                    <div id="view_toggle">
+                    {/* <div id="view_toggle">
                         <button
                             className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
                             onClick={() => setActiveTab('table')}
@@ -494,12 +494,13 @@ const Analysis = () => {
                         >
                             Plot View
                         </button>
-                    </div>
+                    </div> */}
                     <div id="view_content">
                         {currentStage === 'exploration' && (
                             <ExplorationContent
                                 data={edaData}
                                 activeTab={activeTab}
+                                setActiveTab={setActiveTab}
                                 onAddSamplesToGroup={handleAddSamplesToGroup}
                                 onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                                 contrastGroup={contrastGroup}

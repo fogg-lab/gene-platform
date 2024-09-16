@@ -387,9 +387,7 @@ a:hover {
 
 /* New styles for the plot/table toggle */
 #view_content {
-    border: 1px solid #e0e0e0;
     border-radius: 5px;
-    padding: 20px;
     height: 100%;
     width: 100%;
     overflow-x: auto;
@@ -873,7 +871,7 @@ ul.suggestions {
 .table-view.active,
 .plot-view.active {
     display: flex;
-    width: 100vw;
+    width: 70vw;
 }
 
 .plot-container {
@@ -903,18 +901,20 @@ ul.suggestions {
 
 .plot-tab.active {
     background-color: #fff;
-    border-bottom: 2px solid #007bff;
+    border-bottom: 2px solid #D73F09;
     font-weight: bold;
 }
 
 .plot-content {
     flex: 1;
+    border: 1px solid gray;
+    border-top: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
     overflow: hidden;
-    width: 80vw;
+    width: 70vw;
 }
 
 .plot-content>div {
@@ -926,9 +926,4 @@ ul.suggestions {
     width: 100%;
     height: 100%;
     border: none;
-}
-
-#title {
-    color: red;
-    font-size: 10em;
 }

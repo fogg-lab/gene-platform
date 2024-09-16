@@ -6,6 +6,7 @@ import PlotArea from './PlotArea';
 const ExplorationContent = ({
     data,
     activeTab,
+    setActiveTab,
     onAddSamplesToGroup,
     onRemoveSamplesFromGroup,
     contrastGroup,
@@ -76,6 +77,20 @@ const ExplorationContent = ({
 
     return (
         <div className="exploration-content">
+            <div id="view_toggle">
+                <button
+                    className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('table')}
+                >
+                    Table View
+                </button>
+                <button
+                    className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('plot')}
+                >
+                    Plot View
+                </button>
+            </div>
             {isLoading && <ProgressBar progress={progress} />}
             <div className={`table-view ${activeTab === 'table' ? 'active' : ''}`}>
                 {renderTable()}
