@@ -116,7 +116,7 @@ const EDAInputForm = ({
 
     return (
         <div id="analysisInputContainer_comp">
-            <h3>Data - EDAInputForm</h3>
+            <h3>Data</h3>
             <div className='dataSubfield'>
                 {isLoading ? (
                     <div className="loader"></div>

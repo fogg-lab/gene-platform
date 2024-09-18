@@ -79,7 +79,7 @@ nav {
 }
 
 #primary_navbar {
-    background-color: #D73F09;
+    background-color: #d74009;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -161,6 +161,20 @@ nav {
     border-radius: 15px;
     box-sizing: border-box;
     overflow-y: auto;
+}
+
+.analysisContentGuide {
+    background: #d7400941;
+    padding: 1%;
+    border-radius: 15px;
+}
+
+.analysisContentGuide h1 {
+    font-size: 1.5em;
+}
+
+.analysisContentGuide p {
+    font-size: 1.3em;
 }
 
 #analysis_tab_nav {

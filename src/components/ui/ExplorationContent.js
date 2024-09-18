@@ -18,7 +18,13 @@ const ExplorationContent = ({
 
     const renderTable = () => {
         if (!data || !data.tables || !data.tables.coldata) {
-            return <p>No data available</p>;
+            return (
+                <div className='analysisContentGuide'>
+                    <h1>To run Exploratory Data Analysis:</h1>
+                    <p>Step 1. Choose an example dataset, or select one from GDC / GEO, or input a custom dataset.</p>
+                    <p>Step 2. Select desired data transform.</p>
+                    <p>Step 3. Run</p>
+                </div>);
         }
 
         const tableData = data.tables.coldata.data.map((row, index) => {

@@ -44,7 +44,7 @@ const GSEAInputForm = ({
 
     return (
         <div id="analysisInputContainer_comp">
-            <h3>Data - GSEAInputForm</h3>
+            <h3>Data</h3>
             <div>
                 {isLoading ? (
                     <div className="loader"></div>

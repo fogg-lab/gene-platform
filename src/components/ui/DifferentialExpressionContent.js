@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import DataTable from './DataTable';
 import ProgressBar from './ProgressBar';
 import PlotArea from './PlotArea';
@@ -6,6 +6,7 @@ import PlotArea from './PlotArea';
 const DifferentialExpressionContent = ({
     data,
     activeTab,
+    setActiveTab,
     onAddSamplesToGroup,
     onRemoveSamplesFromGroup,
     contrastGroup,
@@ -13,11 +14,19 @@ const DifferentialExpressionContent = ({
     isLoading,
     progress
 }) => {
-    const tableContainerRef = useRef(null);
+    const [currentPlot, setCurrentPlot] = useState('pca');
 
     const renderTable = () => {
         if (!data || !data.tables || !data.tables.coldata) {
-            return <p>No data available</p>;
+            return (
+                <div className='analysisContentGuide'>
+                    <h1>To run Differential Expression Analysis:</h1>
+                    <p>(Optional) Add covariates.</p>
+                    <p>(Optional) Run with batch correction.</p>
+                    <p>Step 1. Select desired adjustment method.</p>
+                    <p>Step 2. Select samples from the table and add them to either the reference or contrast group. </p>
+                    <p>Step 3. Run </p>
+                </div>);
         }
 
         const tableData = data.tables.coldata.data.map((row, index) => {
@@ -43,35 +52,59 @@ const DifferentialExpressionContent = ({
         );
     };
 
-    const renderPlot = () => {
-        if (!data || !data.plots || !data.plots.pca) {
-            return <p>No plot available</p>;
+    const renderPlotTabs = () => {
+        if (!data || !data.plots) {
+            return <p>No plots available</p>;
         }
-        return <PlotArea htmlContent={data.plots.pca} />;
+
+        const availablePlots = Object.keys(data.plots);
+
+        return (
+            <div className="plot-container">
+                <div className="plot-tabs">
+                    {availablePlots.map(plot => (
+                        <button
+                            key={plot}
+                            className={`plot-tab ${currentPlot === plot ? 'active' : ''}`}
+                            onClick={() => setCurrentPlot(plot)}
+                        >
+                            {plot.toUpperCase()}
+                        </button>
+                    ))}
+                </div>
+                <div className="plot-content">
+                    {data.plots[currentPlot] ? (
+                        <PlotArea htmlContent={data.plots[currentPlot]} />
+                    ) : (
+                        <p>No {currentPlot} plot available</p>
+                    )}
+                </div>
+            </div>
+        );
     };
 
     return (
-        <div id="view_content" style={{ height: '100%', width: '100%', overflow: 'hidden' }}>
+        <div className="exploration-content">
+            <div id="view_toggle">
+                <button
+                    className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('table')}
+                >
+                    Table View
+                </button>
+                <button
+                    className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('plot')}
+                >
+                    Plot View
+                </button>
+            </div>
             {isLoading && <ProgressBar progress={progress} />}
-            <div
-                style={{
-                    display: activeTab === 'table' ? 'block' : 'none',
-                    height: '100%',
-                    overflow: 'auto'
-                }}
-                ref={tableContainerRef}
-            >
+            <div className={`table-view ${activeTab === 'table' ? 'active' : ''}`}>
                 {renderTable()}
             </div>
-            <div
-                style={{
-                    display: activeTab === 'plot' ? 'block' : 'none',
-                    height: 'calc(100vh)',
-                    width: '100%',
-                    overflow: 'hidden'
-                }}
-            >
-                {renderPlot()}
+            <div className={`plot-view ${activeTab === 'plot' ? 'active' : ''}`}>
+                {renderPlotTabs()}
             </div>
         </div>
     );

@@ -44,8 +44,6 @@ const DEAInputForm = ({
 
     return (
         <div id="analysisInputContainer_comp">
-            <h3>Data - DEAInputForm</h3>
-            <h3>Configuration</h3>
             <div>
                 <label className="radioLabel">
                     <input className="radioInput" type="radio" name="covariates" />
