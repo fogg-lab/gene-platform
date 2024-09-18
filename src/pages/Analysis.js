@@ -10,6 +10,10 @@ import { getExternalDataset } from '../services/api';
 import DifferentialExpressionContent from '../components/ui/DifferentialExpressionContent';
 import ExplorationContent from '../components/ui/ExplorationContent';
 import GSEAContent from '../components/ui/GSEAContent';
+import GSEAInputForm from '../components/form/GSEAInputForm';
+import DEAInputForm from '../components/form/DEAInputForm';
+import EDAInputForm from '../components/form/EDAInputForm';
+
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -462,7 +466,7 @@ const Analysis = () => {
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-                <AnalysisInputForm
+                {/* <AnalysisInputForm
                     setIsVisible={setIsVisible}
                     onDatasetSelect={handleDatasetSelect}
                     contrastGroup={contrastGroup}
@@ -470,7 +474,40 @@ const Analysis = () => {
                     onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                     runAnalysis={runAnalysis}
                     isLoading={isLoading}
-                />
+                /> */}
+                {currentStage === 'exploration' && (
+                    <EDAInputForm
+                        setIsVisible={setIsVisible}
+                        onDatasetSelect={handleDatasetSelect}
+                        contrastGroup={contrastGroup}
+                        referenceGroup={referenceGroup}
+                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                        runAnalysis={runAnalysis}
+                        isLoading={isLoading}
+                    />
+                )}
+                {currentStage === 'differential' && (
+                    <DEAInputForm
+                        setIsVisible={setIsVisible}
+                        onDatasetSelect={handleDatasetSelect}
+                        contrastGroup={contrastGroup}
+                        referenceGroup={referenceGroup}
+                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                        runAnalysis={runAnalysis}
+                        isLoading={isLoading}
+                    />
+                )}
+                {currentStage === 'enrichment' && (
+                    <GSEAInputForm
+                        setIsVisible={setIsVisible}
+                        onDatasetSelect={handleDatasetSelect}
+                        contrastGroup={contrastGroup}
+                        referenceGroup={referenceGroup}
+                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                        runAnalysis={runAnalysis}
+                        isLoading={isLoading}
+                    />
+                )}
             </div>
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
 
@@ -481,20 +518,6 @@ const Analysis = () => {
                     <TabButton label="Gene Set Enrichment Analysis" onClick={() => handleStageChange('enrichment')} />
                 </div>
                 <div id="analysis_content">
-                    {/* <div id="view_toggle">
-                        <button
-                            className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('table')}
-                        >
-                            Table View
-                        </button>
-                        <button
-                            className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('plot')}
-                        >
-                            Plot View
-                        </button>
-                    </div> */}
                     <div id="view_content">
                         {currentStage === 'exploration' && (
                             <ExplorationContent
