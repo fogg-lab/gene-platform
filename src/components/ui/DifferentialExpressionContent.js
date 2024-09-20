@@ -12,45 +12,49 @@ const DifferentialExpressionContent = ({
     contrastGroup,
     referenceGroup,
     isLoading,
-    progress
+    progress,
+    renderTable,
+    tableData,
+    tableColumns,
+    currentStage,
 }) => {
     const [currentPlot, setCurrentPlot] = useState('pca');
 
-    const renderTable = () => {
-        if (!data || !data.tables || !data.tables.coldata) {
-            return (
-                <div className='analysisContentGuide'>
-                    <h1>To run Differential Expression Analysis:</h1>
-                    <p>(Optional) Add covariates.</p>
-                    <p>(Optional) Run with batch correction.</p>
-                    <p>Step 1. Select desired adjustment method.</p>
-                    <p>Step 2. Select samples from the table and add them to either the reference or contrast group. </p>
-                    <p>Step 3. Run </p>
-                </div>);
-        }
+    // const renderTable = () => {
+    //     if (!data || !data.tables || !data.tables.coldata) {
+    //         return (
+    //             <div className='analysisContentGuide'>
+    //                 <h1>To run Differential Expression Analysis:</h1>
+    //                 <p>(Optional) Add covariates.</p>
+    //                 <p>(Optional) Run with batch correction.</p>
+    //                 <p>Step 1. Select desired adjustment method.</p>
+    //                 <p>Step 2. Select samples from the table and add them to either the reference or contrast group. </p>
+    //                 <p>Step 3. Run </p>
+    //             </div>);
+    //     }
 
-        const tableData = data.tables.coldata.data.map((row, index) => {
-            const obj = {};
-            data.tables.coldata.cols.forEach((col, colIndex) => {
-                obj[col] = row[colIndex];
-            });
-            obj.id = index;
-            return obj;
-        });
+    //     const tableData = data.tables.coldata.data.map((row, index) => {
+    //         const obj = {};
+    //         data.tables.coldata.cols.forEach((col, colIndex) => {
+    //             obj[col] = row[colIndex];
+    //         });
+    //         obj.id = index;
+    //         return obj;
+    //     });
 
-        const columns = data.tables.coldata.cols.map(col => ({ key: col, name: col }));
+    //     const columns = data.tables.coldata.cols.map(col => ({ key: col, name: col }));
 
-        return (
-            <DataTable
-                data={tableData}
-                columns={columns}
-                contrastGroup={contrastGroup}
-                referenceGroup={referenceGroup}
-                onAddSamplesToGroup={onAddSamplesToGroup}
-                onRemoveSamplesFromGroup={onRemoveSamplesFromGroup}
-            />
-        );
-    };
+    //     return (
+    //         <DataTable
+    //             data={tableData}
+    //             columns={columns}
+    //             contrastGroup={contrastGroup}
+    //             referenceGroup={referenceGroup}
+    //             onAddSamplesToGroup={onAddSamplesToGroup}
+    //             onRemoveSamplesFromGroup={onRemoveSamplesFromGroup}
+    //         />
+    //     );
+    // };
 
     const renderPlotTabs = () => {
         if (!data || !data.plots) {

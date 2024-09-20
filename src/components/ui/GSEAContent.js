@@ -24,7 +24,7 @@ const GSEAContent = ({
                     <p>Step 1. Add a gene set</p>
                     <p>Note: Default configuration recommended for most analyses</p>
                     <p>(Optional) Change standard configuration.</p>
-                    <p>Step 3. Run</p>
+                    <p>Step 2. Run</p>
                 </div>);
         }
 

@@ -27,6 +27,8 @@ const Analysis = () => {
     const [gseaData, setGseaData] = useState(null);
     const [currentTable, setCurrentTable] = useState(null);
     const [currentPlot, setCurrentPlot] = useState(null);
+    const [tableData, setTableData] = useState(null);
+    const [tableColumns, setTableColumns] = useState([]);
 
     const [contrastGroup, setContrastGroup] = useState({ samples: [] });
     const [referenceGroup, setReferenceGroup] = useState({ samples: [] });
@@ -166,6 +168,22 @@ const Analysis = () => {
                 setIsLoading(false);
             }
         }
+
+        if (data && data.coldataTable) {
+            const tableData = data.coldataTable.data.map((row, index) => {
+                const obj = {};
+                data.coldataTable.cols.forEach((col, colIndex) => {
+                    obj[col] = row[colIndex];
+                });
+                obj.id = index;
+                return obj;
+            });
+
+            const columns = data.coldataTable.cols.map(col => ({ key: col, name: col }));
+
+            setTableData(tableData);
+            setTableColumns(columns);
+        }
     };
 
     const handleStageChange = (stage) => {
@@ -234,64 +252,64 @@ const Analysis = () => {
         ));
     };
 
-    const renderTable = () => {
-        let tableData, tableColumns;
-        if (currentTable === 'coldata' || currentTable === 'counts') {
-            if (edaData && edaData.tables && edaData.tables[currentTable]) {
-                const rawData = edaData.tables[currentTable].data;
-                const cols = edaData.tables[currentTable].cols;
-                tableData = rawData.map(row => {
-                    const obj = {};
-                    cols.forEach((col, index) => {
-                        obj[col] = row[index];
-                    });
-                    return obj;
-                });
-                tableColumns = cols.map(col => ({ key: col, name: col }));
-            }
-        } else if (currentTable === 'de_results') {
-            if (deData && deData.table) {
-                const rawData = deData.table.data;
-                const cols = deData.table.cols;
-                tableData = rawData.map(row => {
-                    const obj = {};
-                    cols.forEach((col, index) => {
-                        obj[col] = row[index];
-                    });
-                    return obj;
-                });
-                tableColumns = cols.map(col => ({ key: col, name: col }));
-            }
-        } else if (currentTable === 'gsea_results') {
-            if (gseaData && gseaData.table) {
-                const rawData = gseaData.table.data;
-                const cols = gseaData.table.cols;
-                tableData = rawData.map(row => {
-                    const obj = {};
-                    cols.forEach((col, index) => {
-                        obj[col] = row[index];
-                    });
-                    return obj;
-                });
-                tableColumns = cols.map(col => ({ key: col, name: col }));
-            }
-        }
+    // const renderTable = () => {
+    //     let tableData, tableColumns;
+    //     if (currentTable === 'coldata' || currentTable === 'counts') {
+    //         if (edaData && edaData.tables && edaData.tables[currentTable]) {
+    //             const rawData = edaData.tables[currentTable].data;
+    //             const cols = edaData.tables[currentTable].cols;
+    //             tableData = rawData.map(row => {
+    //                 const obj = {};
+    //                 cols.forEach((col, index) => {
+    //                     obj[col] = row[index];
+    //                 });
+    //                 return obj;
+    //             });
+    //             tableColumns = cols.map(col => ({ key: col, name: col }));
+    //         }
+    //     } else if (currentTable === 'de_results') {
+    //         if (deData && deData.table) {
+    //             const rawData = deData.table.data;
+    //             const cols = deData.table.cols;
+    //             tableData = rawData.map(row => {
+    //                 const obj = {};
+    //                 cols.forEach((col, index) => {
+    //                     obj[col] = row[index];
+    //                 });
+    //                 return obj;
+    //             });
+    //             tableColumns = cols.map(col => ({ key: col, name: col }));
+    //         }
+    //     } else if (currentTable === 'gsea_results') {
+    //         if (gseaData && gseaData.table) {
+    //             const rawData = gseaData.table.data;
+    //             const cols = gseaData.table.cols;
+    //             tableData = rawData.map(row => {
+    //                 const obj = {};
+    //                 cols.forEach((col, index) => {
+    //                     obj[col] = row[index];
+    //                 });
+    //                 return obj;
+    //             });
+    //             tableColumns = cols.map(col => ({ key: col, name: col }));
+    //         }
+    //     }
 
-        if (tableData && tableColumns) {
-            return (
-                <DataTable
-                    data={tableData}
-                    columns={tableColumns}
-                    contrastGroup={contrastGroup}
-                    referenceGroup={referenceGroup}
-                    onAddSamplesToGroup={handleAddSamplesToGroup}
-                    onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                />
-            );
-        } else {
-            return <p>No data available</p>;
-        }
-    };
+    //     if (tableData && tableColumns) {
+    //         return (
+    //             <DataTable
+    //                 data={tableData}
+    //                 columns={tableColumns}
+    //                 contrastGroup={contrastGroup}
+    //                 referenceGroup={referenceGroup}
+    //                 onAddSamplesToGroup={handleAddSamplesToGroup}
+    //                 onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+    //             />
+    //         );
+    //     } else {
+    //         return <p>No data available</p>;
+    //     }
+    // };
 
     const renderPlot = () => {
         let plotHtml;
@@ -459,6 +477,35 @@ const Analysis = () => {
         setIsLoading(false);
     };
 
+    const renderTable = () => {
+        if (!tableData || !tableColumns.length) {
+            return (
+                <div className='analysisContentGuide'>
+                    <h1>To run analysis:</h1>
+                    <p>Step 1. Choose a dataset (example, GDC/GEO, or custom).</p>
+                    <p>Step 2. Configure analysis settings.</p>
+                    <p>Step 3. Run the analysis.</p>
+                </div>
+            );
+        }
+
+        const requiresToolbar = currentStage !== 'exploration';
+        console.log("Current stage: ", currentStage)
+
+        return (
+            <DataTable
+                data={tableData}
+                columns={tableColumns}
+                contrastGroup={contrastGroup}
+                referenceGroup={referenceGroup}
+                onAddSamplesToGroup={handleAddSamplesToGroup}
+                onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                requiresToolbar={requiresToolbar}
+            />
+        );
+    };
+
+
     if (error) {
         return <div>Error: {error}</div>;
     }
@@ -530,6 +577,10 @@ const Analysis = () => {
                                 referenceGroup={referenceGroup}
                                 isLoading={isLoading}
                                 progress={progress}
+                                renderTable={renderTable}
+                                tableData={tableData}
+                                tableColumns={tableColumns}
+                                currentStage={currentStage}
                             />
                         )}
                         {currentStage === 'differential' && (
@@ -542,6 +593,10 @@ const Analysis = () => {
                                 referenceGroup={referenceGroup}
                                 isLoading={isLoading}
                                 progress={progress}
+                                renderTable={renderTable}
+                                tableData={tableData}
+                                tableColumns={tableColumns}
+                                currentStage={currentStage}
                             />
                         )}
                         {currentStage === 'enrichment' && (

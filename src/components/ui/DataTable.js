@@ -7,9 +7,13 @@ const getIntersectingRows = (filteredRows, selectionModel) => {
   return selectionModel.filter(id => filteredRows.includes(id));
 };
 
-const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows, clearSelection }) => {
+const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows, clearSelection, requiresToolbar }) => {
   const [selectedGroupType, setSelectedGroupType] = useState('reference');
   const apiRef = useGridApiContext();
+
+  if (!requiresToolbar) {
+    return null;
+  }
 
   const handleAddSamples = () => {
     console.log("handleAddSamples called");
@@ -60,7 +64,8 @@ const DataTable = ({
   contrastGroup,
   referenceGroup,
   onAddSamplesToGroup,
-  onRemoveSamplesFromGroup
+  onRemoveSamplesFromGroup,
+  requiresToolbar
 }) => {
   const [sortModel, setSortModel] = useState([]);
   const [selectionModel, setSelectionModel] = useState([]);
@@ -70,7 +75,7 @@ const DataTable = ({
   const apiRef = useRef(null);
 
 
-  console.log("DataTable rendering, rowGroups:", rowGroups);
+  console.log("Requires Toolbar: ", requiresToolbar);
 
   const gridColumns = useMemo(() => {
     return columns.map(col => ({
@@ -166,7 +171,7 @@ const DataTable = ({
         onSortModelChange={setSortModel}
         filterModel={filterModel}
         onFilterModelChange={setFilterModel}
-        checkboxSelection
+        checkboxSelection={requiresToolbar}
         disableColumnMenu={false}
         disableSelectionOnClick={true}
         density="compact"
@@ -183,15 +188,16 @@ const DataTable = ({
         rowsPerPageOptions={[25, 50, 100]}
         initialState={{ pagination: { pageSize: 100 } }}
         slots={{
-          toolbar: CustomToolbar,
+          toolbar: requiresToolbar ? CustomToolbar : null,
         }}
         slotProps={{
-          toolbar: {
+          toolbar: requiresToolbar ? {
             onAddSamplesToGroup: handleAddSamplesToGroup,
             selectionModel: selectionModel,
             rows: filteredRows,
             clearSelection: clearSelection,
-          },
+            requiresToolbar: requiresToolbar,
+          } : undefined,
         }}
         apiRef={apiRef}
         sx={{
