@@ -136,7 +136,7 @@ nav {
 
 #analysis_content {
     padding: 20px;
-    height: 85vh;
+    height: 80vh;
     overflow-y: auto;
     box-sizing: border-box;
 }
@@ -153,7 +153,7 @@ nav {
 #analysis_user_input {
     background-color: #ECECEC;
     width: 35%;
-    max-height: calc(100vh - 58px);
+    max-height: calc(100vh - 100px);
     min-height: min-content;
     height: auto;
     padding: 1%;
@@ -167,6 +167,7 @@ nav {
     background: #d7400941;
     padding: 1%;
     border-radius: 15px;
+    height: 40%;
 }
 
 .analysisContentGuide h1 {
@@ -884,12 +885,14 @@ ul.suggestions {
     display: none;
     overflow: hidden;
     width: 100vw;
+    height: 200px;
 }
 
 .table-view.active,
 .plot-view.active {
     display: flex;
     width: 70vw;
+    height: 200px;
 }
 
 .plot-container {

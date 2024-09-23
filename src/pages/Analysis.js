@@ -336,49 +336,68 @@ const Analysis = () => {
         const numSamples = dataset.coldataTable.rows.length;
 
         // EDA
-        setProgress(10);
-        const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
-            expression: dataset.expression,
-            numSamples: numSamples,
-            numGenes: numGenes
-        });
-        setProgress(20);
-        const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
-            counts: transformedCounts,
-            numSamples: numSamples,
-            numGenes: numGenes,
-            sample_ids: dataset.countsTable.cols.slice(2)
-        });
-        setProgress(27);
-        const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
-            counts: transformedCounts,
-            numSamples: numSamples,
-            numGenes: numGenes,
-            sample_ids: dataset.countsTable.cols.slice(2)
-        });
-        setProgress(34);
-        const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
-            counts: transformedCounts,
-            numSamples: numSamples,
-            numGenes: numGenes,
-            sample_ids: dataset.countsTable.cols.slice(2)
-        });
-        /*
-                // DE Analysis
-                setProgress(40);
+        if (currentStage === 'exploration') {
+            try {
+                setProgress(10);
+                const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
+                    expression: dataset.expression,
+                    numSamples: numSamples,
+                    numGenes: numGenes
+                });
+
+                setProgress(20);
+                const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
+                    counts: transformedCounts,
+                    numSamples: numSamples,
+                    numGenes: numGenes,
+                    sample_ids: dataset.countsTable.cols.slice(2)
+                });
+
+                setProgress(27);
+                const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
+                    counts: transformedCounts,
+                    numSamples: numSamples,
+                    numGenes: numGenes,
+                    sample_ids: dataset.countsTable.cols.slice(2)
+                });
+
+                setProgress(34);
+                const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
+                    counts: transformedCounts,
+                    numSamples: numSamples,
+                    numGenes: numGenes,
+                    sample_ids: dataset.countsTable.cols.slice(2)
+                });
+
+                setEdaData({
+                    tables: {
+                        coldata: dataset.coldataTable,
+                        counts: dataset.countsTable
+                    },
+                    plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
+                });
+            } catch (error) {
+                console.error("Error in exploration analysis:", error);
+                setError("An error occurred during the exploration analysis. Please try again.");
+            }
+        }
+        // DE Analysis
+        if (currentStage === 'differential') {
+            try {
+                setProgress(10);
                 // Calculate effective library sizes
                 const effectiveLibSizes = Array.from(await WorkerManager.runTask('py', 'compute_tmm_effective_library_sizes', {
                     expression: dataset.expression,
                     numSamples: numSamples,
                     numGenes: numGenes
                 }));
-        
+
                 // Get the sample IDs from contrast and reference groups
                 const selectedSampleIds = new Set([
                     ...contrastGroup.samples.map(s => s.id),
                     ...referenceGroup.samples.map(s => s.id)
                 ]);
-        
+
                 const sampleIds = dataset.countsTable.cols.slice(2).filter(col => selectedSampleIds.has(col));
                 const filteredColdata = {
                     cols: dataset.coldataTable.cols,
@@ -387,7 +406,7 @@ const Analysis = () => {
                         return dataset.coldataTable.data[rowIndex];
                     })
                 }
-        
+
                 const countsColMask = new Array(dataset.countsTable.cols.length).fill(false);
                 countsColMask[0] = true;
                 countsColMask[1] = true;
@@ -402,7 +421,8 @@ const Analysis = () => {
                 const filteredCounts = Int32Array.from(filteredCountsTable.data.flatMap(row => row.slice(2)));
                 const filteredEffectiveLibSizes = effectiveLibSizes.filter((_, index) => countsColMask[index + 2]);
                 const filteredNumSamples = filteredColdata.data.length;
-        
+
+                setProgress(50);
                 const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
                     counts: filteredCounts,
                     ensemblIds: dataset.countsTable.rows,
@@ -413,31 +433,37 @@ const Analysis = () => {
                     numSamples: filteredNumSamples,
                     numGenes: numGenes
                 });
+
                 const deTable = {
                     cols: ['ensembl_id', 'logFC', 't', 'p_value', 'p_value_adj'],
                     data: [...Array(deResults.row_names.length)].map((_, i) => [deResults.row_names[i], deResults.logFC[i], deResults.t[i], deResults.p_value[i], deResults.p_value_adj[i]])
                 }
-        
-                setProgress(50);
+
+                setProgress(70);
                 const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
                     data: deResults.data,
                     row_names: deResults.row_names,
                     column_names: deResults.column_names,
-                    pval_thresh: 0.05,   // todo: make this dynamic or allow the user to set it in the analysis input form
-                    lfc_thresh: 1.5,    // todo: make this dynamic or allow the user to set it in the analysis input form
-                    cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
+                    pval_thresh: 0.05,
+                    lfc_thresh: 1.5,
+                    cohort_name: 'cohort name goes here 🚧'
                 });
-        
-                setProgress(60);
+
+                setProgress(90);
                 const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
                     data: deResults.data,
                     row_names: deResults.row_names,
                     column_names: deResults.column_names,
-                    fdr: 0.05,   // todo: allow this to be set by the user
-                    cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
+                    fdr: 0.05,
+                    cohort_name: 'cohort name goes here 🚧'
                 });
-                */
 
+                setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
+            } catch (error) {
+                console.error("Error in differential expression analysis:", error);
+                setError("An error occurred during the differential expression analysis. Please try again.");
+            }
+        }
         // GSEA
         // setProgress(70);
         // const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
@@ -463,17 +489,7 @@ const Analysis = () => {
         // setProgress(90);
 
         // Update state with results
-        setEdaData({
-            tables: {
-                coldata: dataset.coldataTable,
-                counts: dataset.countsTable
-            },
-            plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
-        });
-        // setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
         // setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
-        setProgress(100);
-
         setIsLoading(false);
     };
 
@@ -560,9 +576,9 @@ const Analysis = () => {
 
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
-                    <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />
-                    <TabButton label="Differential Expression Analysis" onClick={() => handleStageChange('differential')} />
-                    <TabButton label="Gene Set Enrichment Analysis" onClick={() => handleStageChange('enrichment')} />
+                    <TabButton label="1. Data Exploration" onClick={() => handleStageChange('exploration')} />
+                    <TabButton label="2. Differential Expression Analysis" onClick={() => handleStageChange('differential')} />
+                    <TabButton label="3. Gene Set Enrichment Analysis" onClick={() => handleStageChange('enrichment')} />
                 </div>
                 <div id="analysis_content">
                     <div id="view_content">
