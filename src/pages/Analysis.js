@@ -516,6 +516,20 @@ const Analysis = () => {
                 return obj;
             });
             currentTableColumns = cols.map(col => ({ key: col, name: col }));
+            return (
+                <div>
+                    <h1>DE Results</h1>
+                    <DataTable
+                        data={currentTableData}
+                        columns={currentTableColumns}
+                        contrastGroup={contrastGroup}
+                        referenceGroup={referenceGroup}
+                        onAddSamplesToGroup={handleAddSamplesToGroup}
+                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                        requiresToolbar={false}
+                    />
+                </div>
+            );
         }
 
         const requiresToolbar = currentStage !== 'exploration';
@@ -614,30 +628,6 @@ const Analysis = () => {
                                 progress={progress}
                             />
                         )}
-                        {/* <div
-                            style={{ display: activeTab === 'table' ? 'block' : 'none', height: '100%', overflow: 'auto' }}
-                            ref={tableContainerRef}
-                            onScroll={handleTableScroll}
-                        >
-                            <div id="table_toggle">
-                                {renderTableButtons()}
-                            </div>
-                            {isLoading && <ProgressBar progress={progress} />}
-                            {renderTable()}
-                        </div>
-                        <div
-                            style={{
-                                display: activeTab === 'plot' ? 'block' : 'none',
-                                height: 'calc(100vh)',
-                                width: '100%',
-                                overflow: 'hidden'
-                            }}
-                        >
-                            <div id="plot_toggle">
-                                {renderPlotButtons()}
-                            </div>
-                            {renderPlot()}
-                        </div> */}
                     </div>
                 </div>
             </div>
