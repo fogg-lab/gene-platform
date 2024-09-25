@@ -7,16 +7,9 @@ const ExplorationContent = ({
     data,
     activeTab,
     setActiveTab,
-    onAddSamplesToGroup,
-    onRemoveSamplesFromGroup,
-    contrastGroup,
-    referenceGroup,
     isLoading,
     progress,
     renderTable,
-    tableData,
-    tableColumns,
-    currentStage,
 }) => {
     const [currentPlot, setCurrentPlot] = useState('pca');
 
@@ -44,7 +37,7 @@ const ExplorationContent = ({
                     {data.plots[currentPlot] ? (
                         <PlotArea htmlContent={data.plots[currentPlot]} />
                     ) : (
-                        <p>No {currentPlot} plot available</p>
+                        <p>Run analysis to see plots</p>
                     )}
                 </div>
             </div>

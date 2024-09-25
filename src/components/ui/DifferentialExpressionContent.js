@@ -5,20 +5,16 @@ import PlotArea from './PlotArea';
 
 const DifferentialExpressionContent = ({
     data,
-    onAddSamplesToGroup,
-    onRemoveSamplesFromGroup,
-    contrastGroup,
-    referenceGroup,
+    activeTab,
+    setActiveTab,
     isLoading,
     progress,
     renderTable,
-    tableData,
-    tableColumns,
-    currentStage,
+    currentTable,
+    setCurrentTable,
+    currentPlot,
+    setCurrentPlot,
 }) => {
-    const [activeTab, setActiveTab] = useState('table');
-    const [currentPlot, setCurrentPlot] = useState('pca');
-
     const renderPlotTabs = () => {
         if (!data || !data.plots) {
             return <p>No plots available</p>;

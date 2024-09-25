@@ -56,8 +56,6 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
 const EDAInputForm = ({
     setIsVisible,
     onDatasetSelect,
-    contrastGroup,
-    referenceGroup,
     onRemoveSamplesFromGroup,
     runAnalysis,
     isLoading
@@ -177,8 +175,6 @@ FileDropArea.propTypes = {
 EDAInputForm.propTypes = {
     setIsVisible: PropTypes.func.isRequired,
     onDatasetSelect: PropTypes.func.isRequired,
-    contrastGroup: PropTypes.object.isRequired,
-    referenceGroup: PropTypes.object.isRequired,
     onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,

@@ -494,24 +494,37 @@ const Analysis = () => {
     };
 
     const renderTable = () => {
-        if (!tableData || !tableColumns.length) {
+        if ((!tableData || !tableColumns.length) && currentStage !== 'differential') {
             return (
                 <div className='analysisContentGuide'>
-                    <h1>To run analysis:</h1>
-                    <p>Step 1. Choose a dataset (example, GDC/GEO, or custom).</p>
-                    <p>Step 2. Configure analysis settings.</p>
-                    <p>Step 3. Run the analysis.</p>
+                    <h1>Select dataset then run analysis to see results</h1>
                 </div>
             );
         }
 
+        let currentTableData = tableData;
+        let currentTableColumns = tableColumns;
+
+        if (currentStage === 'differential' && deData && deData.table) {
+            const rawData = deData.table.data;
+            const cols = deData.table.cols;
+            currentTableData = rawData.map((row, index) => {
+                const obj = { id: index };
+                cols.forEach((col, colIndex) => {
+                    obj[col] = row[colIndex];
+                });
+                return obj;
+            });
+            currentTableColumns = cols.map(col => ({ key: col, name: col }));
+        }
+
         const requiresToolbar = currentStage !== 'exploration';
-        console.log("Current stage: ", currentStage)
+        console.log("Current stage: ", currentStage);
 
         return (
             <DataTable
-                data={tableData}
-                columns={tableColumns}
+                data={currentTableData}
+                columns={currentTableColumns}
                 contrastGroup={contrastGroup}
                 referenceGroup={referenceGroup}
                 onAddSamplesToGroup={handleAddSamplesToGroup}
@@ -529,21 +542,10 @@ const Analysis = () => {
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-                {/* <AnalysisInputForm
-                    setIsVisible={setIsVisible}
-                    onDatasetSelect={handleDatasetSelect}
-                    contrastGroup={contrastGroup}
-                    referenceGroup={referenceGroup}
-                    onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                    runAnalysis={runAnalysis}
-                    isLoading={isLoading}
-                /> */}
                 {currentStage === 'exploration' && (
                     <EDAInputForm
                         setIsVisible={setIsVisible}
                         onDatasetSelect={handleDatasetSelect}
-                        contrastGroup={contrastGroup}
-                        referenceGroup={referenceGroup}
                         onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
                         isLoading={isLoading}
@@ -551,22 +553,16 @@ const Analysis = () => {
                 )}
                 {currentStage === 'differential' && (
                     <DEAInputForm
-                        setIsVisible={setIsVisible}
-                        onDatasetSelect={handleDatasetSelect}
                         contrastGroup={contrastGroup}
                         referenceGroup={referenceGroup}
                         onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
-                        isLoading={isLoading}
                     />
                 )}
                 {currentStage === 'enrichment' && (
                     <GSEAInputForm
                         setIsVisible={setIsVisible}
                         onDatasetSelect={handleDatasetSelect}
-                        contrastGroup={contrastGroup}
-                        referenceGroup={referenceGroup}
-                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
                         isLoading={isLoading}
                     />
@@ -587,32 +583,23 @@ const Analysis = () => {
                                 data={edaData}
                                 activeTab={activeTab}
                                 setActiveTab={setActiveTab}
-                                onAddSamplesToGroup={handleAddSamplesToGroup}
-                                onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                                contrastGroup={contrastGroup}
-                                referenceGroup={referenceGroup}
                                 isLoading={isLoading}
                                 progress={progress}
                                 renderTable={renderTable}
-                                tableData={tableData}
-                                tableColumns={tableColumns}
-                                currentStage={currentStage}
                             />
                         )}
                         {currentStage === 'differential' && (
                             <DifferentialExpressionContent
                                 data={deData}
                                 activeTab={activeTab}
-                                onAddSamplesToGroup={handleAddSamplesToGroup}
-                                onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                                contrastGroup={contrastGroup}
-                                referenceGroup={referenceGroup}
+                                setActiveTab={setActiveTab}
                                 isLoading={isLoading}
                                 progress={progress}
                                 renderTable={renderTable}
-                                tableData={tableData}
-                                tableColumns={tableColumns}
-                                currentStage={currentStage}
+                                currentTable={currentTable}
+                                setCurrentTable={setCurrentTable}
+                                currentPlot={currentPlot}
+                                setCurrentPlot={setCurrentPlot}
                             />
                         )}
                         {currentStage === 'enrichment' && (

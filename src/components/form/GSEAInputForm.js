@@ -1,17 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
 import terminal from '../../assets/icons/terminal.png';
-import pako from 'pako';
-import SampleField from '../ui/SampleField';
 
 const GSEAInputForm = ({
     setIsVisible,
     onDatasetSelect,
-    contrastGroup,
-    referenceGroup,
-    onRemoveSamplesFromGroup,
     runAnalysis,
     isLoading
 }) => {
@@ -122,9 +116,6 @@ const GSEAInputForm = ({
 GSEAInputForm.propTypes = {
     setIsVisible: PropTypes.func.isRequired,
     onDatasetSelect: PropTypes.func.isRequired,
-    contrastGroup: PropTypes.object.isRequired,
-    referenceGroup: PropTypes.object.isRequired,
-    onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
 };
