@@ -321,6 +321,39 @@ nav {
     overflow: auto;
 }
 
+.errorPopup {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    top: 25%;
+    left: 30%;
+    width: 50%;
+    height: 30%;
+    z-index: 1000;
+    border-radius: 5px;
+    background-color: #D73F09;
+    border: 2px solid black;
+    box-shadow: 15px 15px 10px rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    overflow: auto;
+}
+
+.errorPopupContent {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.errorPopupContent p {
+    color: white;
+    font-size: 1.8em;
+    font-family: 'KievitOffc-Bold'
+}
+
 .databasePopup h1 {
     color: white;
     font-family: 'KievitOffc-Bold';
