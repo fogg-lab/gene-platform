@@ -16,7 +16,7 @@ async function initializePyodide() {
   `);
 }
 
-self.onmessage = async function(event) {
+self.onmessage = async function (event) {
   if (!pyodide) {
     await initializePyodide();
   }

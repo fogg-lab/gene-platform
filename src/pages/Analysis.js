@@ -328,19 +328,61 @@ const Analysis = () => {
         );
     };
 
-    const runAnalysis = async () => {
+    const runAnalysis = async (uploadedFiles) => {
         setIsLoading(true);
         setProgress(0);
 
-        const numGenes = dataset.countsTable.rows.length;
-        const numSamples = dataset.coldataTable.rows.length;
+        let analysisDataset;
+
+        if (uploadedFiles) {
+            analysisDataset = uploadedFiles;
+        } else if (dataset) {
+            analysisDataset = dataset;
+        } else {
+            setError("No dataset available for analysis. Please upload files or select a dataset.");
+            setIsLoading(false);
+            return;
+        }
+
+        const numGenes = analysisDataset.countsTable.rows.length;
+        const numSamples = analysisDataset.coldataTable.rows.length;
+
+        console.log("Number of genes (rows in countsTable):", numGenes);
+        console.log("Number of samples (rows in coldataTable):", numSamples);
+
+        let expressionArray;
+        if (uploadedFiles) {
+            expressionArray = new Float32Array(numGenes * numSamples);
+            for (let i = 0; i < numGenes; i++) {
+                for (let j = 0; j < numSamples; j++) {
+                    expressionArray[i * numSamples + j] = parseFloat(analysisDataset.countsTable.data[i][j + 2]); // +2 to skip gene ID and symbol columns
+                }
+            }
+        } else {
+            expressionArray = new Float32Array(analysisDataset.expression);
+        }
+
+        console.log("Final expression array length:", expressionArray.length);
+
+
+        if (analysisDataset.countsTable.data) {
+            console.log("Length of countsTable data:", analysisDataset.countsTable.data.length);
+            console.log("Length of first row in countsTable data:", analysisDataset.countsTable.data[0].length);
+        }
+
+        if (analysisDataset.expression) {
+            console.log("Length of expression array:", analysisDataset.expression.length);
+        }
 
         // EDA
         if (currentStage === 'exploration') {
             try {
                 setProgress(10);
+                console.log("Sending to Python - expressionArray length:", expressionArray.length);
+                console.log("Sending to Python - numSamples:", numSamples);
+                console.log("Sending to Python - numGenes:", numGenes);
                 const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
-                    expression: dataset.expression,
+                    expression: expressionArray,
                     numSamples: numSamples,
                     numGenes: numGenes
                 });
@@ -350,7 +392,7 @@ const Analysis = () => {
                     counts: transformedCounts,
                     numSamples: numSamples,
                     numGenes: numGenes,
-                    sample_ids: dataset.countsTable.cols.slice(2)
+                    sample_ids: analysisDataset.countsTable.cols.slice(2)
                 });
 
                 setProgress(27);
@@ -358,7 +400,7 @@ const Analysis = () => {
                     counts: transformedCounts,
                     numSamples: numSamples,
                     numGenes: numGenes,
-                    sample_ids: dataset.countsTable.cols.slice(2)
+                    sample_ids: analysisDataset.countsTable.cols.slice(2)
                 });
 
                 setProgress(34);
@@ -366,13 +408,13 @@ const Analysis = () => {
                     counts: transformedCounts,
                     numSamples: numSamples,
                     numGenes: numGenes,
-                    sample_ids: dataset.countsTable.cols.slice(2)
+                    sample_ids: analysisDataset.countsTable.cols.slice(2)
                 });
 
                 setEdaData({
                     tables: {
-                        coldata: dataset.coldataTable,
-                        counts: dataset.countsTable
+                        coldata: analysisDataset.coldataTable,
+                        counts: analysisDataset.countsTable
                     },
                     plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
                 });
@@ -497,7 +539,7 @@ const Analysis = () => {
         if ((!tableData || !tableColumns.length) && currentStage !== 'differential') {
             return (
                 <div className='analysisContentGuide'>
-                    <h1>Select dataset then run analysis to see results</h1>
+                    <h1>Analysis has not yet been run</h1>
                 </div>
             );
         }
@@ -586,9 +628,21 @@ const Analysis = () => {
 
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
-                    <TabButton label="1. Data Exploration" onClick={() => handleStageChange('exploration')} />
-                    <TabButton label="2. Differential Expression Analysis" onClick={() => handleStageChange('differential')} />
-                    <TabButton label="3. Gene Set Enrichment Analysis" onClick={() => handleStageChange('enrichment')} />
+                    <TabButton
+                        label="Data Exploration"
+                        onClick={() => handleStageChange('exploration')}
+                        isActive={currentStage === 'exploration'}
+                    />
+                    <TabButton
+                        label="Differential Expression Analysis"
+                        onClick={() => handleStageChange('differential')}
+                        isActive={currentStage === 'differential'}
+                    />
+                    <TabButton
+                        label="Gene Set Enrichment Analysis"
+                        onClick={() => handleStageChange('enrichment')}
+                        isActive={currentStage === 'enrichment'}
+                    />
                 </div>
                 <div id="analysis_content">
                     <div id="view_content">
