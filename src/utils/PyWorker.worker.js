@@ -31,11 +31,20 @@ self.onmessage = async function (event) {
     switch (action) {
       case 'transform_vst':
         result = (await pyodide.runPythonAsync(`
-          from js import expression, numSamples, numGenes
+          from js import expression, numSamples, numGenes, isUploadedFiles
           import numpy as np
           from gene_platform_utils.transformation import vst
-          counts_2d = np.asarray(expression).reshape(numSamples, numGenes)
-          vst(counts_2d)
+          print(f"Python received: expression length = {len(expression)}, numSamples = {numSamples}, numGenes = {numGenes}, isUploadedFiles = {isUploadedFiles}")
+          counts_2d = np.asarray(expression, dtype=np.int32).reshape(numGenes, numSamples)
+          print(f"Reshaped counts_2d shape: {counts_2d.shape}")
+          # Differentiate between structuring uploaded files vs. external files vv
+          if isUploadedFiles:
+              counts_2d = counts_2d.T  # Transpose for uploaded files
+          transformed = vst(counts_2d)
+          print(f"Transformed shape: {transformed.shape}")
+          if isUploadedFiles:
+              transformed = transformed.T  # Transpose back for uploaded files
+          transformed.flatten().tolist()
         `)).toJs();
         break;
       case 'transform_log2':

@@ -14,7 +14,6 @@ import GSEAInputForm from '../components/form/GSEAInputForm';
 import DEAInputForm from '../components/form/DEAInputForm';
 import EDAInputForm from '../components/form/EDAInputForm';
 
-
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
     const [tableScrollPosition, setTableScrollPosition] = useState(0);
@@ -333,9 +332,11 @@ const Analysis = () => {
         setProgress(0);
 
         let analysisDataset;
+        let isUploadedFiles = false;
 
         if (uploadedFiles) {
             analysisDataset = uploadedFiles;
+            isUploadedFiles = true;
         } else if (dataset) {
             analysisDataset = dataset;
         } else {
@@ -344,22 +345,27 @@ const Analysis = () => {
             return;
         }
 
+
+
         const numGenes = analysisDataset.countsTable.rows.length;
-        const numSamples = analysisDataset.coldataTable.rows.length;
+        const numSamples = isUploadedFiles
+            ? analysisDataset.countsTable.cols.length - 2 // Subtract 2 for gene ID and symbol columns
+            : analysisDataset.coldataTable.rows.length;
 
         console.log("Number of genes (rows in countsTable):", numGenes);
         console.log("Number of samples (rows in coldataTable):", numSamples);
 
         let expressionArray;
-        if (uploadedFiles) {
-            expressionArray = new Float32Array(numGenes * numSamples);
+        if (isUploadedFiles) {
+            expressionArray = new Int32Array(numGenes * numSamples);
             for (let i = 0; i < numGenes; i++) {
                 for (let j = 0; j < numSamples; j++) {
-                    expressionArray[i * numSamples + j] = parseFloat(analysisDataset.countsTable.data[i][j + 2]); // +2 to skip gene ID and symbol columns
+                    const value = parseInt(analysisDataset.countsTable.data[i][j + 2], 10);
+                    expressionArray[i * numSamples + j] = isNaN(value) ? 0 : value;
                 }
             }
         } else {
-            expressionArray = new Float32Array(analysisDataset.expression);
+            expressionArray = new Int32Array(analysisDataset.expression);
         }
 
         console.log("Final expression array length:", expressionArray.length);
@@ -384,7 +390,8 @@ const Analysis = () => {
                 const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
                     expression: expressionArray,
                     numSamples: numSamples,
-                    numGenes: numGenes
+                    numGenes: numGenes,
+                    isUploadedFiles: isUploadedFiles
                 });
 
                 setProgress(20);
