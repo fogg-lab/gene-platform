@@ -6,7 +6,9 @@ import DatabasePopup from '../components/ui/DatabasePopup';
 import WorkerManager from '../utils/Workers';
 import PlotArea from '../components/ui/PlotArea';
 import ProgressBar from '../components/ui/ProgressBar';
-import { getExternalDataset } from '../services/api';
+import { getExternalDataset, getExternalGeneSetCollection } from '../services/api';
+import humanGenes from '../assets/genes/human_genes.json';
+import mouseGenes from '../assets/genes/mouse_genes.json';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -26,6 +28,14 @@ const Analysis = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [progress, setProgress] = useState(0);
+
+    const [geneSetCollections, setGeneSetCollections] = useState([]);
+    const [gseaParams, setGseaParams] = useState({
+        weight: 1,
+        minSize: 15,
+        maxSize: 500,
+        nperm: 1000,
+    });
 
     const handleAddSamplesToGroup = useCallback((isContrast, samplesToAdd) => {
         setContrastGroup(prevContrastGroup => {
@@ -150,6 +160,11 @@ const Analysis = () => {
                             }))
                     }
                 );
+                const collectionSpecies = "human";
+                const collectionId = "C5:GO:BP";
+                //const collectionId = "C2:CP:KEGG_LEGACY";
+                const newCollection = await getExternalGeneSetCollection(collectionSpecies, collectionId);
+                setGeneSetCollections(prev => [...prev, { name: collectionId, data: newCollection }]);
             } catch (error) {
                 console.error('Error loading example dataset:', error);
                 setError('Failed to load example dataset');
@@ -275,7 +290,6 @@ const Analysis = () => {
                     contrastGroup={contrastGroup}
                     referenceGroup={referenceGroup}
                     onAddSamplesToGroup={handleAddSamplesToGroup}
-                    onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                 />
             );
         } else {
@@ -299,17 +313,60 @@ const Analysis = () => {
         );
     };
 
+    const handleAddGeneSetCollection = async (species, collectionId) => {
+        try {
+            const newCollection = await getExternalGeneSetCollection(species, collectionId);
+            setGeneSetCollections(prev => [...prev, { name: collectionId, data: newCollection }]);
+        } catch (error) {
+            console.error('Error fetching gene set collection:', error);
+            setError('Failed to load gene set collection');
+        }
+    };
+
+    const handleUpdateGseaParams = (param, value) => {
+        setGseaParams(prev => ({ ...prev, [param]: value }));
+    };
+
     const runAnalysis = async () => {
         setIsLoading(true);
         setProgress(0);
 
-        const numGenes = dataset.countsTable.rows.length;
+        const numInputGenes = dataset.countsTable.rows.length;
         const numSamples = dataset.coldataTable.rows.length;
+        const geneInfo = await WorkerManager.runTask('py', 'check_genes', {
+            genesQuery: dataset.countsTable.rows,
+            humanGeneReference: humanGenes.genes,
+            mouseGeneReference: mouseGenes.genes
+        });
+        const geneReference = geneInfo.detectedSpecies === "mouse" ? mouseGenes.genes : humanGenes.genes;
+
+        // Create filtered expression and countsTable that excludes duplicate and unmatched genes and uses HGNC symbol
+        // Genes that are unique and were mapped to known HGNC symbols using the gene reference have result code 0
+        // (1-3 are failure codes. 1: reference for gene not found, 2: gene not unique, 3: not found and not unique)
+        const geneIndex = Array.from({ length: numInputGenes }, (_, i) => i);
+        const geneMask = geneIndex.map((i) => geneInfo.queryResultCode[i] == 0);
+        const mappedGeneIdx = geneIndex.filter((i) => geneMask[i]);
+        const mappedGeneSymbols = mappedGeneIdx.map((i) => geneReference[geneInfo.queryResultGeneIndices[i]][2]);
+        const numGenes = mappedGeneSymbols.length;
+        const mappedGenesExpression = new dataset.expression.constructor(numGenes * numSamples);
+        let mappedGenesExpressionIndex = 0;
+        let colIndex = 0;
+        for (let i = 0; i < dataset.expression.length; i++) {
+            if (geneMask[colIndex++]) {
+                mappedGenesExpression[mappedGenesExpressionIndex++] = dataset.expression[i];
+            }
+            if (colIndex === numInputGenes) colIndex = 0;
+        }
+        const mappedGenesCountsTable = {
+            cols: ["Symbol", ...dataset.countsTable.cols.slice(1)],
+            rows: mappedGeneSymbols,
+            data: mappedGeneIdx.map((i) => [mappedGeneSymbols[i], ...dataset.countsTable.data[i].slice(1)])
+        }
 
         // EDA
         setProgress(10);
         const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
-            expression: dataset.expression,
+            expression: mappedGenesExpression,
             numSamples: numSamples,
             numGenes: numGenes
         });
@@ -318,28 +375,28 @@ const Analysis = () => {
             counts: transformedCounts,
             numSamples: numSamples,
             numGenes: numGenes,
-            sample_ids: dataset.countsTable.cols.slice(2)
+            sample_ids: mappedGenesCountsTable.cols.slice(1)
         });
         setProgress(27);
         const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
             counts: transformedCounts,
             numSamples: numSamples,
             numGenes: numGenes,
-            sample_ids: dataset.countsTable.cols.slice(2)
+            sample_ids: mappedGenesCountsTable.cols.slice(1)
         });
         setProgress(34);
         const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
             counts: transformedCounts,
             numSamples: numSamples,
             numGenes: numGenes,
-            sample_ids: dataset.countsTable.cols.slice(2)
+            sample_ids: mappedGenesCountsTable.cols.slice(1)
         });
 
         // DE Analysis
         setProgress(40);
         // Calculate effective library sizes
         const effectiveLibSizes = Array.from(await WorkerManager.runTask('py', 'compute_tmm_effective_library_sizes', {
-            expression: dataset.expression,
+            expression: mappedGenesExpression,
             numSamples: numSamples,
             numGenes: numGenes
         }));
@@ -350,7 +407,7 @@ const Analysis = () => {
             ...referenceGroup.samples.map(s => s.id)
         ]);
 
-        const sampleIds = dataset.countsTable.cols.slice(2).filter(col => selectedSampleIds.has(col));
+        const sampleIds = mappedGenesCountsTable.cols.slice(1).filter(col => selectedSampleIds.has(col));
         const filteredColdata = {
             cols: dataset.coldataTable.cols,
             data: sampleIds.map(sampleId => {
@@ -359,24 +416,24 @@ const Analysis = () => {
             })
         }
 
-        const countsColMask = new Array(dataset.countsTable.cols.length).fill(false);
+        const countsColMask = new Array(mappedGenesCountsTable.cols.length).fill(false);
         countsColMask[0] = true;
         countsColMask[1] = true;
         sampleIds.forEach(sampleId => {
-            const index = dataset.countsTable.cols.indexOf(sampleId);
+            const index = mappedGenesCountsTable.cols.indexOf(sampleId);
             countsColMask[index] = true;
         });
         const filteredCountsTable = {
-            cols: [dataset.countsTable.cols[0], dataset.countsTable.cols[1], ...sampleIds],
-            data: dataset.countsTable.data.map(row => row.filter((_, index) => countsColMask[index]))
+            cols: [mappedGenesCountsTable.cols[0], mappedGenesCountsTable.cols[1], ...sampleIds],
+            data: mappedGenesCountsTable.data.map(row => row.filter((_, index) => countsColMask[index]))
         }
-        const filteredCounts = Int32Array.from(filteredCountsTable.data.flatMap(row => row.slice(2)));
-        const filteredEffectiveLibSizes = effectiveLibSizes.filter((_, index) => countsColMask[index + 2]);
+        const filteredCounts = Int32Array.from(filteredCountsTable.data.flatMap(row => row.slice(1)));
+        const filteredEffectiveLibSizes = effectiveLibSizes.filter((_, index) => countsColMask[index + 1]);
         const filteredNumSamples = filteredColdata.data.length;
 
         const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
             counts: filteredCounts,
-            ensemblIds: dataset.countsTable.rows,
+            geneSymbols: mappedGeneSymbols,
             coldata: filteredColdata,
             contrastGroup: contrastGroup.samples.map(sample => sample.id),
             referenceGroup: referenceGroup.samples.map(sample => sample.id),
@@ -385,7 +442,7 @@ const Analysis = () => {
             numGenes: numGenes
         });
         const deTable = {
-            cols: ['ensembl_id', 'logFC', 't', 'p_value', 'p_value_adj'],
+            cols: ['symbol', 'logFC', 't', 'p_value', 'p_value_adj'],
             data: [...Array(deResults.row_names.length)].map((_, i) => [deResults.row_names[i], deResults.logFC[i], deResults.t[i], deResults.p_value[i], deResults.p_value_adj[i]])
         }
 
@@ -409,39 +466,46 @@ const Analysis = () => {
         });
 
         // GSEA
-        // setProgress(70);
-        // const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
-        //     genes: deResults.row_names,
-        //     metric: deResults.t,
-        //     geneSets: geneSetCollections,
-        //     weight: 1,
-        //     minSize: 15,
-        //     maxSize: 500,
-        //     nperm: 1000,
-        //     seed: Date.now()
-        // });
-        // setProgress(80);
-        // const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
-        //     gsea_res: gseaResults,
-        //     de_res: deResults,
-        //     ensembl_to_symbol: ensemblToSymbol,
-        //     color_metric: 'P.Value',
-        //     pvalue_threshold: 0.05,
-        //     layout_seed: Date.now(),
-        //     color_seed: Date.now()
-        // });
-        // setProgress(90);
+        setProgress(70);
+        const combinedGeneSets = geneSetCollections.reduce((acc, collection) => {
+            return {
+                ...acc, ...collection.data.geneSets.reduce((setAcc, setName, index) => {
+                    setAcc[setName] = collection.data.geneSetSymbols[index];
+                    return setAcc;
+                }, {})
+            };
+        }, {});
+        const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
+            genes: mappedGeneSymbols,
+            metric: deResults.t,
+            geneSets: combinedGeneSets,
+            weight: gseaParams.weight,
+            minSize: gseaParams.minSize,
+            maxSize: gseaParams.maxSize,
+            nperm: gseaParams.nperm,
+            seed: Date.now()
+        });
+        setProgress(80);
+        const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
+            gsea_res: gseaResults,
+            de_res: deResults,
+            color_metric: 'P.Value',
+            pvalue_threshold: 0.05,
+            layout_seed: Date.now(),
+            color_seed: Date.now()
+        });
+        setProgress(90);
 
         // Update state with results
         setEdaData({
             tables: {
                 coldata: dataset.coldataTable,
-                counts: dataset.countsTable
+                counts: mappedGenesCountsTable
             },
             plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
         });
         setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
-        // setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
+        setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
         setProgress(100);
 
         setIsLoading(false);
@@ -462,10 +526,13 @@ const Analysis = () => {
                     onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                     runAnalysis={runAnalysis}
                     isLoading={isLoading}
+                    onAddGeneSetCollection={handleAddGeneSetCollection}
+                    geneSetCollections={geneSetCollections}
+                    gseaParams={gseaParams}
+                    onUpdateGseaParams={handleUpdateGseaParams}
                 />
             </div>
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
-
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
                     <TabButton label="Data Exploration" onClick={() => handleStageChange('exploration')} />

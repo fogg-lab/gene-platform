@@ -51,7 +51,7 @@ module.exports = {
       },
       {
         test: /\.worker\.js$/,
-        use: { 
+        use: {
           loader: 'worker-loader',
           options: {
             filename: '[name].[contenthash].worker.js'
@@ -86,8 +86,8 @@ module.exports = {
     new PyodidePlugin(),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'public/py-wheels', to: 'py-wheels' },
-        { from: 'public/wasm', to: 'wasm' }
+        { from: 'public/py-wheels', to: 'py-wheels' }
+        //{ from: 'public/wasm', to: 'wasm' }
       ],
     }),
     new Dotenv(),
@@ -100,10 +100,20 @@ module.exports = {
     port: 9328,
     historyApiFallback: true,
     proxy: {
-      '/api': {
+      '/datasets': {
         target: 'https://docgl1or94tw4.cloudfront.net',
         changeOrigin: true,
-        pathRewrite: { '^/api': '' },
+        pathRewrite: { '^/datasets': '' },
+      },
+      '/broadinstitute': {
+        target: 'https://data.broadinstitute.org',
+        changeOrigin: true,
+        pathRewrite: { '^/broadinstitute': '' },
+      },
+      '/msigdb': {
+        target: 'https://www.gsea-msigdb.org',
+        changeOrigin: true,
+        pathRewrite: { '^/msigdb': '' },
       },
     },
   }

@@ -72,6 +72,7 @@
     "clsx": "^2.1.0",
     "crypto-browserify": "^3.12.0",
     "dotenv": "^16.4.5",
+    "gsea-rs": "https://github.com/fogg-lab/gsea-rs/releases/download/latest/gsea-rs.tar.gz",
     "pako": "^2.1.0",
     "papa": "^0.0.0",
     "papaparse": "^5.4.1",

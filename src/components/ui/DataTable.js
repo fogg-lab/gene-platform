@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { DataGridPro, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext } from '@mui/x-data-grid-pro';
 import PropTypes from 'prop-types';
 
@@ -60,15 +60,12 @@ const DataTable = ({
   contrastGroup,
   referenceGroup,
   onAddSamplesToGroup,
-  onRemoveSamplesFromGroup
 }) => {
   const [sortModel, setSortModel] = useState([]);
   const [selectionModel, setSelectionModel] = useState([]);
   const [filterModel, setFilterModel] = useState({ items: [] });
   const [key, setKey] = useState(0);
   const [rowGroups, setRowGroups] = useState({});
-  const apiRef = useRef(null);
-
 
   console.log("DataTable rendering, rowGroups:", rowGroups);
 
@@ -193,7 +190,6 @@ const DataTable = ({
             clearSelection: clearSelection,
           },
         }}
-        apiRef={apiRef}
         sx={{
           height: '100%',
           width: '100%',
@@ -250,42 +246,9 @@ DataTable.propTypes = {
       name: PropTypes.string.isRequired,
     })
   ).isRequired,
+  contrastGroup: PropTypes.object.isRequired,
+  referenceGroup: PropTypes.object.isRequired,
   onAddSamplesToGroup: PropTypes.func.isRequired,
 };
 
 export default DataTable;
-
-
-/*
-sx={{
-          height: '100%',
-          width: '100%',
-          '& .MuiDataGrid-main': { overflow: 'hidden' },
-          '& .MuiDataGrid-virtualScroller': { overflow: 'auto' },
-          '& .MuiDataGrid-footerContainer': { overflow: 'hidden' },
-          '& .MuiDataGrid-toolbarContainer .MuiButton-root': {
-            color: '#D73F09',
-          },
-          '& .MuiDataGrid-toolbarContainer .MuiButton-root .MuiSvgIcon-root': {
-            color: '#D73F09',
-          },
-          '& .MuiDataGrid-toolbarContainer .MuiButton-root .MuiButton-startIcon + .MuiButton-text': {
-            color: '#D73F09',
-          },
-          '& .MuiDataGrid-columnHeader .MuiDataGrid-iconButtonContainer .MuiIconButton-root': {
-            color: '#D73F09',
-          },
-          '& .MuiDataGrid-columnHeader .MuiDataGrid-filterIcon': {
-            color: '#D73F09',
-          },
-          '& .MuiCheckbox-root': {
-            color: '#D73F09',
-          },
-          '& .MuiCheckbox-root.Mui-checked': {
-            color: '#D73F09',
-          },
-          '& .MuiCheckbox-root:hover': {
-            backgroundColor: 'rgba(215, 63, 9, 0.04)',
-          },
-        }}
-*/
