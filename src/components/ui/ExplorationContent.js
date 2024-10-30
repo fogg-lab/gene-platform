@@ -2,23 +2,18 @@ import React, { useState } from 'react';
 import DataTable from './DataTable';
 import ProgressBar from './ProgressBar';
 import PlotArea from './PlotArea';
+import { useErrorPopup } from './ErrorPopup';
 
 const ExplorationContent = ({
     data,
     activeTab,
     setActiveTab,
-    onAddSamplesToGroup,
-    onRemoveSamplesFromGroup,
-    contrastGroup,
-    referenceGroup,
     isLoading,
     progress,
     renderTable,
-    tableData,
-    tableColumns,
-    currentStage,
 }) => {
     const [currentPlot, setCurrentPlot] = useState('pca');
+    const { showError } = useErrorPopup();
 
     const renderPlotTabs = () => {
         if (!data || !data.plots) {
@@ -44,7 +39,7 @@ const ExplorationContent = ({
                     {data.plots[currentPlot] ? (
                         <PlotArea htmlContent={data.plots[currentPlot]} />
                     ) : (
-                        <p>No {currentPlot} plot available</p>
+                        <p>Run analysis to see plots</p>
                     )}
                 </div>
             </div>
@@ -62,7 +57,10 @@ const ExplorationContent = ({
                 </button>
                 <button
                     className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('plot')}
+                    onClick={() => {
+                        setActiveTab('plot');
+                        // showError("Huge error lay ahead");
+                    }}
                 >
                     Plot View
                 </button>

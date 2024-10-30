@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import AnalysisInputForm from '../components/form/AnalysisInputForm';
 import TabButton from '../components/ui/TabButton';
 import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
 import WorkerManager from '../utils/Workers';
-import PlotArea from '../components/ui/PlotArea';
-import ProgressBar from '../components/ui/ProgressBar';
 import { getExternalDataset, getExternalGeneSetCollection } from '../services/api';
 import humanGenes from '../assets/genes/human_genes.json';
 import mouseGenes from '../assets/genes/mouse_genes.json';
@@ -15,7 +12,6 @@ import GSEAContent from '../components/ui/GSEAContent';
 import GSEAInputForm from '../components/form/GSEAInputForm';
 import DEAInputForm from '../components/form/DEAInputForm';
 import EDAInputForm from '../components/form/EDAInputForm';
-
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
@@ -222,140 +218,6 @@ const Analysis = () => {
         }
     };
 
-    const renderTableButtons = () => {
-        let tables = [];
-        if (edaData && edaData.tables) {
-            tables = Object.keys(edaData.tables);
-        }
-        if (deData && deData.table) {
-            tables.push('de_results');
-        }
-        if (gseaData && gseaData.table) {
-            tables.push('gsea_results');
-        }
-        return tables.map(table => (
-            <button
-                key={table}
-                onClick={() => setCurrentTable(table)}
-                className={`view-toggle-btn ${currentTable === table ? 'active' : ''}`}
-            >
-                {table}
-            </button>
-        ));
-    };
-
-    const renderPlotButtons = () => {
-        let plots = [];
-        if (edaData && edaData.plots) {
-            plots = Object.keys(edaData.plots);
-        }
-        if (deData && deData.plots) {
-            plots = [...plots, ...Object.keys(deData.plots)];
-        }
-        if (gseaData && gseaData.plots) {
-            plots = [...plots, ...Object.keys(gseaData.plots)];
-        }
-        return plots.map(plot => (
-            <button
-                key={plot}
-                onClick={() => setCurrentPlot(plot)}
-                className={`view-toggle-btn ${currentPlot === plot ? 'active' : ''}`}
-            >
-                {plot}
-            </button>
-        ));
-    };
-
-    // const renderTable = () => {
-    //     let tableData, tableColumns;
-    //     if (currentTable === 'coldata' || currentTable === 'counts') {
-    //         if (edaData && edaData.tables && edaData.tables[currentTable]) {
-    //             const rawData = edaData.tables[currentTable].data;
-    //             const cols = edaData.tables[currentTable].cols;
-    //             tableData = rawData.map(row => {
-    //                 const obj = {};
-    //                 cols.forEach((col, index) => {
-    //                     obj[col] = row[index];
-    //                 });
-    //                 return obj;
-    //             });
-    //             tableColumns = cols.map(col => ({ key: col, name: col }));
-    //         }
-    //     } else if (currentTable === 'de_results') {
-    //         if (deData && deData.table) {
-    //             const rawData = deData.table.data;
-    //             const cols = deData.table.cols;
-    //             tableData = rawData.map(row => {
-    //                 const obj = {};
-    //                 cols.forEach((col, index) => {
-    //                     obj[col] = row[index];
-    //                 });
-    //                 return obj;
-    //             });
-    //             tableColumns = cols.map(col => ({ key: col, name: col }));
-    //         }
-    //     } else if (currentTable === 'gsea_results') {
-    //         if (gseaData && gseaData.table) {
-    //             const rawData = gseaData.table.data;
-    //             const cols = gseaData.table.cols;
-    //             tableData = rawData.map(row => {
-    //                 const obj = {};
-    //                 cols.forEach((col, index) => {
-    //                     obj[col] = row[index];
-    //                 });
-    //                 return obj;
-    //             });
-    //             tableColumns = cols.map(col => ({ key: col, name: col }));
-    //         }
-    //     }
-
-    //     if (tableData && tableColumns) {
-    //         return (
-    //             <DataTable
-    //                 data={tableData}
-    //                 columns={tableColumns}
-    //                 contrastGroup={contrastGroup}
-    //                 referenceGroup={referenceGroup}
-    //                 onAddSamplesToGroup={handleAddSamplesToGroup}
-    //                 onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-    //             />
-    //         );
-    //     } else {
-    //         return <p>No data available</p>;
-    //     }
-    // };
-
-    const renderPlot = () => {
-        let plotHtml;
-        if (edaData && edaData.plots && edaData.plots[currentPlot]) {
-            plotHtml = edaData.plots[currentPlot];
-        } else if (deData && deData.plots && deData.plots[currentPlot]) {
-            plotHtml = deData.plots[currentPlot];
-        } else if (gseaData && gseaData.plots && gseaData.plots[currentPlot]) {
-            plotHtml = gseaData.plots[currentPlot];
-        }
-        console.log('Plot HTML:', plotHtml);
-        return plotHtml ? (
-            <PlotArea htmlContent={plotHtml} />
-        ) : (
-            <p>No plot available</p>
-        );
-    };
-
-    const handleAddGeneSetCollection = async (species, collectionId) => {
-        try {
-            const newCollection = await getExternalGeneSetCollection(species, collectionId);
-            setGeneSetCollections(prev => [...prev, { name: collectionId, data: newCollection }]);
-        } catch (error) {
-            console.error('Error fetching gene set collection:', error);
-            setError('Failed to load gene set collection');
-        }
-    };
-
-    const handleUpdateGseaParams = (param, value) => {
-        setGseaParams(prev => ({ ...prev, [param]: value }));
-    };
-
     const runAnalysis = async () => {
         setIsLoading(true);
         setProgress(0);
@@ -396,10 +258,14 @@ const Analysis = () => {
         if (currentStage === 'exploration') {
             try {
                 setProgress(10);
+                console.log("Sending to Python - expressionArray length:", expressionArray.length);
+                console.log("Sending to Python - numSamples:", numSamples);
+                console.log("Sending to Python - numGenes:", numGenes);
                 const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
                     expression: mappedGenesExpression,
                     numSamples: numSamples,
-                    numGenes: numGenes
+                    numGenes: numGenes,
+                    isUploadedFiles: isUploadedFiles
                 });
                 setProgress(20);
                 const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
@@ -425,8 +291,8 @@ const Analysis = () => {
 
                 setEdaData({
                     tables: {
-                        coldata: dataset.coldataTable,
-                        counts: dataset.countsTable
+                        coldata: analysisDataset.coldataTable,
+                        counts: analysisDataset.countsTable
                     },
                     plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
                 });
@@ -566,24 +432,51 @@ const Analysis = () => {
     };
 
     const renderTable = () => {
-        if (!tableData || !tableColumns.length) {
+        if ((!tableData || !tableColumns.length) && currentStage !== 'differential') {
             return (
                 <div className='analysisContentGuide'>
-                    <h1>To run analysis:</h1>
-                    <p>Step 1. Choose a dataset (example, GDC/GEO, or custom).</p>
-                    <p>Step 2. Configure analysis settings.</p>
-                    <p>Step 3. Run the analysis.</p>
+                    <h1>Analysis has not yet been run</h1>
+                </div>
+            );
+        }
+
+        let currentTableData = tableData;
+        let currentTableColumns = tableColumns;
+
+        if (currentStage === 'differential' && deData && deData.table) {
+            const rawData = deData.table.data;
+            const cols = deData.table.cols;
+            currentTableData = rawData.map((row, index) => {
+                const obj = { id: index };
+                cols.forEach((col, colIndex) => {
+                    obj[col] = row[colIndex];
+                });
+                return obj;
+            });
+            currentTableColumns = cols.map(col => ({ key: col, name: col }));
+            return (
+                <div>
+                    <h1>DE Results</h1>
+                    <DataTable
+                        data={currentTableData}
+                        columns={currentTableColumns}
+                        contrastGroup={contrastGroup}
+                        referenceGroup={referenceGroup}
+                        onAddSamplesToGroup={handleAddSamplesToGroup}
+                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
+                        requiresToolbar={false}
+                    />
                 </div>
             );
         }
 
         const requiresToolbar = currentStage !== 'exploration';
-        console.log("Current stage: ", currentStage)
+        console.log("Current stage: ", currentStage);
 
         return (
             <DataTable
-                data={tableData}
-                columns={tableColumns}
+                data={currentTableData}
+                columns={currentTableColumns}
                 contrastGroup={contrastGroup}
                 referenceGroup={referenceGroup}
                 onAddSamplesToGroup={handleAddSamplesToGroup}
@@ -601,26 +494,10 @@ const Analysis = () => {
     return (
         <div id="analysis_container">
             <div id="analysis_user_input">
-                {/* <AnalysisInputForm
-                    setIsVisible={setIsVisible}
-                    onDatasetSelect={handleDatasetSelect}
-                    contrastGroup={contrastGroup}
-                    referenceGroup={referenceGroup}
-                    onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                    runAnalysis={runAnalysis}
-                    isLoading={isLoading}
-                    onAddGeneSetCollection={handleAddGeneSetCollection}
-                    geneSetCollections={geneSetCollections}
-                    gseaParams={gseaParams}
-                    onUpdateGseaParams={handleUpdateGseaParams}
-                />
-                /> */}
                 {currentStage === 'exploration' && (
                     <EDAInputForm
                         setIsVisible={setIsVisible}
                         onDatasetSelect={handleDatasetSelect}
-                        contrastGroup={contrastGroup}
-                        referenceGroup={referenceGroup}
                         onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
                         isLoading={isLoading}
@@ -628,22 +505,16 @@ const Analysis = () => {
                 )}
                 {currentStage === 'differential' && (
                     <DEAInputForm
-                        setIsVisible={setIsVisible}
-                        onDatasetSelect={handleDatasetSelect}
                         contrastGroup={contrastGroup}
                         referenceGroup={referenceGroup}
                         onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
-                        isLoading={isLoading}
                     />
                 )}
                 {currentStage === 'enrichment' && (
                     <GSEAInputForm
                         setIsVisible={setIsVisible}
                         onDatasetSelect={handleDatasetSelect}
-                        contrastGroup={contrastGroup}
-                        referenceGroup={referenceGroup}
-                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
                         isLoading={isLoading}
                     />
@@ -652,9 +523,21 @@ const Analysis = () => {
             <DatabasePopup setIsVisible={setIsVisible} isVisible={isVisible} onDatasetSelect={handleDatasetSelect} />
             <div id="analysis_visualization_section">
                 <div id="analysis_tab_nav">
-                    <TabButton label="1. Data Exploration" onClick={() => handleStageChange('exploration')} />
-                    <TabButton label="2. Differential Expression Analysis" onClick={() => handleStageChange('differential')} />
-                    <TabButton label="3. Gene Set Enrichment Analysis" onClick={() => handleStageChange('enrichment')} />
+                    <TabButton
+                        label="Data Exploration"
+                        onClick={() => handleStageChange('exploration')}
+                        isActive={currentStage === 'exploration'}
+                    />
+                    <TabButton
+                        label="Differential Expression Analysis"
+                        onClick={() => handleStageChange('differential')}
+                        isActive={currentStage === 'differential'}
+                    />
+                    <TabButton
+                        label="Gene Set Enrichment Analysis"
+                        onClick={() => handleStageChange('enrichment')}
+                        isActive={currentStage === 'enrichment'}
+                    />
                 </div>
                 <div id="analysis_content">
                     <div id="view_content">
@@ -663,32 +546,23 @@ const Analysis = () => {
                                 data={edaData}
                                 activeTab={activeTab}
                                 setActiveTab={setActiveTab}
-                                onAddSamplesToGroup={handleAddSamplesToGroup}
-                                onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                                contrastGroup={contrastGroup}
-                                referenceGroup={referenceGroup}
                                 isLoading={isLoading}
                                 progress={progress}
                                 renderTable={renderTable}
-                                tableData={tableData}
-                                tableColumns={tableColumns}
-                                currentStage={currentStage}
                             />
                         )}
                         {currentStage === 'differential' && (
                             <DifferentialExpressionContent
                                 data={deData}
                                 activeTab={activeTab}
-                                onAddSamplesToGroup={handleAddSamplesToGroup}
-                                onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                                contrastGroup={contrastGroup}
-                                referenceGroup={referenceGroup}
+                                setActiveTab={setActiveTab}
                                 isLoading={isLoading}
                                 progress={progress}
                                 renderTable={renderTable}
-                                tableData={tableData}
-                                tableColumns={tableColumns}
-                                currentStage={currentStage}
+                                currentTable={currentTable}
+                                setCurrentTable={setCurrentTable}
+                                currentPlot={currentPlot}
+                                setCurrentPlot={setCurrentPlot}
                             />
                         )}
                         {currentStage === 'enrichment' && (
@@ -703,30 +577,6 @@ const Analysis = () => {
                                 progress={progress}
                             />
                         )}
-                        {/* <div
-                            style={{ display: activeTab === 'table' ? 'block' : 'none', height: '100%', overflow: 'auto' }}
-                            ref={tableContainerRef}
-                            onScroll={handleTableScroll}
-                        >
-                            <div id="table_toggle">
-                                {renderTableButtons()}
-                            </div>
-                            {isLoading && <ProgressBar progress={progress} />}
-                            {renderTable()}
-                        </div>
-                        <div
-                            style={{
-                                display: activeTab === 'plot' ? 'block' : 'none',
-                                height: 'calc(100vh)',
-                                width: '100%',
-                                overflow: 'hidden'
-                            }}
-                        >
-                            <div id="plot_toggle">
-                                {renderPlotButtons()}
-                            </div>
-                            {renderPlot()}
-                        </div> */}
                     </div>
                 </div>
             </div>

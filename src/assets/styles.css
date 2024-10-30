@@ -137,6 +137,7 @@ nav {
 #analysis_content {
     padding: 20px;
     height: 80vh;
+    width: 78vw;
     overflow-y: auto;
     box-sizing: border-box;
 }
@@ -148,11 +149,16 @@ nav {
     padding-top: 0.5%;
     box-sizing: border-box;
     height: 100%;
+    width: 100%;
+}
+
+#analysis_container>*:last-child {
+    margin-right: 0;
 }
 
 #analysis_user_input {
     background-color: #ECECEC;
-    width: 35%;
+    width: 20%;
     max-height: calc(100vh - 100px);
     min-height: min-content;
     height: auto;
@@ -164,14 +170,15 @@ nav {
 }
 
 .analysisContentGuide {
-    background: #d7400941;
-    padding: 1%;
+    background: #ECECEC;
+    padding: 3%;
     border-radius: 15px;
     height: 40%;
 }
 
 .analysisContentGuide h1 {
     font-size: 1.5em;
+    font-family: 'KievitOffc'
 }
 
 .analysisContentGuide p {
@@ -321,6 +328,39 @@ nav {
     overflow: auto;
 }
 
+.errorPopup {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    top: 25%;
+    left: 30%;
+    width: 50%;
+    height: 30%;
+    z-index: 1000;
+    border-radius: 5px;
+    background-color: #D73F09;
+    border: 2px solid black;
+    box-shadow: 15px 15px 10px rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    overflow: auto;
+}
+
+.errorPopupContent {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.errorPopupContent p {
+    color: white;
+    font-size: 1.8em;
+    font-family: 'KievitOffc-Bold'
+}
+
 .databasePopup h1 {
     color: white;
     font-family: 'KievitOffc-Bold';
@@ -404,17 +444,17 @@ a:hover {
     color: rgba(255, 255, 255, 0.5) !important;
 }
 
-/* New styles for the plot/table toggle */
 #view_content {
     border-radius: 5px;
     height: 100%;
     width: 100%;
-    overflow-x: auto;
-    overflow-y: auto;
+    max-width: 100vw;
     display: flex;
     flex-direction: column;
     gap: 10px;
     box-sizing: border-box;
+    overflow-x: hidden;
+    padding-right: 10px;
 }
 
 #view_toggle {
@@ -849,6 +889,7 @@ ul.suggestions {
 
 .exploration-content {
     height: 100vh;
+    width: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -884,21 +925,24 @@ ul.suggestions {
     flex: 1;
     display: none;
     overflow: hidden;
-    width: 100vw;
-    height: 200px;
+    width: 80vw;
+    height: 73vh;
+    margin-right: 1%;
 }
 
 .table-view.active,
 .plot-view.active {
     display: flex;
-    width: 70vw;
-    height: 200px;
+    width: 73vw;
+    height: 80vh;
+    margin-right: 1%;
 }
 
 .plot-container {
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 70vw;
 }
 
 .plot-tabs {
@@ -988,4 +1032,11 @@ ul.suggestions {
 
 .form-button:hover {
     background-color: #e0e0e0;
+}
+
+.analysisHelpColumn {
+    background-color: #d7400941;
+    border-radius: 5px;
+    flex: 0 0 50vw;
+    margin-right: -10%;
 }

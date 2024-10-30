@@ -41,7 +41,10 @@ const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows, clearSelecti
       <GridToolbarColumnsButton />
       <GridToolbarFilterButton />
       <GridToolbarDensitySelector />
-      <GridToolbarExport />
+      <GridToolbarExport
+        printOptions={{ disableToolbarButton: false }}
+        csvOptions={{ disableToolbarButton: false }}
+      />
       <select
         value={selectedGroupType}
         onChange={(e) => setSelectedGroupType(e.target.value)}
