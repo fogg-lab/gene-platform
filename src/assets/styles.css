@@ -79,7 +79,7 @@ nav {
 }
 
 #primary_navbar {
-    background-color: #D73F09;
+    background-color: #d74009;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -136,7 +136,7 @@ nav {
 
 #analysis_content {
     padding: 20px;
-    height: 85vh;
+    height: 80vh;
     overflow-y: auto;
     box-sizing: border-box;
 }
@@ -152,11 +152,30 @@ nav {
 
 #analysis_user_input {
     background-color: #ECECEC;
-    height: calc(100vh - 58px);
     width: 35%;
+    max-height: calc(100vh - 100px);
+    min-height: min-content;
+    height: auto;
     padding: 1%;
+    margin: 1%;
+    border-radius: 15px;
     box-sizing: border-box;
     overflow-y: auto;
+}
+
+.analysisContentGuide {
+    background: #d7400941;
+    padding: 1%;
+    border-radius: 15px;
+    height: 40%;
+}
+
+.analysisContentGuide h1 {
+    font-size: 1.5em;
+}
+
+.analysisContentGuide p {
+    font-size: 1.3em;
 }
 
 #analysis_tab_nav {
@@ -376,22 +395,20 @@ a li {
 
 a {
     text-decoration: none;
-    color: black;
+    color: white !important;
     font-family: "KievitOffc-Bold";
     font-size: 1.4em;
 }
 
 a:hover {
-    color: white;
+    color: rgba(255, 255, 255, 0.5) !important;
 }
 
 /* New styles for the plot/table toggle */
 #view_content {
-    border: 1px solid #e0e0e0;
     border-radius: 5px;
-    padding: 20px;
-    height: 70%;
-    width: 80%;
+    height: 100%;
+    width: 100%;
     overflow-x: auto;
     overflow-y: auto;
     display: flex;
@@ -430,14 +447,14 @@ a:hover {
     color: white;
 }
 
-#view_content {
+/* #view_content {
     border: 1px solid #e0e0e0;
     border-radius: 5px;
     padding: 20px;
     height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
-}
+} */
 
 .inputWrapper {
     position: relative;
@@ -828,4 +845,147 @@ ul.suggestions {
 
 .databasePopupButton.loading {
     border: none;
+}
+
+.exploration-content {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.exploration-title {
+    text-align: center;
+    padding: 20px 0;
+    margin: 0;
+}
+
+.exploration-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.control-panel {
+    width: 250px;
+    padding: 20px;
+    background-color: #f0f0f0;
+    overflow-y: auto;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.table-view,
+.plot-view {
+    flex: 1;
+    display: none;
+    overflow: hidden;
+    width: 100vw;
+    height: 200px;
+}
+
+.table-view.active,
+.plot-view.active {
+    display: flex;
+    width: 70vw;
+    height: 200px;
+}
+
+.plot-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.plot-tabs {
+    display: flex;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+}
+
+.plot-tab {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.plot-tab:hover {
+    background-color: #e0e0e0;
+}
+
+.plot-tab.active {
+    background-color: #fff;
+    border-bottom: 2px solid #D73F09;
+    font-weight: bold;
+}
+
+.plot-content {
+    flex: 1;
+    border: 1px solid gray;
+    border-top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden;
+    width: 70vw;
+}
+
+.plot-content>div {
+    width: 100%;
+    height: 100%;
+}
+
+.plot-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: center;
+    width: 100%;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-input {
+    width: 100px;
+    padding: 5px;
+    border: 1px solid black;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.form-button {
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: 1px solid black;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.form-button:hover {
+    background-color: #e0e0e0;
 }

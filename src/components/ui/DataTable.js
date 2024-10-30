@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { DataGridPro, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext } from '@mui/x-data-grid-pro';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
+import { DataGridPro, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext, } from '@mui/x-data-grid-pro';
 import PropTypes from 'prop-types';
 
 const getFilteredRows = ({ apiRef }) => gridExpandedSortedRowIdsSelector(apiRef);
@@ -7,9 +7,13 @@ const getIntersectingRows = (filteredRows, selectionModel) => {
   return selectionModel.filter(id => filteredRows.includes(id));
 };
 
-const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows, clearSelection }) => {
+const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows, clearSelection, requiresToolbar }) => {
   const [selectedGroupType, setSelectedGroupType] = useState('reference');
   const apiRef = useGridApiContext();
+
+  if (!requiresToolbar) {
+    return null;
+  }
 
   const handleAddSamples = () => {
     console.log("handleAddSamples called");
@@ -60,6 +64,8 @@ const DataTable = ({
   contrastGroup,
   referenceGroup,
   onAddSamplesToGroup,
+  onRemoveSamplesFromGroup,
+  requiresToolbar
 }) => {
   const [sortModel, setSortModel] = useState([]);
   const [selectionModel, setSelectionModel] = useState([]);
@@ -67,7 +73,7 @@ const DataTable = ({
   const [key, setKey] = useState(0);
   const [rowGroups, setRowGroups] = useState({});
 
-  console.log("DataTable rendering, rowGroups:", rowGroups);
+  console.log("Requires Toolbar: ", requiresToolbar);
 
   const gridColumns = useMemo(() => {
     return columns.map(col => ({
@@ -163,7 +169,7 @@ const DataTable = ({
         onSortModelChange={setSortModel}
         filterModel={filterModel}
         onFilterModelChange={setFilterModel}
-        checkboxSelection
+        checkboxSelection={requiresToolbar}
         disableColumnMenu={false}
         disableSelectionOnClick={true}
         density="compact"
@@ -180,15 +186,16 @@ const DataTable = ({
         rowsPerPageOptions={[25, 50, 100]}
         initialState={{ pagination: { pageSize: 100 } }}
         slots={{
-          toolbar: CustomToolbar,
+          toolbar: requiresToolbar ? CustomToolbar : null,
         }}
         slotProps={{
-          toolbar: {
+          toolbar: requiresToolbar ? {
             onAddSamplesToGroup: handleAddSamplesToGroup,
             selectionModel: selectionModel,
             rows: filteredRows,
             clearSelection: clearSelection,
-          },
+            requiresToolbar: requiresToolbar,
+          } : undefined,
         }}
         sx={{
           height: '100%',
