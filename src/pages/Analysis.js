@@ -529,10 +529,6 @@ const Analysis = () => {
                                 isLoading={isLoading}
                                 progress={progress}
                                 renderTable={renderTable}
-                                currentTable={currentTable}
-                                setCurrentTable={setCurrentTable}
-                                currentPlot={currentPlot}
-                                setCurrentPlot={setCurrentPlot}
                             />
                         )}
                         {currentStage === 'differential' && (
