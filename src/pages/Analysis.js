@@ -119,12 +119,15 @@ const Analysis = () => {
     }, [dataset]);
 
     const handleDatasetSelect = async (type, data) => {
+        let dset;
         if (type === 'external' || type === 'upload') {
             setDataset(data);
+            dset = data;
         } else if (type === 'example') {
             setIsLoading(true);
             try {
                 const exampleData = await getExternalDataset('GDC', 'CDDP_EAGLE-1');
+                dset = exampleData;
                 setDataset(exampleData);
 
                 handleClearGroup(true);
@@ -167,17 +170,17 @@ const Analysis = () => {
             }
         }
 
-        if (data && data.coldataTable) {
-            const tableData = data.coldataTable.data.map((row, index) => {
+        if (dset && dset.coldataTable) {
+            const tableData = dset.coldataTable.data.map((row, index) => {
                 const obj = {};
-                data.coldataTable.cols.forEach((col, colIndex) => {
+                dset.coldataTable.cols.forEach((col, colIndex) => {
                     obj[col] = row[colIndex];
                 });
                 obj.id = index;
                 return obj;
             });
 
-            const columns = data.coldataTable.cols.map(col => ({ key: col, name: col }));
+            const columns = dset.coldataTable.cols.map(col => ({ key: col, name: col }));
 
             setTableData(tableData);
             setTableColumns(columns);
