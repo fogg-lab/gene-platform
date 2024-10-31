@@ -11,7 +11,12 @@ const ExplorationContent = ({
     isLoading,
     progress,
     renderTable,
+    currentTable,
+    setCurrentTable,
+    currentPlot,
+    setCurrentPlot,
 }) => {
+    const [currentTable, setCurrentTable] = useState('coldata');
     const [currentPlot, setCurrentPlot] = useState('pca');
     const { showError } = useErrorPopup();
 

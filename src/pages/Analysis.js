@@ -15,10 +15,8 @@ import EDAInputForm from '../components/form/EDAInputForm';
 
 const Analysis = () => {
     const [activeTab, setActiveTab] = useState('table');
-    const [tableScrollPosition, setTableScrollPosition] = useState(0);
     const [error, setError] = useState(null);
     const [isVisible, setIsVisible] = useState(false);
-    const tableContainerRef = useRef(null);
     const [dataset, setDataset] = useState(null);
     const [edaData, setEdaData] = useState(null);
     const [deData, setDeData] = useState(null);
@@ -119,16 +117,6 @@ const Analysis = () => {
             setCurrentTable('coldata');
         }
     }, [dataset]);
-
-    useEffect(() => {
-        if (activeTab === 'table' && tableContainerRef.current) {
-            tableContainerRef.current.scrollTop = tableScrollPosition;
-        }
-    }, [activeTab, tableScrollPosition]);
-
-    const handleTableScroll = (event) => {
-        setTableScrollPosition(event.target.scrollTop);
-    };
 
     const handleDatasetSelect = async (type, data) => {
         if (type === 'external' || type === 'upload') {
@@ -253,35 +241,31 @@ const Analysis = () => {
             rows: mappedGeneSymbols,
             data: mappedGeneIdx.map((i) => [mappedGeneSymbols[i], ...dataset.countsTable.data[i].slice(1)])
         }
+        setProgress(20);
 
         // EDA
         if (currentStage === 'exploration') {
             try {
-                setProgress(10);
-                console.log("Sending to Python - expressionArray length:", expressionArray.length);
-                console.log("Sending to Python - numSamples:", numSamples);
-                console.log("Sending to Python - numGenes:", numGenes);
                 const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
                     expression: mappedGenesExpression,
                     numSamples: numSamples,
                     numGenes: numGenes,
-                    isUploadedFiles: isUploadedFiles
                 });
-                setProgress(20);
+                setProgress(40);
                 const pcaPlot = await WorkerManager.runTask('py', 'create_pca', {
                     counts: transformedCounts,
                     numSamples: numSamples,
                     numGenes: numGenes,
                     sample_ids: mappedGenesCountsTable.cols.slice(1)
                 });
-                setProgress(27);
+                setProgress(60);
                 const tsnePlot = await WorkerManager.runTask('py', 'create_tsne', {
                     counts: transformedCounts,
                     numSamples: numSamples,
                     numGenes: numGenes,
                     sample_ids: mappedGenesCountsTable.cols.slice(1)
                 });
-                setProgress(34);
+                setProgress(80);
                 const heatmap = await WorkerManager.runTask('py', 'create_heatmap', {
                     counts: transformedCounts,
                     numSamples: numSamples,
@@ -291,11 +275,12 @@ const Analysis = () => {
 
                 setEdaData({
                     tables: {
-                        coldata: analysisDataset.coldataTable,
-                        counts: analysisDataset.countsTable
+                        coldata: dataset.coldataTable,
+                        counts: mappedGenesCountsTable
                     },
                     plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
                 });
+                setCurrentTable('coldata');
             } catch (error) {
                 console.error("Error in exploration analysis:", error);
                 setError("An error occurred during the exploration analysis. Please try again.");
@@ -305,7 +290,6 @@ const Analysis = () => {
         // DE Analysis
         if (currentStage === 'differential') {
             try {
-                setProgress(10);
                 // Calculate effective library sizes
                 const effectiveLibSizes = Array.from(await WorkerManager.runTask('py', 'compute_tmm_effective_library_sizes', {
                     expression: mappedGenesExpression,
@@ -343,7 +327,7 @@ const Analysis = () => {
                 const filteredEffectiveLibSizes = effectiveLibSizes.filter((_, index) => countsColMask[index + 1]);
                 const filteredNumSamples = filteredColdata.data.length;
 
-                setProgress(50);
+                setProgress(40);
                 const deResults = await WorkerManager.runTask('r', 'run_de_analysis', {
                     counts: filteredCounts,
                     geneSymbols: mappedGeneSymbols,
@@ -359,7 +343,7 @@ const Analysis = () => {
                     data: [...Array(deResults.row_names.length)].map((_, i) => [deResults.row_names[i], deResults.logFC[i], deResults.t[i], deResults.p_value[i], deResults.p_value_adj[i]])
                 }
 
-                setProgress(70);
+                setProgress(60);
                 const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
                     data: deResults.data,
                     row_names: deResults.row_names,
@@ -369,7 +353,7 @@ const Analysis = () => {
                     cohort_name: 'cohort name goes here 🚧'  // todo: allow this to be set by the user
                 });
 
-                setProgress(90);
+                setProgress(80);
                 const meanDifferencePlot = await WorkerManager.runTask('py', 'create_mean_difference_plot', {
                     data: deResults.data,
                     row_names: deResults.row_names,
@@ -386,48 +370,44 @@ const Analysis = () => {
         }
 
         // GSEA
-        setProgress(70);
-        const combinedGeneSets = geneSetCollections.reduce((acc, collection) => {
-            return {
-                ...acc, ...collection.data.geneSets.reduce((setAcc, setName, index) => {
-                    setAcc[setName] = collection.data.geneSetSymbols[index];
-                    return setAcc;
-                }, {})
-            };
-        }, {});
-        const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
-            genes: mappedGeneSymbols,
-            metric: deResults.t,
-            geneSets: combinedGeneSets,
-            weight: gseaParams.weight,
-            minSize: gseaParams.minSize,
-            maxSize: gseaParams.maxSize,
-            nperm: gseaParams.nperm,
-            seed: Date.now()
-        });
-        setProgress(80);
-        const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
-            gsea_res: gseaResults,
-            de_res: deResults,
-            color_metric: 'P.Value',
-            pvalue_threshold: 0.05,
-            layout_seed: Date.now(),
-            color_seed: Date.now()
-        });
-        setProgress(90);
-
-        // Update state with results
-        setEdaData({
-            tables: {
-                coldata: dataset.coldataTable,
-                counts: mappedGenesCountsTable
-            },
-            plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
-        });
-        setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
-        setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
+        if (currentStage === 'enrichment') {
+            try {
+                const combinedGeneSets = geneSetCollections.reduce((acc, collection) => {
+                    return {
+                        ...acc, ...collection.data.geneSets.reduce((setAcc, setName, index) => {
+                            setAcc[setName] = collection.data.geneSetSymbols[index];
+                            return setAcc;
+                        }, {})
+                    };
+                }, {});
+                setProgress(40);
+                const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
+                    genes: mappedGeneSymbols,
+                    metric: deResults.t,
+                    geneSets: combinedGeneSets,
+                    weight: gseaParams.weight,
+                    minSize: gseaParams.minSize,
+                    maxSize: gseaParams.maxSize,
+                    nperm: gseaParams.nperm,
+                    seed: Date.now()
+                });
+                setProgress(60);
+                const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
+                    gsea_res: gseaResults,
+                    de_res: deResults,
+                    color_metric: 'P.Value',
+                    pvalue_threshold: 0.05,
+                    layout_seed: Date.now(),
+                    color_seed: Date.now()
+                });
+                setProgress(80);
+                setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
+            } catch (error) {
+                console.error("Error in gene set enrichment analysis:", error);
+                setError("An error occurred during the gene set enrichment analysis. Please try again.");
+            }
+        }
         setProgress(100);
-
         setIsLoading(false);
     };
 
@@ -549,6 +529,10 @@ const Analysis = () => {
                                 isLoading={isLoading}
                                 progress={progress}
                                 renderTable={renderTable}
+                                currentTable={currentTable}
+                                setCurrentTable={setCurrentTable}
+                                currentPlot={currentPlot}
+                                setCurrentPlot={setCurrentPlot}
                             />
                         )}
                         {currentStage === 'differential' && (
