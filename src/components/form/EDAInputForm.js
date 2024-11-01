@@ -106,11 +106,11 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     });
 
     return (
-        <div {...getRootProps()} className="filedropArea">
-            <input {...getInputProps()} className="fileDrop" />
+        <div {...getRootProps()} className="filedropArea filedropArea-disabled">
+            <input {...getInputProps()} className="fileDrop" disabled />
             <h4>{title}</h4>
             <span>Drop file here or</span>
-            <button className="openFilesystemButton">
+            <button className="openFilesystemButton" disabled>
                 <span>Browse</span>
             </button>
             {isDragActive ? (

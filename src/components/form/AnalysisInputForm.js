@@ -38,11 +38,25 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     });
 
     return (
-        <div {...getRootProps()} className="filedropArea">
-            <input {...getInputProps()} className="fileDrop" />
+        <div {...getRootProps()} className="filedropArea" style={{ opacity: 0.5, pointerEvents: 'none', position: 'relative' }}>
+            <input {...getInputProps()} className="fileDrop" disabled />
+            <div style={{ 
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: '#D73F09',
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                zIndex: 1,
+                fontSize: '0.8em'
+            }}>
+                Coming Soon
+            </div>
             <h4>{title}</h4>
             <span>Drop file here or</span>
-            <button className="openFilesystemButton">
+            <button className="openFilesystemButton" disabled>
                 <span>Browse</span>
             </button>
             {isDragActive ? (
