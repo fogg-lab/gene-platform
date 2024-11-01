@@ -26,7 +26,7 @@ self.onmessage = async function(event) {
       case 'run_de_analysis':
         // Bind variables to the R environment
         const varNames = [
-          'ensemblIds',      // Array<string>
+          'geneSymbols',      // Array<string>
           'contrastGroup',   // Array<string>
           'referenceGroup',  // Array<string>
           'libSizes',        // Array<number>
@@ -59,7 +59,7 @@ self.onmessage = async function(event) {
           # Convert counts (initially a flat raw vector) to a numGenes x numSamples matrix
           counts <- readBin(counts, what = "integer", n = numGenes * numSamples)
           counts <- matrix(counts, nrow = numGenes, ncol = numSamples)
-          rownames(counts) <- ensemblIds
+          rownames(counts) <- geneSymbols
           colnames(counts) <- coldata$sample_id
 
           # Filter lowly expressed genes

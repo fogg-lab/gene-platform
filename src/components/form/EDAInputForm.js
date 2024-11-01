@@ -4,9 +4,79 @@ import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
 import terminal from '../../assets/icons/terminal.png';
 import pako from 'pako';
+import Papa from 'papaparse';
 
 function validFileType(filetype) {
     return filetype.startsWith("text/") || filetype == "application/gzip" || filetype == "application/x-gzip";
+}
+
+const readFileAsText = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsText(file);
+    });
+};
+
+const parseCSV = (csvString) => {
+    const lines = csvString.split('\n');
+    const cols = lines[0].split('\t');
+    const data = lines.slice(1).map(line => line.split('\t'));
+    return { cols, data };
+};
+
+
+async function processUploadedFiles(countsFile, coldataFile) {
+    // Parse coldata file
+    const coldataText = await readFileAsText(coldataFile);
+    const coldataData = Papa.parse(coldataText, { header: true }).data;
+    const coldataTable = structureColdataTable(coldataData);
+
+    // Parse counts file
+    const countsText = await readFileAsText(countsFile);
+    const countsData = Papa.parse(countsText, { header: true }).data;
+    const { countsTable, genesTable, expression, counts } = structureCountsData(countsData);
+
+    return {
+        expression,
+        counts,
+        countsTable,
+        coldataTable,
+        genesTable,
+    };
+}
+
+function structureColdataTable(coldataData) {
+    const cols = Object.keys(coldataData[0]);
+    return {
+        cols,
+        rows: coldataData.map(row => row.sample_id),
+        data: coldataData.map(row => cols.map(col => row[col]))
+    };
+}
+
+function structureCountsData(countsData) {
+    const sampleIds = Object.keys(countsData[0]).slice(2);
+    const genesData = countsData.map(row => [row['Ensembl gene'], row['Symbol']]);
+    const expressionData = countsData.map(row => sampleIds.map(id => parseInt(row[id])));
+
+    const expression = new Int32Array(expressionData.flat());
+    const counts = new Int32Array(expressionData.map((row, i) => row.map((val, j) => expressionData[j][i])).flat());
+
+    const countsTable = {
+        cols: ['Ensembl gene', 'Symbol', ...sampleIds],
+        rows: genesData.map(gene => gene[0]),
+        data: countsData.map(row => [row['Ensembl gene'], row['Symbol'], ...sampleIds.map(id => parseInt(row[id]))])
+    };
+
+    const genesTable = {
+        cols: ['ensembl_gene', 'symbol'],
+        rows: genesData.map(gene => gene[0]),
+        data: genesData
+    };
+
+    return { countsTable, genesTable, expression, counts };
 }
 
 const FileDropArea = ({ title, onDrop, fileName }) => {
@@ -36,11 +106,11 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     });
 
     return (
-        <div {...getRootProps()} className="filedropArea">
-            <input {...getInputProps()} className="fileDrop" />
+        <div {...getRootProps()} className="filedropArea filedropArea-disabled">
+            <input {...getInputProps()} className="fileDrop" disabled />
             <h4>{title}</h4>
             <span>Drop file here or</span>
-            <button className="openFilesystemButton">
+            <button className="openFilesystemButton" disabled>
                 <span>Browse</span>
             </button>
             {isDragActive ? (
@@ -56,12 +126,12 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
 const EDAInputForm = ({
     setIsVisible,
     onDatasetSelect,
-    contrastGroup,
-    referenceGroup,
     onRemoveSamplesFromGroup,
     runAnalysis,
     isLoading
 }) => {
+    const [countsFile, setCountsFile] = useState(null);
+    const [coldataFile, setColdataFile] = useState(null);
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
 
@@ -92,16 +162,16 @@ const EDAInputForm = ({
 
     const onDropCounts = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
+            setCountsFile(acceptedFiles[0]);
             setCountsFileName(acceptedFiles[0].name);
         }
-        console.log("AnalysisInputForm.js:onDropCounts requires further implementation");
     }, []);
 
     const onDropColdata = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
+            setColdataFile(acceptedFiles[0]);
             setColdataFileName(acceptedFiles[0].name);
         }
-        console.log("AnalysisInputForm.js:onDropColdata requires further implementation");
     }, []);
 
     const handleButtonClick = (datasetType) => {
@@ -111,6 +181,20 @@ const EDAInputForm = ({
             setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
             // Load example dataset
             onDatasetSelect('example', null);
+        }
+    };
+
+    const handleRunAnalysis = async () => {
+        if (countsFile && coldataFile) {
+            try {
+                const processedData = await processUploadedFiles(countsFile, coldataFile);
+                runAnalysis(processedData);
+            } catch (error) {
+                console.error("Error processing uploaded files:", error);
+                // Handle error (e.g., show error message to user)
+            }
+        } else {
+            runAnalysis();
         }
     };
 
@@ -162,7 +246,7 @@ const EDAInputForm = ({
                 </label>
             </div>
             <div id="runAnalysisContainer">
-                <IconButton icon={terminal} label="Run Analysis" onClick={runAnalysis} />
+                <IconButton icon={terminal} label="Run Analysis" onClick={handleRunAnalysis} />
             </div>
         </div>
     );
@@ -177,8 +261,6 @@ FileDropArea.propTypes = {
 EDAInputForm.propTypes = {
     setIsVisible: PropTypes.func.isRequired,
     onDatasetSelect: PropTypes.func.isRequired,
-    contrastGroup: PropTypes.object.isRequired,
-    referenceGroup: PropTypes.object.isRequired,
     onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,

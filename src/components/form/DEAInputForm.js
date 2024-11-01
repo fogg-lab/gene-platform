@@ -7,13 +7,10 @@ import pako from 'pako';
 import SampleField from '../ui/SampleField';
 
 const DEAInputForm = ({
-    setIsVisible,
-    onDatasetSelect,
     contrastGroup,
     referenceGroup,
     onRemoveSamplesFromGroup,
     runAnalysis,
-    isLoading
 }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
@@ -83,13 +80,10 @@ const DEAInputForm = ({
 };
 
 DEAInputForm.propTypes = {
-    setIsVisible: PropTypes.func.isRequired,
-    onDatasetSelect: PropTypes.func.isRequired,
     contrastGroup: PropTypes.object.isRequired,
     referenceGroup: PropTypes.object.isRequired,
     onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
-    isLoading: PropTypes.bool.isRequired,
 };
 
 export default DEAInputForm;

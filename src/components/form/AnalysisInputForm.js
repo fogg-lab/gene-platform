@@ -5,6 +5,7 @@ import IconButton from '../ui/IconButton';
 import terminal from '../../assets/icons/terminal.png';
 import pako from 'pako';
 import SampleField from '../ui/SampleField';
+import GeneSetCollectionsPopup from '../ui/GeneSetCollectionsPopup';
 
 function validFileType(filetype) {
     return filetype.startsWith("text/") || filetype == "application/gzip" || filetype == "application/x-gzip";
@@ -37,11 +38,25 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     });
 
     return (
-        <div {...getRootProps()} className="filedropArea">
-            <input {...getInputProps()} className="fileDrop" />
+        <div {...getRootProps()} className="filedropArea" style={{ opacity: 0.5, pointerEvents: 'none', position: 'relative' }}>
+            <input {...getInputProps()} className="fileDrop" disabled />
+            <div style={{ 
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: '#D73F09',
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                zIndex: 1,
+                fontSize: '0.8em'
+            }}>
+                Coming Soon
+            </div>
             <h4>{title}</h4>
             <span>Drop file here or</span>
-            <button className="openFilesystemButton">
+            <button className="openFilesystemButton" disabled>
                 <span>Browse</span>
             </button>
             {isDragActive ? (
@@ -61,20 +76,15 @@ const AnalysisInputForm = ({
     referenceGroup,
     onRemoveSamplesFromGroup,
     runAnalysis,
-    isLoading
+    isLoading,
+    onAddGeneSetCollection,
+    geneSetCollections,
+    gseaParams,
+    onUpdateGseaParams
 }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
-
-    const handleRemoveContrastSample = (sampleId) => {
-        console.log("Removing contrast sample:", sampleId);
-        onRemoveSamplesFromGroup(true, [sampleId]);
-    };
-
-    const handleRemoveReferenceSample = (sampleId) => {
-        console.log("Removing reference sample:", sampleId);
-        onRemoveSamplesFromGroup(false, [sampleId]);
-    };
+    const [isGeneSetPopupVisible, setIsGeneSetPopupVisible] = useState(false);
 
     const decompressAndParseFile = useCallback((file, onParsed) => {
         const reader = new FileReader();
@@ -159,8 +169,8 @@ const AnalysisInputForm = ({
                 <label className="radioLabel">
                     <span id="adjustmentSubfield">Adjustment method (🚧):</span>
                     <select id="adjustmentMethod" name="adjustmentMethod">
-                        <option value="option1">Bonferroni</option>
-                        <option value="option2">Benjamini and Hochberg</option>
+                        <option value="option1">Benjamini and Hochberg</option>
+                        <option value="option2">Bonferroni</option>
                     </select>
                 </label>
                 <div className='dataSubfieldSampleField'>
@@ -191,6 +201,56 @@ const AnalysisInputForm = ({
                     <span>Batch correction (🚧)</span>
                 </label>
             </div>
+            <h3>Gene Set Enrichment Analysis</h3>
+            <div>
+                <button onClick={() => setIsGeneSetPopupVisible(true)}>
+                    Add Gene Set Collection
+                </button>
+                <div>
+                    {geneSetCollections.map((collection, index) => (
+                        <div key={index}>{collection.name}</div>
+                    ))}
+                </div>
+                <div>
+                    <label>
+                        Weight:
+                        <input
+                            type="number"
+                            value={gseaParams.weight}
+                            onChange={(e) => onUpdateGseaParams('weight', parseFloat(e.target.value))}
+                        />
+                    </label>
+                    <label>
+                        Min Size:
+                        <input
+                            type="number"
+                            value={gseaParams.minSize}
+                            onChange={(e) => onUpdateGseaParams('minSize', parseInt(e.target.value))}
+                        />
+                    </label>
+                    <label>
+                        Max Size:
+                        <input
+                            type="number"
+                            value={gseaParams.maxSize}
+                            onChange={(e) => onUpdateGseaParams('maxSize', parseInt(e.target.value))}
+                        />
+                    </label>
+                    <label>
+                        Number of Permutations:
+                        <input
+                            type="number"
+                            value={gseaParams.nperm}
+                            onChange={(e) => onUpdateGseaParams('nperm', parseInt(e.target.value))}
+                        />
+                    </label>
+                </div>
+            </div>
+            <GeneSetCollectionsPopup
+                isVisible={isGeneSetPopupVisible}
+                setIsVisible={setIsGeneSetPopupVisible}
+                onCollectionSelect={onAddGeneSetCollection}
+            />
             <div id="runAnalysisContainer">
                 <IconButton icon={terminal} label="Run Analysis" onClick={runAnalysis} />
             </div>
@@ -212,6 +272,10 @@ AnalysisInputForm.propTypes = {
     onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
+    onAddGeneSetCollection: PropTypes.func.isRequired,
+    geneSetCollections: PropTypes.array.isRequired,
+    gseaParams: PropTypes.object.isRequired,
+    onUpdateGseaParams: PropTypes.func.isRequired,
 };
 
 export default AnalysisInputForm;

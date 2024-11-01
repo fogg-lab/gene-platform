@@ -29,6 +29,45 @@ self.onmessage = async function(event) {
   try {
     let result;
     switch (action) {
+      case 'check_genes':
+        const res = (await pyodide.runPythonAsync(`
+          from js import genesQuery, humanGeneReference, mouseGeneReference
+          import numpy as np
+          from gene_platform_utils.genes import get_gene_info, get_duplicated
+          hs_gene_result = get_gene_info(genesQuery, humanGeneReference)
+          mm_gene_result = get_gene_info(genesQuery, mouseGeneReference)
+          if mm_gene_result["num_matches"] > hs_gene_result["num_matches"]:
+            species = "mouse"
+            res = mm_gene_result
+          else:
+            species = "human"
+            res = hs_gene_result
+          gene_reference_idx = res["reference_indices"]
+          not_found_gene_mask = gene_reference_idx == -1
+          duplicate_genes_indices = get_duplicated(genesQuery)
+          duplicate_gene_mask = np.zeros(len(gene_reference_idx), dtype=bool)
+          for dup_indices in duplicate_genes_indices:
+            duplicate_gene_mask[dup_indices] = True
+          # Gather result codes:
+          # 0: reference was found for the gene & the # of occurences of the gene in genesQuery == 1
+          # 1: reference not found for the gene & the # of occurences of the gene in genesQuery == 1
+          # 2: reference was found for the gene & the # of occurences of the gene in genesQuery >= 2
+          # 3: reference not found for the gene & the # of occurences of the gene in genesQuery >= 2
+          query_result_code = np.zeros(len(genesQuery), dtype=np.int32)
+          query_result_code[not_found_gene_mask] += 1
+          query_result_code[duplicate_gene_mask] += 2
+          res["queryResultCode"] = query_result_code.tolist()
+          res["duplicateGenesIndices"] = duplicate_genes_indices
+          res["detectedSpecies"] = species
+          res
+        `)).toJs();
+        result = {};
+        result.queryResultGeneIndices = res.reference_indices;
+        result.queryResultCode = res.queryResultCode;
+        result.duplicateGenesIndices = res.duplicateGenesIndices;
+        result.detectedSpecies = res.detectedSpecies;
+        result.numFound = res.num_matches;
+        break;
       case 'transform_vst':
         result = (await pyodide.runPythonAsync(`
           from js import expression, numSamples, numGenes
@@ -120,9 +159,9 @@ self.onmessage = async function(event) {
       case 'create_gene_concept_network':
         result = await pyodide.runPythonAsync(`
           from gene_platform_utils.plot_gsea import gene_concept_network_plot
-          from js import gsea_res, de_res, ensembl_to_symbol, color_metric, pvalue_threshold, layout_seed, color_seed
+          from js import gsea_res, de_res, color_metric, pvalue_threshold, layout_seed, color_seed
           de_res_2d = np.asarray(de_res).reshape(len(column_names), len(row_names)).T
-          gene_concept_network_plot(gsea_res, de_res_2d, ensembl_to_symbol, color_metric, pvalue_threshold, layout_seed, color_seed)
+          gene_concept_network_plot(gsea_res, de_res_2d, color_metric, pvalue_threshold, layout_seed, color_seed)
         `);
         break;
     }

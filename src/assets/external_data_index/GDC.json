@@ -1,249 +1,246 @@
 {
-  "base_url": "https://docgl1or94tw4.cloudfront.net/curated-bulk-rnaseq-human-gene-expression/GDC",
-  "datasets": {
-    "APOLLO-LUAD": {
-      "title": "APOLLO1: Proteogenomic characterization of lung adenocarcinoma",
-      "n_samples": 87
-    },
-    "CDDP_EAGLE-1": {
-      "title": "CDDP Integrative Analysis of Lung Adenocarcinoma (Phase 2)",
-      "n_samples": 48
-    },
-    "CGCI-BLGSP": {
-      "title": "Burkitt Lymphoma Genome Sequencing Project",
-      "n_samples": 283
-    },
-    "CGCI-HTMCP-CC": {
-      "title": "HIV+ Tumor Molecular Characterization Project - Cervical Cancer",
-      "n_samples": 123
-    },
-    "CGCI-HTMCP-DLBCL": {
-      "title": "HIV+ Tumor Molecular Characterization Project - Diffuse Large B-Cell Lymphoma",
-      "n_samples": 55
-    },
-    "CGCI-HTMCP-LC": {
-      "title": "HIV+ Tumor Molecular Characterization Project - Lung Cancer",
-      "n_samples": 38
-    },
-    "CMI-ASC": {
-      "title": "Count Me In (CMI): The Angiosarcoma (ASC) Project",
-      "n_samples": 8
-    },
-    "CMI-MBC": {
-      "title": "Count Me In (CMI): The Metastatic Breast Cancer (MBC) Project",
-      "n_samples": 140
-    },
-    "CMI-MPC": {
-      "title": "Count Me In (CMI): The Metastatic Prostate Cancer (MPC) Project",
-      "n_samples": 38
-    },
-    "CPTAC-3": {
-      "title": "CPTAC-Brain, Head and Neck, Kidney, Lung, Pancreas, Uterus",
-      "n_samples": 1190
-    },
-    "CTSP-DLBCL1": {
-      "title": "CTSP Diffuse Large B-Cell Lymphoma (DLBCL) CALGB 50303",
-      "n_samples": 44
-    },
-    "EXCEPTIONAL_RESPONDERS-ER": {
-      "title": "Exceptional Responders",
-      "n_samples": 70
-    },
-    "HCMI-CMDC": {
-      "title": "NCI Cancer Model Development for the Human Cancer Models Initiative",
-      "n_samples": 277
-    },
-    "MMRF-COMMPASS": {
-      "title": "Multiple Myeloma CoMMpass Study",
-      "n_samples": 787
-    },
-    "MP2PRT-ALL": {
-      "title": "Molecular Profiling to Predict Response to Treatment for Acute Lymphoblastic Leukemia",
-      "n_samples": 1479
-    },
-    "MP2PRT-WT": {
-      "title": "Molecular Profiling to Predict Response to Treatment - Wilms Tumor",
-      "n_samples": 52
-    },
-    "NCICCR-DLBCL": {
-      "title": "Genomic Variation in Diffuse Large B Cell Lymphomas",
-      "n_samples": 481
-    },
-    "REBC-THYR": {
-      "title": "Comprehensive genomic characterization of radiation-related papillary thyroid cancer in the Ukraine",
-      "n_samples": 438
-    },
-    "TARGET-ALL-P1": {
-      "title": "Acute Lymphoblastic Leukemia (ALL) Expansion Phase 1",
-      "n_samples": 13
-    },
-    "TARGET-ALL-P2": {
-      "title": "Acute Lymphoblastic Leukemia (ALL) Expansion Phase 2",
-      "n_samples": 469
-    },
-    "TARGET-ALL-P3": {
-      "title": "Acute Lymphoblastic Leukemia (ALL) Expansion Phase 3",
-      "n_samples": 143
-    },
-    "TARGET-AML": {
-      "title": "Acute Myeloid Leukemia",
-      "n_samples": 1978
-    },
-    "TARGET-CCSK": {
-      "title": "Clear Cell Sarcoma of the Kidney",
-      "n_samples": 13
-    },
-    "TARGET-NBL": {
-      "title": "Neuroblastoma",
-      "n_samples": 151
-    },
-    "TARGET-OS": {
-      "title": "Osteosarcoma",
-      "n_samples": 88
-    },
-    "TARGET-RT": {
-      "title": "Rhabdoid Tumor",
-      "n_samples": 63
-    },
-    "TARGET-WT": {
-      "title": "Wilms Tumor",
-      "n_samples": 125
-    },
-    "TCGA-ACC": {
-      "title": "Adrenocortical Carcinoma",
-      "n_samples": 79
-    },
-    "TCGA-BLCA": {
-      "title": "Bladder Urothelial Carcinoma",
-      "n_samples": 406
-    },
-    "TCGA-BRCA": {
-      "title": "Breast Invasive Carcinoma",
-      "n_samples": 1095
-    },
-    "TCGA-CESC": {
-      "title": "Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma",
-      "n_samples": 304
-    },
-    "TCGA-CHOL": {
-      "title": "Cholangiocarcinoma",
-      "n_samples": 36
-    },
-    "TCGA-COAD": {
-      "title": "Colon Adenocarcinoma",
-      "n_samples": 458
-    },
-    "TCGA-DLBC": {
-      "title": "Lymphoid Neoplasm Diffuse Large B-cell Lymphoma",
-      "n_samples": 48
-    },
-    "TCGA-ESCA": {
-      "title": "Esophageal Carcinoma",
-      "n_samples": 184
-    },
-    "TCGA-GBM": {
-      "title": "Glioblastoma Multiforme",
-      "n_samples": 168
-    },
-    "TCGA-HNSC": {
-      "title": "Head and Neck Squamous Cell Carcinoma",
-      "n_samples": 521
-    },
-    "TCGA-KICH": {
-      "title": "Kidney Chromophobe",
-      "n_samples": 66
-    },
-    "TCGA-KIRC": {
-      "title": "Kidney Renal Clear Cell Carcinoma",
-      "n_samples": 533
-    },
-    "TCGA-KIRP": {
-      "title": "Kidney Renal Papillary Cell Carcinoma",
-      "n_samples": 290
-    },
-    "TCGA-LAML": {
-      "title": "Acute Myeloid Leukemia",
-      "n_samples": 151
-    },
-    "TCGA-LGG": {
-      "title": "Brain Lower Grade Glioma",
-      "n_samples": 516
-    },
-    "TCGA-LIHC": {
-      "title": "Liver Hepatocellular Carcinoma",
-      "n_samples": 371
-    },
-    "TCGA-LUAD": {
-      "title": "Lung Adenocarcinoma",
-      "n_samples": 517
-    },
-    "TCGA-LUSC": {
-      "title": "Lung Squamous Cell Carcinoma",
-      "n_samples": 501
-    },
-    "TCGA-MESO": {
-      "title": "Mesothelioma",
-      "n_samples": 87
-    },
-    "TCGA-OV": {
-      "title": "Ovarian Serous Cystadenocarcinoma",
-      "n_samples": 422
-    },
-    "TCGA-PAAD": {
-      "title": "Pancreatic Adenocarcinoma",
-      "n_samples": 178
-    },
-    "TCGA-PCPG": {
-      "title": "Pheochromocytoma and Paraganglioma",
-      "n_samples": 179
-    },
-    "TCGA-PRAD": {
-      "title": "Prostate Adenocarcinoma",
-      "n_samples": 497
-    },
-    "TCGA-READ": {
-      "title": "Rectum Adenocarcinoma",
-      "n_samples": 167
-    },
-    "TCGA-SARC": {
-      "title": "Sarcoma",
-      "n_samples": 259
-    },
-    "TCGA-SKCM": {
-      "title": "Skin Cutaneous Melanoma",
-      "n_samples": 469
-    },
-    "TCGA-STAD": {
-      "title": "Stomach Adenocarcinoma",
-      "n_samples": 415
-    },
-    "TCGA-TGCT": {
-      "title": "Testicular Germ Cell Tumors",
-      "n_samples": 150
-    },
-    "TCGA-THCA": {
-      "title": "Thyroid Carcinoma",
-      "n_samples": 505
-    },
-    "TCGA-THYM": {
-      "title": "Thymoma",
-      "n_samples": 120
-    },
-    "TCGA-UCEC": {
-      "title": "Uterine Corpus Endometrial Carcinoma",
-      "n_samples": 557
-    },
-    "TCGA-UCS": {
-      "title": "Uterine Carcinosarcoma",
-      "n_samples": 57
-    },
-    "TCGA-UVM": {
-      "title": "Uveal Melanoma",
-      "n_samples": 80
-    },
-    "WCDT-MCRPC": {
-      "title": "West Coast Prostate Cancer Dream Team - Metastatic Castration-Resistant Prostate Cancer",
-      "n_samples": 99
-    }
+  "APOLLO-LUAD": {
+    "title": "APOLLO1: Proteogenomic characterization of lung adenocarcinoma",
+    "n_samples": 87
+  },
+  "CDDP_EAGLE-1": {
+    "title": "CDDP Integrative Analysis of Lung Adenocarcinoma (Phase 2)",
+    "n_samples": 48
+  },
+  "CGCI-BLGSP": {
+    "title": "Burkitt Lymphoma Genome Sequencing Project",
+    "n_samples": 283
+  },
+  "CGCI-HTMCP-CC": {
+    "title": "HIV+ Tumor Molecular Characterization Project - Cervical Cancer",
+    "n_samples": 123
+  },
+  "CGCI-HTMCP-DLBCL": {
+    "title": "HIV+ Tumor Molecular Characterization Project - Diffuse Large B-Cell Lymphoma",
+    "n_samples": 55
+  },
+  "CGCI-HTMCP-LC": {
+    "title": "HIV+ Tumor Molecular Characterization Project - Lung Cancer",
+    "n_samples": 38
+  },
+  "CMI-ASC": {
+    "title": "Count Me In (CMI): The Angiosarcoma (ASC) Project",
+    "n_samples": 8
+  },
+  "CMI-MBC": {
+    "title": "Count Me In (CMI): The Metastatic Breast Cancer (MBC) Project",
+    "n_samples": 140
+  },
+  "CMI-MPC": {
+    "title": "Count Me In (CMI): The Metastatic Prostate Cancer (MPC) Project",
+    "n_samples": 38
+  },
+  "CPTAC-3": {
+    "title": "CPTAC-Brain, Head and Neck, Kidney, Lung, Pancreas, Uterus",
+    "n_samples": 1190
+  },
+  "CTSP-DLBCL1": {
+    "title": "CTSP Diffuse Large B-Cell Lymphoma (DLBCL) CALGB 50303",
+    "n_samples": 44
+  },
+  "EXCEPTIONAL_RESPONDERS-ER": {
+    "title": "Exceptional Responders",
+    "n_samples": 70
+  },
+  "HCMI-CMDC": {
+    "title": "NCI Cancer Model Development for the Human Cancer Models Initiative",
+    "n_samples": 277
+  },
+  "MMRF-COMMPASS": {
+    "title": "Multiple Myeloma CoMMpass Study",
+    "n_samples": 787
+  },
+  "MP2PRT-ALL": {
+    "title": "Molecular Profiling to Predict Response to Treatment for Acute Lymphoblastic Leukemia",
+    "n_samples": 1479
+  },
+  "MP2PRT-WT": {
+    "title": "Molecular Profiling to Predict Response to Treatment - Wilms Tumor",
+    "n_samples": 52
+  },
+  "NCICCR-DLBCL": {
+    "title": "Genomic Variation in Diffuse Large B Cell Lymphomas",
+    "n_samples": 481
+  },
+  "REBC-THYR": {
+    "title": "Comprehensive genomic characterization of radiation-related papillary thyroid cancer in the Ukraine",
+    "n_samples": 438
+  },
+  "TARGET-ALL-P1": {
+    "title": "Acute Lymphoblastic Leukemia (ALL) Expansion Phase 1",
+    "n_samples": 13
+  },
+  "TARGET-ALL-P2": {
+    "title": "Acute Lymphoblastic Leukemia (ALL) Expansion Phase 2",
+    "n_samples": 469
+  },
+  "TARGET-ALL-P3": {
+    "title": "Acute Lymphoblastic Leukemia (ALL) Expansion Phase 3",
+    "n_samples": 143
+  },
+  "TARGET-AML": {
+    "title": "Acute Myeloid Leukemia",
+    "n_samples": 1978
+  },
+  "TARGET-CCSK": {
+    "title": "Clear Cell Sarcoma of the Kidney",
+    "n_samples": 13
+  },
+  "TARGET-NBL": {
+    "title": "Neuroblastoma",
+    "n_samples": 151
+  },
+  "TARGET-OS": {
+    "title": "Osteosarcoma",
+    "n_samples": 88
+  },
+  "TARGET-RT": {
+    "title": "Rhabdoid Tumor",
+    "n_samples": 63
+  },
+  "TARGET-WT": {
+    "title": "Wilms Tumor",
+    "n_samples": 125
+  },
+  "TCGA-ACC": {
+    "title": "Adrenocortical Carcinoma",
+    "n_samples": 79
+  },
+  "TCGA-BLCA": {
+    "title": "Bladder Urothelial Carcinoma",
+    "n_samples": 406
+  },
+  "TCGA-BRCA": {
+    "title": "Breast Invasive Carcinoma",
+    "n_samples": 1095
+  },
+  "TCGA-CESC": {
+    "title": "Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma",
+    "n_samples": 304
+  },
+  "TCGA-CHOL": {
+    "title": "Cholangiocarcinoma",
+    "n_samples": 36
+  },
+  "TCGA-COAD": {
+    "title": "Colon Adenocarcinoma",
+    "n_samples": 458
+  },
+  "TCGA-DLBC": {
+    "title": "Lymphoid Neoplasm Diffuse Large B-cell Lymphoma",
+    "n_samples": 48
+  },
+  "TCGA-ESCA": {
+    "title": "Esophageal Carcinoma",
+    "n_samples": 184
+  },
+  "TCGA-GBM": {
+    "title": "Glioblastoma Multiforme",
+    "n_samples": 168
+  },
+  "TCGA-HNSC": {
+    "title": "Head and Neck Squamous Cell Carcinoma",
+    "n_samples": 521
+  },
+  "TCGA-KICH": {
+    "title": "Kidney Chromophobe",
+    "n_samples": 66
+  },
+  "TCGA-KIRC": {
+    "title": "Kidney Renal Clear Cell Carcinoma",
+    "n_samples": 533
+  },
+  "TCGA-KIRP": {
+    "title": "Kidney Renal Papillary Cell Carcinoma",
+    "n_samples": 290
+  },
+  "TCGA-LAML": {
+    "title": "Acute Myeloid Leukemia",
+    "n_samples": 151
+  },
+  "TCGA-LGG": {
+    "title": "Brain Lower Grade Glioma",
+    "n_samples": 516
+  },
+  "TCGA-LIHC": {
+    "title": "Liver Hepatocellular Carcinoma",
+    "n_samples": 371
+  },
+  "TCGA-LUAD": {
+    "title": "Lung Adenocarcinoma",
+    "n_samples": 517
+  },
+  "TCGA-LUSC": {
+    "title": "Lung Squamous Cell Carcinoma",
+    "n_samples": 501
+  },
+  "TCGA-MESO": {
+    "title": "Mesothelioma",
+    "n_samples": 87
+  },
+  "TCGA-OV": {
+    "title": "Ovarian Serous Cystadenocarcinoma",
+    "n_samples": 422
+  },
+  "TCGA-PAAD": {
+    "title": "Pancreatic Adenocarcinoma",
+    "n_samples": 178
+  },
+  "TCGA-PCPG": {
+    "title": "Pheochromocytoma and Paraganglioma",
+    "n_samples": 179
+  },
+  "TCGA-PRAD": {
+    "title": "Prostate Adenocarcinoma",
+    "n_samples": 497
+  },
+  "TCGA-READ": {
+    "title": "Rectum Adenocarcinoma",
+    "n_samples": 167
+  },
+  "TCGA-SARC": {
+    "title": "Sarcoma",
+    "n_samples": 259
+  },
+  "TCGA-SKCM": {
+    "title": "Skin Cutaneous Melanoma",
+    "n_samples": 469
+  },
+  "TCGA-STAD": {
+    "title": "Stomach Adenocarcinoma",
+    "n_samples": 415
+  },
+  "TCGA-TGCT": {
+    "title": "Testicular Germ Cell Tumors",
+    "n_samples": 150
+  },
+  "TCGA-THCA": {
+    "title": "Thyroid Carcinoma",
+    "n_samples": 505
+  },
+  "TCGA-THYM": {
+    "title": "Thymoma",
+    "n_samples": 120
+  },
+  "TCGA-UCEC": {
+    "title": "Uterine Corpus Endometrial Carcinoma",
+    "n_samples": 557
+  },
+  "TCGA-UCS": {
+    "title": "Uterine Carcinosarcoma",
+    "n_samples": 57
+  },
+  "TCGA-UVM": {
+    "title": "Uveal Melanoma",
+    "n_samples": 80
+  },
+  "WCDT-MCRPC": {
+    "title": "West Coast Prostate Cancer Dream Team - Metastatic Castration-Resistant Prostate Cancer",
+    "n_samples": 99
   }
 }

@@ -3,17 +3,13 @@ import PropTypes from 'prop-types';
 import closeIcon from '../../assets/icons/close.svg';
 import IconButton from '../ui/IconButton';
 import terminal from '../../assets/icons/terminal.png';
-import { getExternalDataset } from '../../services/api';
-import GDCIndex from '../../assets/external_data_index/GDC.json';
-import GEOHumanIndex from '../../assets/external_data_index/GEO-human.json';
-import GEOMouseIndex from '../../assets/external_data_index/GEO-mouse.json';
 
-const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
-  const [dataSrc, setDataSrc] = useState('GDC');
-  const [datasets, setDatasets] = useState([]);
+const GeneSetCollectionsPopup = ({ setIsVisible, isVisible, onCollectionSelect }) => {
+  const [species, setSpecies] = useState('human');
+  const [collections, setCollections] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-  const [selectedDataset, setSelectedDataset] = useState(null);
+  const [selectedCollection, setSelectedCollection] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
   const wrapperRef = useRef(null);
@@ -21,22 +17,10 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    let indexData;
-    switch (dataSrc) {
-      case 'GDC':
-        indexData = GDCIndex;
-        break;
-      case 'GEO-human':
-        indexData = GEOHumanIndex;
-        break;
-      case 'GEO-mouse':
-        indexData = GEOMouseIndex;
-        break;
-      default:
-        indexData = GDCIndex;
-    }
-    setDatasets(Object.entries(indexData));
-  }, [dataSrc]);
+    import(`../../assets/external_data_index/MSigDBCollections.json`)
+      .then(data => setCollections(Object.entries(data[`${species}Collections`])))
+      .catch(error => console.error('Error loading collections:', error));
+  }, [species]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -56,15 +40,16 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
     setSearchTerm(value);
     setCurrentPage(1);
     if (value.length > 0) {
-      const filtered = datasets.filter(([id, info]) =>
+      const filtered = collections.filter(([id, info]) =>
         id.toLowerCase().includes(value.toLowerCase()) ||
-        info.title.toLowerCase().includes(value.toLowerCase())
+        info.title.toLowerCase().includes(value.toLowerCase()) ||
+        info.description.toLowerCase().includes(value.toLowerCase())
       );
       setSuggestions(filtered);
     } else {
-      setSuggestions(datasets);
+      setSuggestions(collections);
     }
-  }, [datasets]);
+  }, [collections]);
 
   const paginatedSuggestions = suggestions.slice(
     (currentPage - 1) * itemsPerPage,
@@ -77,23 +62,22 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
     setCurrentPage(newPage);
   };
 
-  const handleSelectDataset = (dataset) => {
-    setSelectedDataset(dataset);
-    setSearchTerm(dataset[1].title);
+  const handleSelectCollection = (collection) => {
+    setSelectedCollection(collection);
+    setSearchTerm(collection[1].title);
     setSuggestions([]);
   };
 
-  const handleLoadDataset = async () => {
-    if (selectedDataset) {
+  const handleLoadCollection = async () => {
+    if (selectedCollection) {
       setIsLoading(true);
-      console.log("Attempting to search dataset")
+      console.log("Attempting to search collection")
       try {
-        const data = await getExternalDataset(dataSrc, selectedDataset[0]);
-        onDatasetSelect('external', data);
-        console.log("Dataset received.")
+        onCollectionSelect(species, selectedCollection[0]);
+        console.log("Collection received.")
         setIsVisible(false);
       } catch (error) {
-        console.error('Error fetching external dataset:', error);
+        console.error('Error fetching external collection:', error);
       } finally {
         setIsLoading(false);
       }
@@ -103,7 +87,7 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
   const handleClose = () => {
     setIsVisible(false);
     setSearchTerm('');
-    setSelectedDataset(null);
+    setSelectedCollection(null);
     setSuggestions([]);
   };
 
@@ -124,33 +108,32 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
             <img src={closeIcon} alt="Close" />
           </div>
           <div>
-            <h1>Search GDC and GEO Datasets</h1>
+            <h1>Search human and mouse gene sets</h1>
             <div className='inputWrapper' ref={wrapperRef}>
               <select
-                value={dataSrc}
+                value={species}
                 onChange={(e) => {
-                  setDataSrc(e.target.value);
+                  setSpecies(e.target.value);
                   setSuggestions([]);
                 }}
                 style={{ marginRight: '10px' }}
               >
-                <option value="GDC">GDC</option>
-                <option value="GEO-human">GEO (Human)</option>
-                <option value="GEO-mouse">GEO (Mouse)</option>
+                <option value="human">Human</option>
+                <option value="mouse">Mouse</option>
               </select>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 onFocus={(e) => handleSearch(e.target.value)}
-                placeholder="Search datasets..."
+                placeholder="Search collections..."
               />
               {suggestions.length > 0 && (
                 <>
                   <ul className="suggestions">
                     {paginatedSuggestions.map(([id, info]) => (
-                      <li key={id} onClick={() => handleSelectDataset([id, info])}>
-                        {id}: {truncateTitle(info.title)}
+                      <li key={id} onClick={() => handleSelectCollection([id, info])}>
+                        {id}: {truncateTitle(`${info.title} | ${info.description}`)}
                       </li>
                     ))}
                   </ul>
@@ -175,9 +158,9 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
               )}
             </div>
           </div>
-          <div className="selectedDataset">
-            {selectedDataset && (
-              <p>{selectedDataset[0]}: {truncateTitle(selectedDataset[1].title)}</p>
+          <div className="selectedCollection">
+            {selectedCollection && (
+              <p>{selectedCollection[0]}: {truncateTitle(selectedCollection[1].title)}</p>
             )}
           </div>
           <div className='databasePopupButton'>
@@ -186,9 +169,9 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
             ) : (
               <IconButton
                 icon={terminal}
-                label="Select dataset"
-                onClick={handleLoadDataset}
-                disabled={!selectedDataset}
+                label="Select collection"
+                onClick={handleLoadCollection}
+                disabled={!selectedCollection}
               />
             )}
           </div>
@@ -198,10 +181,10 @@ const DatabasePopup = ({ setIsVisible, isVisible, onDatasetSelect }) => {
   );
 };
 
-DatabasePopup.propTypes = {
+GeneSetCollectionsPopup.propTypes = {
   setIsVisible: PropTypes.func.isRequired,
   isVisible: PropTypes.bool.isRequired,
-  onDatasetSelect: PropTypes.func.isRequired,
+  onCollectionSelect: PropTypes.func.isRequired,
 };
 
-export default DatabasePopup;
+export default GeneSetCollectionsPopup;
