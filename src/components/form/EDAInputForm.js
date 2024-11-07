@@ -19,13 +19,6 @@ const readFileAsText = (file) => {
     });
 };
 
-const parseCSV = (csvString) => {
-    const lines = csvString.split('\n');
-    const cols = lines[0].split('\t');
-    const data = lines.slice(1).map(line => line.split('\t'));
-    return { cols, data };
-};
-
 
 async function processUploadedFiles(countsFile, coldataFile) {
     // Parse coldata file
@@ -134,31 +127,6 @@ const EDAInputForm = ({
     const [coldataFile, setColdataFile] = useState(null);
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
-
-    const handleRemoveContrastSample = (sampleId) => {
-        console.log("Removing contrast sample:", sampleId);
-        onRemoveSamplesFromGroup(true, [sampleId]);
-    };
-
-    const handleRemoveReferenceSample = (sampleId) => {
-        console.log("Removing reference sample:", sampleId);
-        onRemoveSamplesFromGroup(false, [sampleId]);
-    };
-
-    const decompressAndParseFile = useCallback((file, onParsed) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            let content = event.target.result;
-            if (file.name.endsWith('.gz')) {
-                // Decompress gzip content
-                const compressed = new Uint8Array(content);
-                content = pako.inflate(compressed, { to: 'string' });
-            }
-            const data = Papa.parse(content, { header: true, delimiter: '\t' }).data;
-            onParsed(data);
-        };
-        reader.readAsArrayBuffer(file);
-    }, []);
 
     const onDropCounts = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
