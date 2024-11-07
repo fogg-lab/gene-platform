@@ -39,7 +39,21 @@ const Analysis = () => {
         maxSize: 500,
         nperm: 1000,
     });
+
     const [currentStage, setCurrentStage] = useState('exploration');
+    const [lockedStates, setLockedStates] = useState({
+        exploration: false,
+        differential: true,
+        enrichment: true
+    });
+
+    const updateLockedState = (stage, isLocked) => {
+        setLockedStates(prevStates => ({
+            ...prevStates,
+            [stage]: isLocked
+        }));
+    };
+
 
     const handleAddSamplesToGroup = useCallback((isContrast, samplesToAdd) => {
         setContrastGroup(prevContrastGroup => {
@@ -284,6 +298,7 @@ const Analysis = () => {
                     plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
                 });
                 setCurrentTable('coldata');
+                updateLockedState('differential', false);
             } catch (error) {
                 console.error("Error in exploration analysis:", error);
                 setError("An error occurred during the exploration analysis. Please try again.");
@@ -366,6 +381,7 @@ const Analysis = () => {
                 });
 
                 setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
+                updateLockedState('enrichment', false);
             } catch (error) {
                 console.error("Error in differential expression analysis:", error);
                 setError("An error occurred during the differential expression analysis. Please try again.");
@@ -510,16 +526,19 @@ const Analysis = () => {
                         label="Data Exploration"
                         onClick={() => handleStageChange('exploration')}
                         isActive={currentStage === 'exploration'}
+                        isLocked={lockedStates.exploration}
                     />
                     <TabButton
                         label="Differential Expression Analysis"
                         onClick={() => handleStageChange('differential')}
                         isActive={currentStage === 'differential'}
+                        isLocked={lockedStates.differential}
                     />
                     <TabButton
                         label="Gene Set Enrichment Analysis"
                         onClick={() => handleStageChange('enrichment')}
                         isActive={currentStage === 'enrichment'}
+                        isLocked={lockedStates.enrichment}
                     />
                 </div>
                 <div id="analysis_content">
