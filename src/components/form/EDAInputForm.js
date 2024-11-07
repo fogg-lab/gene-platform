@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
+import ToolTip from '../ui/ToolTip';
 import terminal from '../../assets/icons/terminal.png';
 import next from '../../assets/icons/next.svg';
 import pako from 'pako';
@@ -177,56 +178,78 @@ const EDAInputForm = ({
 
     return (
         <div id="analysisInputContainer_comp">
-            <h3>Data</h3>
-            <div className='dataSubfield'>
-                {isLoading ? (
-                    <div className="loader"></div>
-                ) : (
-                    <>
-                        <button
-                            className="analysisInputButton"
-                            onClick={() => onDatasetSelect('example')}
-                        >
-                            Use Example Dataset
-                        </button>
-                        <button
-                            className="analysisInputButton"
-                            onClick={() => handleButtonClick('external')}
-                        >
-                            Use External Dataset
-                        </button>
-                    </>
-                )}
-            </div>
-            <div id="filedropContainer">
-                <FileDropArea
-                    title="Counts"
-                    onDrop={onDropCounts}
-                    fileName={countsFileName}
-                />
-                <FileDropArea
-                    title="Coldata"
-                    onDrop={onDropColdata}
-                    fileName={coldataFileName}
-                />
-            </div>
-            <h3>Configuration</h3>
-            <div>
-                <label className="radioLabel">
-                    <span>Data Exploration Transform (🚧):</span>
-                    <select id="transformationMethod" name="transformationMethod">
-                        <option value="option1">VST</option>
-                        <option value="option2">log2(counts + 1)</option>
-                        <option value="option3">ln(counts + 1)</option>
-                        <option value="option4">log10(counts + 1)</option>
-                    </select>
-                </label>
-            </div>
-            <div id="runAnalysisContainer">
-                <IconButton
-                    icon={edaData?.plots?.pca ? next : terminal}
-                    label={edaData?.plots?.pca ? "Next Stage" : "Run Analysis"}
-                    onClick={handleRunAnalysis} />
+            <div className="form-with-tooltips">
+                <div className="form-content">
+                    {/* Left side: All the form fields */}
+                    <h3>Data</h3>
+                    <div className='dataSubfield'>
+                        {isLoading ? (
+                            <div className="loader"></div>
+                        ) : (
+                            <>
+                                <button
+                                    className="analysisInputButton"
+                                    onClick={() => onDatasetSelect('example')}
+                                >
+                                    Use Example Dataset
+                                </button>
+                                <button
+                                    className="analysisInputButton"
+                                    onClick={() => handleButtonClick('external')}
+                                >
+                                    Use External Dataset
+                                </button>
+                            </>
+                        )}
+                    </div>
+                    <div id="filedropContainer">
+                        <FileDropArea
+                            title="Counts"
+                            onDrop={onDropCounts}
+                            fileName={countsFileName}
+                        />
+                        <FileDropArea
+                            title="Coldata"
+                            onDrop={onDropColdata}
+                            fileName={coldataFileName}
+                        />
+                    </div>
+                    <h3>Configuration</h3>
+                    <div>
+                        <label className="radioLabel">
+                            <span>Data Exploration Transform (🚧):</span>
+                            <select id="transformationMethod" name="transformationMethod">
+                                <option value="option1">VST</option>
+                                <option value="option2">log2(counts + 1)</option>
+                                <option value="option3">ln(counts + 1)</option>
+                                <option value="option4">log10(counts + 1)</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div id="runAnalysisContainer" style={{ marginTop: '50px' }}>
+                        <IconButton
+                            icon={edaData?.plots?.pca ? next : terminal}
+                            label={edaData?.plots?.pca ? "Next Stage" : "Run Analysis"}
+                            onClick={handleRunAnalysis}
+                        />
+                    </div>
+                </div>
+
+                {/* Right side: Aligned tooltips */}
+                <div className="tooltips-column">
+                    {/* Dataset Selection tooltips */}
+                    <div className="tooltip-row" style={{ marginTop: '20px' }}>
+                        <ToolTip content="Choose between example and external datasets" />
+                    </div>
+                    {/* File Upload tooltip */}
+                    <div className="tooltip-row" style={{ marginTop: '60px' }}>
+                        <ToolTip content="Upload your gene expression matrix and sample metadata files" />
+                    </div>
+                    {/* Transform Selection tooltip */}
+                    <div className="tooltip-row" style={{ marginTop: '130px' }}>
+                        <ToolTip content="Select the transformation method to normalize your count data" />
+                    </div>
+                </div>
             </div>
         </div>
     );

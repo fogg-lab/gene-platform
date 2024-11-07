@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ToolTip = ({ }) => {
+const ToolTip = ({ content }) => {
     let iconSrc = require(`../../assets/icons/help.png`).default;
 
     const iconStyle = {
@@ -23,12 +23,50 @@ const ToolTip = ({ }) => {
         color: 'grey',
         cursor: 'pointer',
         borderRadius: '200px',
+        position: 'relative',
+    };
+
+    const tooltipTextStyle = {
+        visibility: 'hidden',
+        width: '200px',
+        backgroundColor: '#555',
+        color: 'white',
+        textAlign: 'center',
+        padding: '1px 1px',
+        borderRadius: '6px',
+        position: 'fixed',
+        zIndex: 9999,
+        opacity: 0,
+        transition: 'opacity 0.3s',
+    };
+
+    const handleMouseMove = (e) => {
+        const tooltip = e.currentTarget.querySelector('.tooltip-text');
+        if (tooltip) {
+            tooltip.style.left = `${e.clientX + 20}px`;
+            tooltip.style.top = `${e.clientY}px`;
+        }
     };
 
     return (
-        <button className="tooltip" style={tooltipStyle}>
-            <img src={iconSrc} style={iconStyle} />
-        </button>
+        <div className="tooltip-wrapper" style={{ position: 'relative' }}>
+            <button
+                className="tooltip"
+                style={tooltipStyle}
+                onMouseMove={handleMouseMove}
+            >
+                <img src={iconSrc} style={iconStyle} alt="help" />
+                <span className="tooltip-text" style={tooltipTextStyle}>{content}</span>
+            </button>
+            <style>
+                {`
+                    .tooltip:hover .tooltip-text {
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                    }
+                `}
+            </style>
+        </div>
     );
 };
 
