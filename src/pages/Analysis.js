@@ -500,6 +500,9 @@ const Analysis = () => {
                         onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
                         isLoading={isLoading}
+                        handleStageChange={handleStageChange}
+                        currentStage={currentStage}
+                        edaData={edaData}
                     />
                 )}
                 {currentStage === 'differential' && (
@@ -508,6 +511,9 @@ const Analysis = () => {
                         referenceGroup={referenceGroup}
                         onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
+                        handleStageChange={handleStageChange}
+                        currentStage={currentStage}
+                        deData={deData}
                     />
                 )}
                 {currentStage === 'enrichment' && (
@@ -571,6 +577,7 @@ const Analysis = () => {
                             <GSEAContent
                                 data={gseaData}
                                 activeTab={activeTab}
+                                setActiveTab={setActiveTab}
                                 onAddSamplesToGroup={handleAddSamplesToGroup}
                                 onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                                 contrastGroup={contrastGroup}

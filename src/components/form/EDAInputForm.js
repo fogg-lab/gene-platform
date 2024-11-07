@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useDropzone } from 'react-dropzone';
 import IconButton from '../ui/IconButton';
 import terminal from '../../assets/icons/terminal.png';
+import next from '../../assets/icons/next.svg';
 import pako from 'pako';
 import Papa from 'papaparse';
 
@@ -121,7 +122,10 @@ const EDAInputForm = ({
     onDatasetSelect,
     onRemoveSamplesFromGroup,
     runAnalysis,
-    isLoading
+    isLoading,
+    handleStageChange,
+    currentStage,
+    edaData
 }) => {
     const [countsFile, setCountsFile] = useState(null);
     const [coldataFile, setColdataFile] = useState(null);
@@ -144,25 +148,30 @@ const EDAInputForm = ({
 
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {
-            setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
+            setIsVisible(true);
         } else {
-            setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
-            // Load example dataset
+            setIsVisible(false);
             onDatasetSelect('example', null);
         }
     };
 
     const handleRunAnalysis = async () => {
-        if (countsFile && coldataFile) {
-            try {
-                const processedData = await processUploadedFiles(countsFile, coldataFile);
-                runAnalysis(processedData);
-            } catch (error) {
-                console.error("Error processing uploaded files:", error);
-                // Handle error (e.g., show error message to user)
+        if (edaData?.plots?.pca) {
+            // If analysis is complete, move to next stage
+            handleStageChange('differential');
+        }
+        else {
+            if (countsFile && coldataFile) {
+                try {
+                    const processedData = await processUploadedFiles(countsFile, coldataFile);
+                    runAnalysis(processedData);
+                } catch (error) {
+                    console.error("Error processing uploaded files:", error);
+                    // Handle error (e.g., show error message to user)
+                }
+            } else {
+                runAnalysis();
             }
-        } else {
-            runAnalysis();
         }
     };
 
@@ -214,7 +223,10 @@ const EDAInputForm = ({
                 </label>
             </div>
             <div id="runAnalysisContainer">
-                <IconButton icon={terminal} label="Run Analysis" onClick={handleRunAnalysis} />
+                <IconButton
+                    icon={edaData?.plots?.pca ? next : terminal}
+                    label={edaData?.plots?.pca ? "Next Stage" : "Run Analysis"}
+                    onClick={handleRunAnalysis} />
             </div>
         </div>
     );
