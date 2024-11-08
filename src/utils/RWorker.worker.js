@@ -1,13 +1,23 @@
-import { WebR } from 'webr';
-
 let webR;
 
 async function initializeWebR() {
-  webR = new WebR();
-  await webR.init();
-  await webR.installPackages(['limma'], {
-    repos: ['https://bioc.r-universe.dev', 'https://repo.r-wasm.org']
-  });
+  try {
+    const { WebR } = await import(/* webpackIgnore: true */ 'https://webr.r-wasm.org/latest/webr.mjs');
+    webR = new WebR({
+      baseURL: 'https://webr.r-wasm.org/latest/'
+    });
+    
+    await webR.init();
+    console.log('WebR initialized successfully');
+    
+    await webR.installPackages(['limma'], {
+      repos: ['https://bioc.r-universe.dev', 'https://repo.r-wasm.org']
+    });
+    console.log('Limma package installed successfully');
+  } catch (error) {
+    console.error('Failed to initialize WebR:', error);
+    throw error;
+  }
 }
 
 self.onmessage = async function(event) {
@@ -101,3 +111,5 @@ self.onmessage = async function(event) {
     self.postMessage({ status: 'error', error: error.toString() });
   }
 };
+
+export default null;
