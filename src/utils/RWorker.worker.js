@@ -1,13 +1,15 @@
-import { WebR } from 'webr';
-
 let webR;
 
 async function initializeWebR() {
-  webR = new WebR();
-  await webR.init();
-  await webR.installPackages(['limma'], {
-    repos: ['https://bioc.r-universe.dev', 'https://repo.r-wasm.org']
-  });
+  import('https://webr.r-wasm.org/latest/webr.mjs').then(
+    async ({ WebR }) => {
+      webR = new WebR();
+      await webR.init();
+      await webR.installPackages(['limma'], {
+        repos: ['https://bioc.r-universe.dev', 'https://repo.r-wasm.org']
+      });
+    }
+  );
 }
 
 self.onmessage = async function(event) {

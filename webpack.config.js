@@ -87,7 +87,6 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         { from: 'public/py-wheels', to: 'py-wheels' }
-        //{ from: 'public/wasm', to: 'wasm' }
       ],
     }),
     new Dotenv(),
