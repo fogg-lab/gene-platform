@@ -10,7 +10,8 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
-    publicPath: '/'
+    publicPath: '/',
+    globalObject: 'self'
   },
   mode: 'development',
   target: 'electron-renderer',
@@ -54,7 +55,8 @@ module.exports = {
         use: {
           loader: 'worker-loader',
           options: {
-            filename: '[name].[contenthash].worker.js'
+            filename: '[name].[contenthash].worker.js',
+            publicPath: '/'
           }
         }
       }
