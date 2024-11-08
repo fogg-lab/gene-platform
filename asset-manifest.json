@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/gene-platform/static/css/main.03efbf9e.css",
-    "main.js": "/gene-platform/static/js/main.31525bb7.js",
+    "main.css": "/gene-platform/static/css/main.5f9ccf21.css",
+    "main.js": "/gene-platform/static/js/main.c9a129d8.js",
     "pyodide/pyodide.asm.wasm": "/gene-platform/pyodide/pyodide.asm.wasm",
     "pyodide/python_stdlib.zip": "/gene-platform/pyodide/python_stdlib.zip",
     "pyodide/pyodide.asm.js": "/gene-platform/pyodide/pyodide.asm.js",
@@ -12,7 +12,7 @@
     "static/media/Stratum2-Black.otf": "/gene-platform/static/media/Stratum2-Black.f567e07083e81e0ac895.otf",
     "static/media/KievitOffc.ttf": "/gene-platform/static/media/KievitOffc.256498cc6a4fb2e48dd8.ttf",
     "static/media/fogg_logo.svg": "/gene-platform/static/media/fogg_logo.6cc261dc2e6bbb9e1f08e57a989e3390.svg",
-    "py-wheels/gene_platform_utils-0.0.1-py3-none-any.whl": "/gene-platform/py-wheels/gene_platform_utils-0.0.1-py3-none-any.whl",
+    "static/py-wheels/gene_platform_utils-0.0.1-py3-none-any.whl": "/gene-platform/static/py-wheels/gene_platform_utils-0.0.1-py3-none-any.whl",
     "pyodide/package.json": "/gene-platform/pyodide/package.json",
     "index.html": "/gene-platform/index.html",
     "static/media/next.svg": "/gene-platform/static/media/next.9f1a7c12dade361fb1327a46f2013528.svg",
@@ -21,7 +21,7 @@
     "static/media/close.svg": "/gene-platform/static/media/close.c0a059236c4bc52272e932945a8a26e5.svg"
   },
   "entrypoints": [
-    "static/css/main.03efbf9e.css",
-    "static/js/main.31525bb7.js"
+    "static/css/main.5f9ccf21.css",
+    "static/js/main.c9a129d8.js"
   ]
 }
