@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import closeIcon from '../../assets/icons/close.svg';
+import warningIcon from '../../assets/icons/warning.svg';
 
 const ErrorPopupContext = createContext();
 
@@ -38,8 +39,6 @@ ErrorPopupProvider.propTypes = {
 };
 
 const ErrorPopup = ({ isVisible, errorMessage, onClose }) => {
-    let iconSrc = require(`../../assets/icons/warning.svg`).default;
-
     const iconStyle = {
         margin: '0px',
         padding: '0px',
@@ -60,7 +59,7 @@ const ErrorPopup = ({ isVisible, errorMessage, onClose }) => {
                 <img src={closeIcon} alt="Close" />
             </div>
             <div className="errorPopupContent">
-                <img src={iconSrc} style={iconStyle} alt="Warning" />
+                <img src={warningIcon} style={iconStyle} alt="Warning" />
                 <p>{errorMessage}</p>
             </div>
         </div>

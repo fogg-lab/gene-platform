@@ -1,8 +1,7 @@
 import React from 'react';
+import helpIcon from '../../assets/icons/help.png';
 
 const ToolTip = ({ content }) => {
-    let iconSrc = require(`../../assets/icons/help.png`).default;
-
     const iconStyle = {
         margin: '0px',
         padding: '0px',
@@ -55,7 +54,7 @@ const ToolTip = ({ content }) => {
                 style={tooltipStyle}
                 onMouseMove={handleMouseMove}
             >
-                <img src={iconSrc} style={iconStyle} alt="help" />
+                <img src={helpIcon} style={iconStyle} alt="help" />
                 <span className="tooltip-text" style={tooltipTextStyle}>{content}</span>
             </button>
             <style>

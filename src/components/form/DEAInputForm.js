@@ -55,8 +55,8 @@ const DEAInputForm = ({
                 <label className="radioLabel">
                     <span id="adjustmentSubfield">Adjustment method (🚧):</span>
                     <select id="adjustmentMethod" name="adjustmentMethod">
-                        <option value="option1">Bonferroni</option>
-                        <option value="option2">Benjamini and Hochberg</option>
+                        <option value="option1">Benjamini and Hochberg</option>
+                        <option value="option2">Bonferroni</option>
                     </select>
                 </label>
                 <div className='dataSubfieldSampleField'>

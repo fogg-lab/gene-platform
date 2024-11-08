@@ -6,10 +6,10 @@ async function initializeWebR() {
     webR = new WebR({
       baseURL: 'https://webr.r-wasm.org/latest/'
     });
-    
+
     await webR.init();
     console.log('WebR initialized successfully');
-    
+
     await webR.installPackages(['limma'], {
       repos: ['https://bioc.r-universe.dev', 'https://repo.r-wasm.org']
     });
