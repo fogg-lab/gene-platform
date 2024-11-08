@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/gene-platform/static/css/main.8d9eacc5.css",
-    "main.js": "/gene-platform/static/js/main.541266ce.js",
+    "main.css": "/gene-platform/static/css/main.5f9ccf21.css",
+    "main.js": "/gene-platform/static/js/main.a7232fe4.js",
     "pyodide/pyodide.asm.wasm": "/gene-platform/pyodide/pyodide.asm.wasm",
     "pyodide/python_stdlib.zip": "/gene-platform/pyodide/python_stdlib.zip",
     "pyodide/pyodide.asm.js": "/gene-platform/pyodide/pyodide.asm.js",
@@ -21,7 +21,7 @@
     "static/media/close.svg": "/gene-platform/static/media/close.c0a059236c4bc52272e932945a8a26e5.svg"
   },
   "entrypoints": [
-    "static/css/main.8d9eacc5.css",
-    "static/js/main.541266ce.js"
+    "static/css/main.5f9ccf21.css",
+    "static/js/main.a7232fe4.js"
   ]
 }
