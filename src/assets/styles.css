@@ -1061,3 +1061,39 @@ ul.suggestions {
     z-index: 1;
     font-size: 0.8em;
 }
+
+.radioLabel-container {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+
+.tooltip-wrapper {
+    flex-shrink: 0;
+    padding-left: 2px;
+}
+
+.radioLabel {
+    flex-grow: 1;
+}
+
+.form-with-tooltips {
+    display: flex;
+    gap: 2px;
+}
+
+.form-content {
+    flex: 1;
+}
+
+.tooltips-column {
+    width: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.tooltip-row {
+    height: 24px;
+}

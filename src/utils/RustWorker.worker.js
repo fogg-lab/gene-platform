@@ -42,3 +42,5 @@ self.onmessage = async function (event) {
     self.postMessage({ status: "error", error: error.toString() });
   }
 };
+
+export default null;

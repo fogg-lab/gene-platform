@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import lockIcon from '../../assets/icons/lock.svg';
 
 const TabButton = ({ label, onClick, isActive, isLocked }) => {
-
-    let iconSrc = require(`../../assets/icons/lock.svg`).default;
 
     const iconStyle = {
         margin: '0 8px 0 0',
@@ -57,7 +56,7 @@ const TabButton = ({ label, onClick, isActive, isLocked }) => {
             onClick={handleClick}
             disabled={isLocked}
         >
-            {isLocked && <img src={iconSrc} style={iconStyle} alt="lock" />}
+            {isLocked && <img src={lockIcon} style={iconStyle} alt="lock" />}
             <span>{label}</span>
             <div style={shadowStyle}></div>
         </button>

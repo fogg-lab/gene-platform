@@ -5,15 +5,21 @@ import IconButton from '../ui/IconButton';
 import terminal from '../../assets/icons/terminal.png';
 import pako from 'pako';
 import SampleField from '../ui/SampleField';
+import { useErrorPopup } from '../ui/ErrorPopup';
+import next from '../../assets/icons/next.svg';
 
 const DEAInputForm = ({
     contrastGroup,
     referenceGroup,
     onRemoveSamplesFromGroup,
     runAnalysis,
+    handleStageChange,
+    currentStage,
+    deData,
 }) => {
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
+    const { showError } = useErrorPopup();
 
     const handleRemoveContrastSample = (sampleId) => {
         console.log("Removing contrast sample:", sampleId);
@@ -49,8 +55,8 @@ const DEAInputForm = ({
                 <label className="radioLabel">
                     <span id="adjustmentSubfield">Adjustment method (🚧):</span>
                     <select id="adjustmentMethod" name="adjustmentMethod">
-                        <option value="option1">Bonferroni</option>
-                        <option value="option2">Benjamini and Hochberg</option>
+                        <option value="option1">Benjamini and Hochberg</option>
+                        <option value="option2">Bonferroni</option>
                     </select>
                 </label>
                 <div className='dataSubfieldSampleField'>
@@ -73,7 +79,21 @@ const DEAInputForm = ({
                 </label>
             </div>
             <div id="runAnalysisContainer">
-                <IconButton icon={terminal} label="Run Analysis" onClick={runAnalysis} />
+                <IconButton
+                    icon={deData?.plots?.volcano ? next : terminal}
+                    label={deData?.plots?.volcano ? "Next Stage" : "Run Analysis"}
+                    onClick={() => {
+                        if (deData?.plots?.volcano) {
+                            handleStageChange('enrichment');
+                        } else {
+                            if (referenceGroup.samples.length < 1 || contrastGroup.samples.length < 1) {
+                                showError("Each group must have at least one sample to run the analysis.");
+                                return;
+                            }
+                            runAnalysis();
+                        }
+                    }}
+                />
             </div>
         </div>
     );
@@ -84,6 +104,9 @@ DEAInputForm.propTypes = {
     referenceGroup: PropTypes.object.isRequired,
     onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
+    handleStageChange: PropTypes.func.isRequired,
+    currentStage: PropTypes.string.isRequired,
+    deData: PropTypes.object,
 };
 
 export default DEAInputForm;

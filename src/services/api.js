@@ -2,6 +2,7 @@ import pako from "pako";
 import Papa from "papaparse";
 const { loadPyodide } = require("pyodide");
 import { strReplaceAll } from "../utils/helper";
+import { getPublicUrl } from "../utils/environment";
 
 /**
  * Retrieve a dataset from an external database (GDC, GEO-human, or GEO-mouse).
@@ -29,7 +30,7 @@ import { strReplaceAll } from "../utils/helper";
  *   }
  */
 export async function getExternalDataset(dataSrc, datasetID) {
-    const baseUrl = `/datasets/curated-bulk-rnaseq-gene-expression/${dataSrc}`;
+    const baseUrl = `${getPublicUrl()}/datasets/curated-bulk-rnaseq-gene-expression/${dataSrc}`;
 
     // Fetch and parse coldata
     const coldataResponse = await fetch(`${baseUrl}/coldata/${datasetID}.csv.gz`);

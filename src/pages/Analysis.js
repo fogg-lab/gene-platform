@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import TabButton from '../components/ui/TabButton';
 import DataTable from '../components/ui/DataTable';
 import DatabasePopup from '../components/ui/DatabasePopup';
+import GeneSetCollectionsPopup from '../components/ui/GeneSetCollectionsPopup';
 import WorkerManager from '../utils/Workers';
 import { getExternalDataset, getExternalGeneSetCollection } from '../services/api';
 import humanGenes from '../assets/genes/human_genes.json';
@@ -485,6 +486,9 @@ const Analysis = () => {
         );
     };
 
+    const handleRemoveGeneSetCollection = (index) => {
+        setGeneSetCollections(prev => prev.filter((_, i) => i !== index));
+    };
 
     if (error) {
         return <div>Error: {error}</div>;
@@ -500,6 +504,9 @@ const Analysis = () => {
                         onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
                         isLoading={isLoading}
+                        handleStageChange={handleStageChange}
+                        currentStage={currentStage}
+                        edaData={edaData}
                     />
                 )}
                 {currentStage === 'differential' && (
@@ -508,6 +515,9 @@ const Analysis = () => {
                         referenceGroup={referenceGroup}
                         onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                         runAnalysis={runAnalysis}
+                        handleStageChange={handleStageChange}
+                        currentStage={currentStage}
+                        deData={deData}
                     />
                 )}
                 {currentStage === 'enrichment' && (
@@ -516,6 +526,12 @@ const Analysis = () => {
                         onDatasetSelect={handleDatasetSelect}
                         runAnalysis={runAnalysis}
                         isLoading={isLoading}
+                        onAddGeneSetCollection={(species, collectionId) => getExternalGeneSetCollection(species, collectionId)
+                            .then(newCollection => setGeneSetCollections(prev => [...prev, { name: collectionId, data: newCollection }]))}
+                        geneSetCollections={geneSetCollections}
+                        gseaParams={gseaParams}
+                        onUpdateGseaParams={setGseaParams}
+                        onRemoveGeneSetCollection={handleRemoveGeneSetCollection}
                     />
                 )}
             </div>
@@ -571,6 +587,7 @@ const Analysis = () => {
                             <GSEAContent
                                 data={gseaData}
                                 activeTab={activeTab}
+                                setActiveTab={setActiveTab}
                                 onAddSamplesToGroup={handleAddSamplesToGroup}
                                 onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
                                 contrastGroup={contrastGroup}

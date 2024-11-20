@@ -1,18 +1,24 @@
-import { getPublicUrl } from '../utils/environment';
+import { isElectron } from '../utils/environment';
 import { loadPyodide } from 'pyodide';
 
 let pyodide;
 
 async function initializePyodide() {
-  pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.3/full/' });
+  pyodide = await loadPyodide({
+    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.3/full/'
+  });
   await pyodide.loadPackage(['numpy', 'scipy', 'scikit-learn', 'micropip']);
+
+  // Get the base URL for the wheel
+  let publicUrl = isElectron() ? '' : `${self.location.origin}${getPublicUrl()}/static`;
+  const wheelPath = `${publicUrl}/py-wheels/gene_platform_utils-0.0.1-py3-none-any.whl`;
 
   // Install gene-platform-utils
   await pyodide.runPythonAsync(`
     import micropip
     await micropip.install('networkx')
     await micropip.install('plotly')
-    await micropip.install('${getPublicUrl()}/py-wheels/gene_platform_utils-0.0.1-py3-none-any.whl')
+    await micropip.install('${wheelPath}')
   `);
 }
 
