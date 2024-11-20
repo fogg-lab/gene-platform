@@ -2,38 +2,23 @@ import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import IconButton from '../ui/IconButton';
 import terminal from '../../assets/icons/terminal.png';
+import GeneSetCollectionsPopup from '../ui/GeneSetCollectionsPopup';
 
 const GSEAInputForm = ({
     setIsVisible,
     onDatasetSelect,
     runAnalysis,
-    isLoading
+    isLoading,
+    onAddGeneSetCollection,
+    geneSetCollections,
+    gseaParams,
+    onUpdateGseaParams,
+    onRemoveGeneSetCollection
 }) => {
-    const [libraries, setLibraries] = useState([]);
-    const [minSize, setMinSize] = useState(15);
-    const [maxSize, setMaxSize] = useState(500);
-    const [permutations, setPermutations] = useState(1000);
-    const [seed, setSeed] = useState(123);
-    const [showLibrariesPopup, setShowLibrariesPopup] = useState(false);
-
-    const handleButtonClick = (datasetType) => {
-        if (datasetType === 'external') {
-            setIsVisible(true); // Show plot area when 'Use External Dataset' is selected
-        } else {
-            setIsVisible(false); // Hide plot area when 'Use Example Dataset' is selected
-            // Load example dataset
-            onDatasetSelect('example', null);
-        }
-    };
+    const [isGeneSetPopupVisible, setIsGeneSetPopupVisible] = useState(false);
 
     const handleRunAnalysis = () => {
-        // Pass all GSEA options to the runAnalysis function
-        runAnalysis({ libraries, minSize, maxSize, permutations, seed });
-    };
-
-    const handleAddLibrary = (library) => {
-        setLibraries([...libraries, library]);
-        setShowLibrariesPopup(false);
+        runAnalysis();
     };
 
     return (
@@ -46,10 +31,24 @@ const GSEAInputForm = ({
                     <>
                         <button
                             className="analysisInputButton"
-                            onClick={() => handleButtonClick('external')}
+                            onClick={() => setIsGeneSetPopupVisible(true)}
                         >
-                            Add gene set
+                            Add Gene Set Collection
                         </button>
+                        <div className="geneSetCollections">
+                            {geneSetCollections.map((collection, index) => (
+                                <div key={index} className="geneSetCollection">
+                                    <span>{collection.name}</span>
+                                    <button 
+                                        className="removeButton"
+                                        onClick={() => onRemoveGeneSetCollection(index)}
+                                        aria-label={`Remove ${collection.name}`}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </>
                 )}
             </div>
@@ -57,14 +56,26 @@ const GSEAInputForm = ({
             <div className="form-container">
                 <form id="gseaOptionsForm">
                     <div className="form-group">
+                        <label className="form-label" htmlFor="weight">Weight:</label>
+                        <input
+                            className="form-input"
+                            type="number"
+                            id="weight"
+                            name="weight"
+                            value={gseaParams.weight}
+                            onChange={(e) => onUpdateGseaParams('weight', parseFloat(e.target.value))}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
                         <label className="form-label" htmlFor="minSize">Minimum Size:</label>
                         <input
                             className="form-input"
                             type="number"
                             id="minSize"
                             name="minSize"
-                            value={minSize}
-                            onChange={(e) => setMinSize(Number(e.target.value))}
+                            value={gseaParams.minSize}
+                            onChange={(e) => onUpdateGseaParams('minSize', parseInt(e.target.value))}
                             required
                         />
                     </div>
@@ -75,37 +86,30 @@ const GSEAInputForm = ({
                             type="number"
                             id="maxSize"
                             name="maxSize"
-                            value={maxSize}
-                            onChange={(e) => setMaxSize(Number(e.target.value))}
+                            value={gseaParams.maxSize}
+                            onChange={(e) => onUpdateGseaParams('maxSize', parseInt(e.target.value))}
                             required
                         />
                     </div>
                     <div className="form-group">
-                        <label className="form-label" htmlFor="permutations">Permutations:</label>
+                        <label className="form-label" htmlFor="nperm">Permutations:</label>
                         <input
                             className="form-input"
                             type="number"
-                            id="permutations"
-                            name="permutations"
-                            value={permutations}
-                            onChange={(e) => setPermutations(Number(e.target.value))}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="seed">Seed:</label>
-                        <input
-                            className="form-input"
-                            type="number"
-                            id="seed"
-                            name="seed"
-                            value={seed}
-                            onChange={(e) => setSeed(Number(e.target.value))}
+                            id="nperm"
+                            name="nperm"
+                            value={gseaParams.nperm}
+                            onChange={(e) => onUpdateGseaParams('nperm', parseInt(e.target.value))}
                             required
                         />
                     </div>
                 </form>
             </div>
+            <GeneSetCollectionsPopup
+                isVisible={isGeneSetPopupVisible}
+                setIsVisible={setIsGeneSetPopupVisible}
+                onCollectionSelect={onAddGeneSetCollection}
+            />
             <div id="runAnalysisContainer">
                 <IconButton icon={terminal} label="Run Analysis" onClick={handleRunAnalysis} />
             </div>
@@ -118,6 +122,11 @@ GSEAInputForm.propTypes = {
     onDatasetSelect: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
+    onAddGeneSetCollection: PropTypes.func.isRequired,
+    geneSetCollections: PropTypes.array.isRequired,
+    gseaParams: PropTypes.object.isRequired,
+    onUpdateGseaParams: PropTypes.func.isRequired,
+    onRemoveGeneSetCollection: PropTypes.func.isRequired,
 };
 
 export default GSEAInputForm;
