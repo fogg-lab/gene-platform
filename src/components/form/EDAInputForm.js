@@ -158,7 +158,6 @@ const EDAInputForm = ({
 
     const handleRunAnalysis = async () => {
         if (edaData?.plots?.pca) {
-            // If analysis is complete, move to next stage
             handleStageChange('differential');
         }
         else {
@@ -168,7 +167,6 @@ const EDAInputForm = ({
                     runAnalysis(processedData);
                 } catch (error) {
                     console.error("Error processing uploaded files:", error);
-                    // Handle error (e.g., show error message to user)
                 }
             } else {
                 runAnalysis();
@@ -234,18 +232,13 @@ const EDAInputForm = ({
                         />
                     </div>
                 </div>
-
-                {/* Right side: Aligned tooltips */}
                 <div className="tooltips-column">
-                    {/* Dataset Selection tooltips */}
                     <div className="tooltip-row" style={{ marginTop: '20px' }}>
                         <ToolTip content="Choose between example and external datasets" />
                     </div>
-                    {/* File Upload tooltip */}
                     <div className="tooltip-row" style={{ marginTop: '60px' }}>
                         <ToolTip content="Upload your gene expression matrix and sample metadata files" />
                     </div>
-                    {/* Transform Selection tooltip */}
                     <div className="tooltip-row" style={{ marginTop: '130px' }}>
                         <ToolTip content="Select the transformation method to normalize your count data" />
                     </div>

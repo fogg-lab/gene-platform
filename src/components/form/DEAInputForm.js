@@ -1,11 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { useDropzone } from 'react-dropzone';
-import IconButton from '../ui/IconButton';
-import terminal from '../../assets/icons/terminal.png';
-import pako from 'pako';
-import SampleField from '../ui/SampleField';
 import { useErrorPopup } from '../ui/ErrorPopup';
+import IconButton from '../ui/IconButton';
+import ToolTip from '../ui/ToolTip';
+import SampleField from '../ui/SampleField';
+import terminal from '../../assets/icons/terminal.png';
 import next from '../../assets/icons/next.svg';
 
 const DEAInputForm = ({
@@ -17,84 +16,132 @@ const DEAInputForm = ({
     currentStage,
     deData,
 }) => {
-    const [countsFileName, setCountsFileName] = useState('');
-    const [coldataFileName, setColdataFileName] = useState('');
     const { showError } = useErrorPopup();
-
-    const handleRemoveContrastSample = (sampleId) => {
-        console.log("Removing contrast sample:", sampleId);
-        onRemoveSamplesFromGroup(true, [sampleId]);
-    };
-
-    const handleRemoveReferenceSample = (sampleId) => {
-        console.log("Removing reference sample:", sampleId);
-        onRemoveSamplesFromGroup(false, [sampleId]);
-    };
-
-    const onDropCounts = useCallback((acceptedFiles) => {
-        if (acceptedFiles.length > 0) {
-            setCountsFileName(acceptedFiles[0].name);
-        }
-        console.log("AnalysisInputForm.js:onDropCounts requires further implementation");
-    }, []);
-
-    const onDropColdata = useCallback((acceptedFiles) => {
-        if (acceptedFiles.length > 0) {
-            setColdataFileName(acceptedFiles[0].name);
-        }
-        console.log("AnalysisInputForm.js:onDropColdata requires further implementation");
-    }, []);
 
     return (
         <div id="analysisInputContainer_comp">
-            <div>
-                <label className="radioLabel">
-                    <input className="radioInput" type="radio" name="covariates" />
-                    <span>Add covariates (🚧)</span>
-                </label>
-                <label className="radioLabel">
-                    <span id="adjustmentSubfield">Adjustment method (🚧):</span>
-                    <select id="adjustmentMethod" name="adjustmentMethod">
-                        <option value="option1">Benjamini and Hochberg</option>
-                        <option value="option2">Bonferroni</option>
-                    </select>
-                </label>
-                <div className='dataSubfieldSampleField'>
-                    <SampleField
-                        headerName="Reference Group"
-                        samples={referenceGroup.samples}
-                        onRemoveSample={(sampleId) => onRemoveSamplesFromGroup(false, [sampleId])}
-                        isContrast={false}
-                    />
-                    <SampleField
-                        headerName="Contrast Group"
-                        samples={contrastGroup.samples}
-                        onRemoveSample={(sampleId) => onRemoveSamplesFromGroup(true, [sampleId])}
-                        isContrast={true}
-                    />
+            <div className="form-with-tooltips">
+                <div className="form-content">
+                    <div className="form-fields">
+                        <div className="form-field-row">
+                            <label className="radioLabel">
+                                <input className="radioInput" type="radio" name="covariates" />
+                                <span>Add covariates (🚧)</span>
+                            </label>
+                            <div className="tooltip-wrapper">
+                                <ToolTip content="Include additional variables that might affect gene expression" />
+                            </div>
+                        </div>
+
+                        <div className="form-field-row">
+                            <label className="radioLabel">
+                                <span id="adjustmentSubfield">Adjustment method (🚧):</span>
+                                <select id="adjustmentMethod" name="adjustmentMethod">
+                                    <option value="option1">Benjamini and Hochberg</option>
+                                    <option value="option2">Bonferroni</option>
+                                </select>
+                            </label>
+                            <div className="tooltip-wrapper">
+                                <ToolTip content="Choose the method to control for multiple testing" />
+                            </div>
+                        </div>
+
+                        <div className="form-field-row">
+                            <div className="dataSubfieldSampleField">
+                                <SampleField
+                                    headerName="Reference Group"
+                                    samples={referenceGroup.samples}
+                                    onRemoveSample={(sampleId) => onRemoveSamplesFromGroup(false, [sampleId])}
+                                    isContrast={false}
+                                />
+                                <SampleField
+                                    headerName="Contrast Group"
+                                    samples={contrastGroup.samples}
+                                    onRemoveSample={(sampleId) => onRemoveSamplesFromGroup(true, [sampleId])}
+                                    isContrast={true}
+                                />
+                            </div>
+                            <div className="tooltip-wrapper">
+                                <ToolTip content="Select samples for your reference (control) and contrast (treatment) groups" />
+                            </div>
+                        </div>
+
+                        <div className="form-field-row">
+                            <label className="radioLabel">
+                                <input className="radioInput" type="radio" name="name" />
+                                <span>Batch correction (🚧)</span>
+                            </label>
+                            <div className="tooltip-wrapper">
+                                <ToolTip content="Correct for systematic variations between sample batches" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="runAnalysisContainer">
+                        <IconButton
+                            icon={deData?.plots?.volcano ? next : terminal}
+                            label={deData?.plots?.volcano ? "Next Stage" : "Run Analysis"}
+                            onClick={() => {
+                                if (deData?.plots?.volcano) {
+                                    handleStageChange('enrichment');
+                                } else {
+                                    if (referenceGroup.samples.length < 1 || contrastGroup.samples.length < 1) {
+                                        showError("Each group must have at least one sample to run the analysis.");
+                                        return;
+                                    }
+                                    runAnalysis();
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
-                <label className="radioLabel">
-                    <input className="radioInput" type="radio" name="name" />
-                    <span>Batch correction (🚧)</span>
-                </label>
             </div>
-            <div id="runAnalysisContainer">
-                <IconButton
-                    icon={deData?.plots?.volcano ? next : terminal}
-                    label={deData?.plots?.volcano ? "Next Stage" : "Run Analysis"}
-                    onClick={() => {
-                        if (deData?.plots?.volcano) {
-                            handleStageChange('enrichment');
-                        } else {
-                            if (referenceGroup.samples.length < 1 || contrastGroup.samples.length < 1) {
-                                showError("Each group must have at least one sample to run the analysis.");
-                                return;
-                            }
-                            runAnalysis();
-                        }
-                    }}
-                />
-            </div>
+
+            <style jsx>{`
+                .form-with-tooltips {
+                    display: flex;
+                    width: 100%;
+                    gap: 1rem;
+                }
+
+                .form-content {
+                    flex: 1;
+                }
+
+                .form-fields {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                }
+
+                .form-field-row {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 1rem;
+                    min-height: 2rem;
+                }
+
+                .form-field-row > *:first-child {
+                    flex: 1;
+                }
+
+                .tooltip-wrapper {
+                    width: 24px;
+                    display: flex;
+                    align-items: flex-start;
+                    padding-top: 0.25rem;
+                }
+
+                .radioLabel {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                #runAnalysisContainer {
+                    margin-top: 1rem;
+                }
+            `}</style>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import DataTable from './DataTable';
 import ProgressBar from './ProgressBar';
 import PlotArea from './PlotArea';
@@ -21,15 +21,6 @@ const DifferentialExpressionContent = ({
         }
 
         const availablePlots = Object.keys(data.plots);
-
-        useEffect(() => {
-            if (data && data.plots && Object.keys(data.plots).length > 0) {
-                const firstPlot = Object.keys(data.plots)[0];
-                if (currentPlot !== firstPlot) {
-                    setCurrentPlot(firstPlot);
-                }
-            }
-        }, [data, currentPlot, setCurrentPlot]);
 
         return (
             <div className="plot-container">
