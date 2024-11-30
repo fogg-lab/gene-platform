@@ -207,18 +207,18 @@ const Analysis = () => {
         switch (stage) {
             case 'exploration':
                 setCurrentTable('coldata');
-                setCurrentPlot(null);
+                if (!currentPlot) setCurrentPlot('pca');
                 break;
             case 'differential':
                 if (deData) {
                     setCurrentTable('de_results');
-                    setCurrentPlot('volcano_plot');
+                    if (!currentPlot) setCurrentPlot('volcano_plot');
                 }
                 break;
             case 'enrichment':
                 if (gseaData) {
                     setCurrentTable('gsea_results');
-                    setCurrentPlot('gene_concept_network');
+                    if (!currentPlot) setCurrentPlot('gene_concept_network');
                 }
                 break;
         }

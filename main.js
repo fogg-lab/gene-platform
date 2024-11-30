@@ -9,6 +9,8 @@ async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 900,
+    minWidth: 1200,
+    minHeight: 600,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

@@ -27,8 +27,8 @@ const App = () => {
 						<li>
 							<Link to="/Guide">Guide</Link>
 						</li>
-						<li>
-							<Link to="/ViewRuns">View Runs</Link>
+						<li className="opacity-50 pointer-events-none">
+							<Link to="/ViewRuns">View Runs(🚧)</Link>
 						</li>
 					</ul>
 				</nav>
