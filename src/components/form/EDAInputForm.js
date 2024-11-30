@@ -179,8 +179,8 @@ const EDAInputForm = ({
             <div className="form-with-tooltips">
                 <div className="form-content">
                     {/* Left side: All the form fields */}
-                    <h3>Data</h3>
-                    <div className='dataSubfield'>
+                    <h3>Use GDC/GEO data or run an example dataset</h3>
+                    <div className='dataSubfield flex flex-col gap-2 border border-black rounded p-4'>
                         {isLoading ? (
                             <div className="loader"></div>
                         ) : (
@@ -191,6 +191,7 @@ const EDAInputForm = ({
                                 >
                                     Use Example Dataset
                                 </button>
+                                <div className="border-b border-black w-full"></div>
                                 <button
                                     className="analysisInputButton"
                                     onClick={() => handleButtonClick('external')}
@@ -233,13 +234,13 @@ const EDAInputForm = ({
                     </div>
                 </div>
                 <div className="tooltips-column">
-                    <div className="tooltip-row" style={{ marginTop: '20px' }}>
+                    <div className="tooltip-row" style={{ marginTop: '40px' }}>
                         <ToolTip content="Choose between example and external datasets" />
                     </div>
-                    <div className="tooltip-row" style={{ marginTop: '60px' }}>
+                    <div className="tooltip-row" style={{ marginTop: '80px' }}>
                         <ToolTip content="Upload your gene expression matrix and sample metadata files" />
                     </div>
-                    <div className="tooltip-row" style={{ marginTop: '130px' }}>
+                    <div className="tooltip-row" style={{ marginTop: '150px' }}>
                         <ToolTip content="Select the transformation method to normalize your count data" />
                     </div>
                 </div>
