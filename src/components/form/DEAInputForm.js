@@ -24,7 +24,7 @@ const DEAInputForm = ({
                 <div className="form-content">
                     <div className="form-fields">
                         <div className="form-field-row">
-                            <label className="radioLabel">
+                            <label className="radioLabel opacity-50 pointer-events-none">
                                 <input className="radioInput" type="radio" name="covariates" />
                                 <span>Add covariates (🚧)</span>
                             </label>
@@ -34,7 +34,7 @@ const DEAInputForm = ({
                         </div>
 
                         <div className="form-field-row">
-                            <label className="radioLabel">
+                            <label className="radioLabel opacity-50 pointer-events-none">
                                 <span id="adjustmentSubfield">Adjustment method (🚧):</span>
                                 <select id="adjustmentMethod" name="adjustmentMethod">
                                     <option value="option1">Benjamini and Hochberg</option>
@@ -67,7 +67,7 @@ const DEAInputForm = ({
                         </div>
 
                         <div className="form-field-row">
-                            <label className="radioLabel">
+                            <label className="radioLabel opacity-50 pointer-events-none">
                                 <input className="radioInput" type="radio" name="name" />
                                 <span>Batch correction (🚧)</span>
                             </label>

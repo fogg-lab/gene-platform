@@ -214,7 +214,7 @@ const EDAInputForm = ({
                         />
                     </div>
                     <h3>Configuration</h3>
-                    <div>
+                    <div className="opacity-50 pointer-events-none">
                         <label className="radioLabel">
                             <span>Data Exploration Transform (🚧):</span>
                             <select id="transformationMethod" name="transformationMethod">
