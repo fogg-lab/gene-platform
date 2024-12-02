@@ -155,7 +155,6 @@ const EDAInputForm = ({
 
     const handleRunAnalysis = async () => {
         if (edaData?.plots?.pca) {
-            // If analysis is complete, move to next stage
             handleStageChange('differential');
         }
         else {
@@ -165,7 +164,6 @@ const EDAInputForm = ({
                     runAnalysis(processedData);
                 } catch (error) {
                     console.error("Error processing uploaded files:", error);
-                    // Handle error (e.g., show error message to user)
                 }
             } else {
                 runAnalysis();
@@ -178,8 +176,8 @@ const EDAInputForm = ({
             <div className="form-with-tooltips">
                 <div className="form-content">
                     {/* Left side: All the form fields */}
-                    <h3>Data</h3>
-                    <div className='dataSubfield'>
+                    <h3>Use GDC/GEO data or run an example dataset</h3>
+                    <div className='dataSubfield flex flex-col gap-2 border border-black rounded p-4'>
                         {isLoading ? (
                             <div className="loader"></div>
                         ) : (
@@ -190,6 +188,7 @@ const EDAInputForm = ({
                                 >
                                     Use Example Dataset
                                 </button>
+                                <div className="border-b border-black w-full"></div>
                                 <button
                                     className="analysisInputButton"
                                     onClick={() => handleButtonClick('external')}
@@ -212,7 +211,7 @@ const EDAInputForm = ({
                         />
                     </div>
                     <h3>Configuration</h3>
-                    <div>
+                    <div className="opacity-50 pointer-events-none">
                         <label className="radioLabel">
                             <span>Data Exploration Transform (🚧):</span>
                             <select id="transformationMethod" name="transformationMethod">
@@ -231,19 +230,14 @@ const EDAInputForm = ({
                         />
                     </div>
                 </div>
-
-                {/* Right side: Aligned tooltips */}
                 <div className="tooltips-column">
-                    {/* Dataset Selection tooltips */}
-                    <div className="tooltip-row" style={{ marginTop: '20px' }}>
+                    <div className="tooltip-row" style={{ marginTop: '40px' }}>
                         <ToolTip content="Choose between example and external datasets" />
                     </div>
-                    {/* File Upload tooltip */}
-                    <div className="tooltip-row" style={{ marginTop: '60px' }}>
+                    <div className="tooltip-row" style={{ marginTop: '80px' }}>
                         <ToolTip content="Upload your gene expression matrix and sample metadata files" />
                     </div>
-                    {/* Transform Selection tooltip */}
-                    <div className="tooltip-row" style={{ marginTop: '130px' }}>
+                    <div className="tooltip-row" style={{ marginTop: '150px' }}>
                         <ToolTip content="Select the transformation method to normalize your count data" />
                     </div>
                 </div>

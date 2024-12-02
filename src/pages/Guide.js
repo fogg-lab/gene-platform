@@ -15,19 +15,15 @@ const Guide = () => {
             answer: 'To perform gene set enrichment analysis, simply navigate to the \'Gene Set Enrichment Analysis\' tab on the Analysis page. By entering into this tab, more input options will become automatically added to the left-hand form.',
         },
         {
-            question: 'How do I change the save directory for my analysis runs?',
-            answer: 'To change your save directory, navigate to the \'Settings\' icon located on the right side of the navigation bar. There, select \'Change save location\'',
+            question: 'Can I download the plots produced by the GENE Platform?',
+            answer: 'To save plots to the GENE Platform, navigate to the plot you want to download, hover your mouse near the top, and select the camera icon to download the plot as a .png',
         },
         {
             question: 'What input data file types are accepted for upload?',
             answer: 'The GENE Platform accepts the following file types for counts and coldata:\n\n' +
-                    '- Tab-separated values (.tsv or .txt)\n' +
-                    '- Comma-separated values (.csv)\n' +
-                    '- Gzipped versions of the above (.tsv.gz, .txt.gz, or .csv.gz)',
-        },
-        {
-            question: 'What a cool application!',
-            answer: '😎',
+                '- Tab-separated values (.tsv or .txt)\n' +
+                '- Comma-separated values (.csv)\n' +
+                '- Gzipped versions of the above (.tsv.gz, .txt.gz, or .csv.gz)',
         }
     ];
     return (
@@ -37,7 +33,6 @@ const Guide = () => {
             <Accordion data={[faq[2]]} />
             <Accordion data={[faq[3]]} />
             <Accordion data={[faq[4]]} />
-            <Accordion data={[faq[5]]} />
         </div>
     );
 };
