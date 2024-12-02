@@ -5,7 +5,6 @@ import IconButton from '../ui/IconButton';
 import ToolTip from '../ui/ToolTip';
 import terminal from '../../assets/icons/terminal.png';
 import next from '../../assets/icons/next.svg';
-import pako from 'pako';
 import Papa from 'papaparse';
 
 function validFileType(filetype) {
@@ -25,20 +24,25 @@ const readFileAsText = (file) => {
 async function processUploadedFiles(countsFile, coldataFile) {
     // Parse coldata file
     const coldataText = await readFileAsText(coldataFile);
-    const coldataData = Papa.parse(coldataText, { header: true }).data;
+    let coldataData = Papa.parse(coldataText, { header: true }).data;
+    if (Object.keys(coldataData.at(-1)).length === 1) {
+        coldataData = coldataData.slice(0, -1);
+    }
     const coldataTable = structureColdataTable(coldataData);
 
     // Parse counts file
     const countsText = await readFileAsText(countsFile);
-    const countsData = Papa.parse(countsText, { header: true }).data;
-    const { countsTable, genesTable, expression, counts } = structureCountsData(countsData);
+    let countsData = Papa.parse(countsText, { header: true }).data;
+    if (Object.keys(countsData.at(-1)).length === 1) {
+        countsData = countsData.slice(0, -1);
+    }
+    const { countsTable, expression, counts } = structureCountsData(countsData);
 
     return {
         expression,
         counts,
         countsTable,
         coldataTable,
-        genesTable,
     };
 }
 
@@ -52,26 +56,19 @@ function structureColdataTable(coldataData) {
 }
 
 function structureCountsData(countsData) {
-    const sampleIds = Object.keys(countsData[0]).slice(2);
-    const genesData = countsData.map(row => [row['Ensembl gene'], row['Symbol']]);
+    const sampleIds = Object.keys(countsData[0]).slice(1);
     const expressionData = countsData.map(row => sampleIds.map(id => parseInt(row[id])));
 
     const expression = new Int32Array(expressionData.flat());
     const counts = new Int32Array(expressionData.map((row, i) => row.map((val, j) => expressionData[j][i])).flat());
-
+    const geneIdType = Object.keys(countsData[0])[0];
     const countsTable = {
-        cols: ['Ensembl gene', 'Symbol', ...sampleIds],
-        rows: genesData.map(gene => gene[0]),
-        data: countsData.map(row => [row['Ensembl gene'], row['Symbol'], ...sampleIds.map(id => parseInt(row[id]))])
+        cols: [...sampleIds],
+        rows: countsData.map(row => row[geneIdType]),
+        data: countsData.map(row => sampleIds.map(id => parseInt(row[id])))
     };
 
-    const genesTable = {
-        cols: ['ensembl_gene', 'symbol'],
-        rows: genesData.map(gene => gene[0]),
-        data: genesData
-    };
-
-    return { countsTable, genesTable, expression, counts };
+    return { countsTable, expression, counts };
 }
 
 const FileDropArea = ({ title, onDrop, fileName }) => {
@@ -101,11 +98,11 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     });
 
     return (
-        <div {...getRootProps()} className="filedropArea filedropArea-disabled">
-            <input {...getInputProps()} className="fileDrop" disabled />
+        <div {...getRootProps()} className="filedropArea">
+            <input {...getInputProps()} className="fileDrop" />
             <h4>{title}</h4>
             <span>Drop file here or</span>
-            <button className="openFilesystemButton" disabled>
+            <button className="openFilesystemButton">
                 <span>Browse</span>
             </button>
             {isDragActive ? (

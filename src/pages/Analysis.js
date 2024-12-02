@@ -55,7 +55,6 @@ const Analysis = () => {
         }));
     };
 
-
     const handleAddSamplesToGroup = useCallback((isContrast, samplesToAdd) => {
         setContrastGroup(prevContrastGroup => {
             const updatedContrastGroup = isContrast
@@ -224,14 +223,19 @@ const Analysis = () => {
         }
     };
 
-    const runAnalysis = async () => {
+    const runAnalysis = async (processedData) => {
         setIsLoading(true);
         setProgress(0);
 
-        const numInputGenes = dataset.countsTable.rows.length;
-        const numSamples = dataset.coldataTable.rows.length;
+        // If processedData is provided (from EDAInputForm), use it instead of the current dataset
+        if (processedData) {
+            setDataset(processedData);
+        }
+
+        const numInputGenes = (processedData?.countsTable || dataset.countsTable).rows.length;
+        const numSamples = (processedData?.coldataTable || dataset.coldataTable).rows.length;
         const geneInfo = await WorkerManager.runTask('py', 'check_genes', {
-            genesQuery: dataset.countsTable.rows,
+            genesQuery: (processedData?.countsTable || dataset.countsTable).rows,
             humanGeneReference: humanGenes.genes,
             mouseGeneReference: mouseGenes.genes
         });
@@ -245,19 +249,19 @@ const Analysis = () => {
         const mappedGeneIdx = geneIndex.filter((i) => geneMask[i]);
         const mappedGeneSymbols = mappedGeneIdx.map((i) => geneReference[geneInfo.queryResultGeneIndices[i]][2]);
         const numGenes = mappedGeneSymbols.length;
-        const mappedGenesExpression = new dataset.expression.constructor(numGenes * numSamples);
+        const mappedGenesExpression = new (processedData?.expression || dataset.expression).constructor(numGenes * numSamples);
         let mappedGenesExpressionIndex = 0;
         let colIndex = 0;
-        for (let i = 0; i < dataset.expression.length; i++) {
+        for (let i = 0; i < (processedData?.expression || dataset.expression).length; i++) {
             if (geneMask[colIndex++]) {
-                mappedGenesExpression[mappedGenesExpressionIndex++] = dataset.expression[i];
+                mappedGenesExpression[mappedGenesExpressionIndex++] = (processedData?.expression || dataset.expression)[i];
             }
             if (colIndex === numInputGenes) colIndex = 0;
         }
         const mappedGenesCountsTable = {
-            cols: ["Symbol", ...dataset.countsTable.cols.slice(1)],
+            cols: ["Symbol", ...(processedData?.countsTable || dataset.countsTable).cols],
             rows: mappedGeneSymbols,
-            data: mappedGeneIdx.map((i) => [mappedGeneSymbols[i], ...dataset.countsTable.data[i].slice(1)])
+            data: mappedGeneIdx.map((i) => [mappedGeneSymbols[i], ...(processedData?.countsTable || dataset.countsTable).data[i]])
         }
         setProgress(20);
 
@@ -293,7 +297,7 @@ const Analysis = () => {
 
                 setEdaData({
                     tables: {
-                        coldata: dataset.coldataTable,
+                        coldata: (processedData?.coldataTable || dataset.coldataTable),
                         counts: mappedGenesCountsTable
                     },
                     plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }
@@ -357,10 +361,11 @@ const Analysis = () => {
                     numSamples: filteredNumSamples,
                     numGenes: numGenes
                 });
+                setDataset({ ...dataset, deResults: deResults });
                 const deTable = {
                     cols: ['symbol', 'logFC', 't', 'p_value', 'p_value_adj'],
                     data: [...Array(deResults.row_names.length)].map((_, i) => [deResults.row_names[i], deResults.logFC[i], deResults.t[i], deResults.p_value[i], deResults.p_value_adj[i]])
-                }
+                };
 
                 setProgress(60);
                 const volcanoPlot = await WorkerManager.runTask('py', 'create_volcano_plot', {
@@ -403,7 +408,7 @@ const Analysis = () => {
                 setProgress(40);
                 const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
                     genes: mappedGeneSymbols,
-                    metric: deResults.t,
+                    metric: dataset.deResults.t,
                     geneSets: combinedGeneSets,
                     weight: gseaParams.weight,
                     minSize: gseaParams.minSize,
@@ -414,7 +419,7 @@ const Analysis = () => {
                 setProgress(60);
                 const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
                     gsea_res: gseaResults,
-                    de_res: deResults,
+                    de_res: dataset.deResults,
                     color_metric: 'P.Value',
                     pvalue_threshold: 0.05,
                     layout_seed: Date.now(),

@@ -22,11 +22,6 @@ import { getPublicUrl } from "../utils/environment";
  *       rows: string[], // Array of sample IDs
  *       data: string[][] // 2D array of metadata values
  *     },
- *     genesTable: {
- *       cols: string[], // Array of column names from the genes CSV
- *       rows: string[], // Array of gene IDs (ensembl_id)
- *       data: string[][] // 2D array of gene information
- *     }
  *   }
  */
 export async function getExternalDataset(dataSrc, datasetID) {
@@ -81,29 +76,20 @@ export async function getExternalDataset(dataSrc, datasetID) {
         data: coldataData.map((row) => coldataCols.map((col) => row[col])),
     };
 
-    // Create genesTable
-    const genesCols = Object.keys(genesData[0]);
-    const genesTable = {
-        cols: genesCols,
-        rows: genesData.map((row) => row.ensembl_gene),
-        data: genesData.map((row) => genesCols.map((col) => row[col])),
-    };
-
     // Create countsTable
     const countsTable = {
-        cols: ["symbol", ...coldataTable.rows],
-        rows: genesTable.rows,
+        cols: coldataTable.rows,
+        rows: genesData.map((row) => row.symbol),
         data: (() => {
             const numSamples = coldataTable.rows.length;
-            const numGenes = genesTable.rows.length;
+            const numGenes = genesData.length;
             return Array.from({ length: numGenes }, (_, geneIndex) => {
-                const hgncSymbol = genesTable.data[geneIndex][2];
                 const geneCountsStart = geneIndex * numSamples;
                 const geneCounts = counts.slice(
                     geneCountsStart,
                     geneCountsStart + numSamples
                 );
-                return [hgncSymbol, ...Array.from(geneCounts)];
+                return Array.from(geneCounts);
             });
         })(),
     };
@@ -113,7 +99,6 @@ export async function getExternalDataset(dataSrc, datasetID) {
         counts,
         countsTable,
         coldataTable,
-        genesTable,
     };
 }
 
