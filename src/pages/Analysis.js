@@ -138,14 +138,15 @@ const Analysis = () => {
             setDataset(data);
             dset = data;
         } else if (type === 'upload') {
-            setDataset(data);
-            dset = data;
-            // Set table data directly if provided
+            setDataset(prev => ({
+                ...prev,
+                ...data
+            }));
             if (data.tableData && data.tableColumns) {
                 setTableData(data.tableData);
                 setTableColumns(data.tableColumns);
-                return;
             }
+            return;
         } else if (type === 'example') {
             setIsLoading(true);
             try {
@@ -236,18 +237,21 @@ const Analysis = () => {
         setIsLoading(true);
         setProgress(0);
 
-        // If processedData is provided (from EDAInputForm), use it instead of the current dataset
-        if (processedData) {
-            setDataset(processedData);
-        }
-
-        const numInputGenes = (processedData?.countsTable || dataset.countsTable).rows.length;
-        const numSamples = (processedData?.coldataTable || dataset.coldataTable).rows.length;
+        // Create a consistent data structure regardless of source
+        const analysisData = processedData || dataset;
+        
+        const numInputGenes = analysisData.countsTable.rows.length;
+        const numSamples = analysisData.coldataTable.rows.length;
+        
+        // Use consistent expression data
+        const expressionData = analysisData.expression;
+        
         const geneInfo = await WorkerManager.runTask('py', 'check_genes', {
-            genesQuery: (processedData?.countsTable || dataset.countsTable).rows,
+            genesQuery: analysisData.countsTable.rows,
             humanGeneReference: humanGenes.genes,
             mouseGeneReference: mouseGenes.genes
         });
+        
         const geneReference = geneInfo.detectedSpecies === "mouse" ? mouseGenes.genes : humanGenes.genes;
 
         // Create filtered expression and countsTable that excludes duplicate and unmatched genes and uses HGNC symbol
@@ -258,19 +262,19 @@ const Analysis = () => {
         const mappedGeneIdx = geneIndex.filter((i) => geneMask[i]);
         const mappedGeneSymbols = mappedGeneIdx.map((i) => geneReference[geneInfo.queryResultGeneIndices[i]][2]);
         const numGenes = mappedGeneSymbols.length;
-        const mappedGenesExpression = new (processedData?.expression || dataset.expression).constructor(numGenes * numSamples);
+        const mappedGenesExpression = new (expressionData || dataset.expression).constructor(numGenes * numSamples);
         let mappedGenesExpressionIndex = 0;
         let colIndex = 0;
-        for (let i = 0; i < (processedData?.expression || dataset.expression).length; i++) {
+        for (let i = 0; i < (expressionData || dataset.expression).length; i++) {
             if (geneMask[colIndex++]) {
-                mappedGenesExpression[mappedGenesExpressionIndex++] = (processedData?.expression || dataset.expression)[i];
+                mappedGenesExpression[mappedGenesExpressionIndex++] = (expressionData || dataset.expression)[i];
             }
             if (colIndex === numInputGenes) colIndex = 0;
         }
         const mappedGenesCountsTable = {
-            cols: ["Symbol", ...(processedData?.countsTable || dataset.countsTable).cols],
+            cols: ["Symbol", ...(analysisData.countsTable || dataset.countsTable).cols],
             rows: mappedGeneSymbols,
-            data: mappedGeneIdx.map((i) => [mappedGeneSymbols[i], ...(processedData?.countsTable || dataset.countsTable).data[i]])
+            data: mappedGeneIdx.map((i) => [mappedGeneSymbols[i], ...(analysisData.countsTable || dataset.countsTable).data[i]])
         }
         setProgress(20);
 
@@ -306,7 +310,7 @@ const Analysis = () => {
 
                 setEdaData({
                     tables: {
-                        coldata: (processedData?.coldataTable || dataset.coldataTable),
+                        coldata: (analysisData.coldataTable || dataset.coldataTable),
                         counts: mappedGenesCountsTable
                     },
                     plots: { pca: pcaPlot, tsne: tsnePlot, heatmap: heatmap }

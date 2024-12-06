@@ -141,8 +141,40 @@ const EDAInputForm = ({
         if (acceptedFiles.length > 0) {
             setColdataFile(acceptedFiles[0]);
             setColdataFileName(acceptedFiles[0].name);
+            
+            // Read and process the coldata file immediately
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const coldataText = event.target.result;
+                    let coldataData = Papa.parse(coldataText, { header: true }).data;
+                    if (Object.keys(coldataData.at(-1)).length === 1) {
+                        coldataData = coldataData.slice(0, -1);
+                    }
+                    const coldataTable = structureColdataTable(coldataData);
+                    
+                    // Create table data structure
+                    const tableData = coldataTable.data.map((row, index) => {
+                        const obj = { id: index };
+                        coldataTable.cols.forEach((col, colIndex) => {
+                            obj[col] = row[colIndex];
+                        });
+                        return obj;
+                    });
+
+                    // Pass the processed data up to the parent
+                    onDatasetSelect('upload', {
+                        coldataTable,
+                        tableData,
+                        tableColumns: coldataTable.cols.map(col => ({ key: col, name: col }))
+                    });
+                } catch (error) {
+                    console.error("Error processing coldata file:", error);
+                }
+            };
+            reader.readAsText(acceptedFiles[0]);
         }
-    }, []);
+    }, [onDatasetSelect]);
 
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {

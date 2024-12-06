@@ -29,7 +29,7 @@ const DifferentialExpressionContent = ({
 
     const renderPlotTabs = () => {
         if (!data || !data.plots) {
-            return <p>No plots available</p>;
+            return <p>Run analysis to see plots</p>;
         }
 
         const availablePlots = Object.keys(data.plots);
