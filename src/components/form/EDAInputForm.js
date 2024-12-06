@@ -57,11 +57,11 @@ function structureColdataTable(coldataData) {
 
 function structureCountsData(countsData) {
     const sampleIds = Object.keys(countsData[0]).slice(1);
-    const expressionData = countsData.map(row => sampleIds.map(id => parseInt(row[id])));
-
-    const expression = new Int32Array(expressionData.flat());
-    const counts = new Int32Array(expressionData.map((row, i) => row.map((val, j) => expressionData[j][i])).flat());
+    const countsDataInt = countsData.map(row => sampleIds.map(id => parseInt(row[id])));
+    const counts = new Int32Array(countsDataInt.flat());
+    const expression = new Int32Array(countsDataInt.map((row, i) => row.map((val, j) => countsDataInt[j][i])).flat());
     const geneIdType = Object.keys(countsData[0])[0];
+
     const countsTable = {
         cols: [...sampleIds],
         rows: countsData.map(row => row[geneIdType]),
@@ -161,6 +161,22 @@ const EDAInputForm = ({
             if (countsFile && coldataFile) {
                 try {
                     const processedData = await processUploadedFiles(countsFile, coldataFile);
+                    // Create table data structure before running analysis
+                    const tableData = processedData.coldataTable.data.map((row, index) => {
+                        const obj = { id: index };
+                        processedData.coldataTable.cols.forEach((col, colIndex) => {
+                            obj[col] = row[colIndex];
+                        });
+                        return obj;
+                    });
+
+                    // Set the table data in the parent component
+                    onDatasetSelect('upload', {
+                        ...processedData,
+                        tableData,
+                        tableColumns: processedData.coldataTable.cols.map(col => ({ key: col, name: col }))
+                    });
+                    
                     runAnalysis(processedData);
                 } catch (error) {
                     console.error("Error processing uploaded files:", error);

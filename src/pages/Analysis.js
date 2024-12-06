@@ -134,9 +134,18 @@ const Analysis = () => {
 
     const handleDatasetSelect = async (type, data) => {
         let dset;
-        if (type === 'external' || type === 'upload') {
+        if (type === 'external') {
             setDataset(data);
             dset = data;
+        } else if (type === 'upload') {
+            setDataset(data);
+            dset = data;
+            // Set table data directly if provided
+            if (data.tableData && data.tableColumns) {
+                setTableData(data.tableData);
+                setTableColumns(data.tableColumns);
+                return;
+            }
         } else if (type === 'example') {
             setIsLoading(true);
             try {
@@ -440,7 +449,7 @@ const Analysis = () => {
         if ((!tableData || !tableColumns.length) && currentStage !== 'differential') {
             return (
                 <div className='analysisContentGuide'>
-                    <h1>Analysis has not yet been run</h1>
+                    <h1>Run analysis to view results</h1>
                 </div>
             );
         }
