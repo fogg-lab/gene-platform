@@ -105,6 +105,53 @@ self.onmessage = async function(event) {
           column_names: res.names
         }
         break;
+        case 'run_camera':
+            // Bind variables to the R environment
+            await webR.objs.globalEnv.bind('counts', counts);
+            await webR.objs.globalEnv.bind('geneSymbols', geneSymbols);
+            await webR.objs.globalEnv.bind('geneSets', geneSets);
+            await webR.objs.globalEnv.bind('design', design);
+            await webR.objs.globalEnv.bind('contrast', contrast);
+            await webR.objs.globalEnv.bind('species', species);
+
+            const _res = await (await webR.evalR(`
+              library(limma)
+              library(org.Hs.eg.db)
+              library(org.Mm.eg.db)
+    
+              # Convert gene sets to index lists
+              index_list <- lapply(geneSets, function(set) {
+                match(set, geneSymbols)
+              })
+    
+              # Run camera analysis
+              camera_result <- camera(
+                y = counts,
+                index = index_list,
+                design = design,
+                contrast = contrast,
+                inter.gene.cor = 0.01
+              )
+    
+              # Convert results to a data frame
+              camera_df <- as.data.frame(camera_result)
+              camera_df$Name <- rownames(camera_df)
+    
+              # Order by FDR
+              camera_df <- camera_df[order(camera_df$FDR), ]
+    
+              # Return results
+              list(
+                NGenes = camera_df$NGenes,
+                Direction = camera_df$Direction,
+                PValue = camera_df$PValue,
+                FDR = camera_df$FDR,
+                Name = camera_df$Name
+              )
+            `)).toJs();
+    
+            result = _res;
+            break;
     }
     self.postMessage({ status: 'success', result });
   } catch (error) {

@@ -59,13 +59,24 @@ function structureCountsData(countsData) {
     const sampleIds = Object.keys(countsData[0]).slice(1);
     const countsDataInt = countsData.map(row => sampleIds.map(id => parseInt(row[id])));
     const counts = new Int32Array(countsDataInt.flat());
-    const expression = new Int32Array(countsDataInt.map((row, i) => row.map((val, j) => countsDataInt[j][i])).flat());
-    const geneIdType = Object.keys(countsData[0])[0];
+    
+    // Fix: Properly transpose the entire matrix
+    const numGenes = countsData.length;
+    const numSamples = sampleIds.length;
+    const expression = new Int32Array(numGenes * numSamples);
+    
+    for (let i = 0; i < numGenes; i++) {
+        for (let j = 0; j < numSamples; j++) {
+            expression[j * numGenes + i] = countsDataInt[i][j];
+        }
+    }
 
+    const geneIdType = Object.keys(countsData[0])[0];
+    
     const countsTable = {
         cols: [...sampleIds],
         rows: countsData.map(row => row[geneIdType]),
-        data: countsData.map(row => sampleIds.map(id => parseInt(row[id])))
+        data: countsDataInt
     };
 
     return { countsTable, expression, counts };

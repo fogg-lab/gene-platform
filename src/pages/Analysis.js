@@ -219,6 +219,7 @@ const Analysis = () => {
                 if (!currentPlot) setCurrentPlot('pca');
                 break;
             case 'differential':
+                setActiveTab('table');
                 if (deData) {
                     setCurrentTable('de_results');
                     if (!currentPlot) setCurrentPlot('volcano_plot');
@@ -407,39 +408,59 @@ const Analysis = () => {
             }
         }
 
-        // GSEA
+        // GSEA using camera
         if (currentStage === 'enrichment') {
             try {
+                // Prepare gene sets in the format camera expects
                 const combinedGeneSets = geneSetCollections.reduce((acc, collection) => {
                     return {
-                        ...acc, ...collection.data.geneSets.reduce((setAcc, setName, index) => {
-                            setAcc[setName] = collection.data.geneSetSymbols[index];
+                        ...acc,
+                        ...collection.data.geneSetSymbols.reduce((setAcc, symbols, index) => {
+                            setAcc[collection.data.geneSets[index]] = symbols;
                             return setAcc;
                         }, {})
                     };
                 }, {});
+
+                // Get design matrix and contrast from the DE analysis
+                const design = dataset.deResults.design;
+                const contrast = dataset.deResults.contrast;
+                
                 setProgress(40);
-                const gseaResults = await WorkerManager.runTask('rust', 'run_gsea', {
-                    genes: mappedGeneSymbols,
-                    metric: dataset.deResults.t,
+                const cameraResults = await WorkerManager.runTask('r', 'run_camera', {
+                    counts: dataset.expression,
+                    geneSymbols: mappedGeneSymbols,
                     geneSets: combinedGeneSets,
-                    weight: gseaParams.weight,
-                    minSize: gseaParams.minSize,
-                    maxSize: gseaParams.maxSize,
-                    nperm: gseaParams.nperm,
-                    seed: Date.now()
+                    design: design,
+                    contrast: contrast,
+                    species: geneInfo.detectedSpecies
                 });
+
                 setProgress(60);
+                // Create table from camera results
+                const gseaTable = {
+                    cols: ['Name', 'NGenes', 'Direction', 'PValue', 'FDR'],
+                    data: cameraResults.Name.map((name, i) => [
+                        name,
+                        cameraResults.NGenes[i],
+                        cameraResults.Direction[i],
+                        cameraResults.PValue[i],
+                        cameraResults.FDR[i]
+                    ])
+                };
+
+                setProgress(80);
+                // Create visualization
                 const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
-                    gsea_res: gseaResults,
+                    gsea_res: gseaTable,
                     de_res: dataset.deResults,
-                    color_metric: 'P.Value',
+                    color_metric: 'FDR',
                     pvalue_threshold: 0.05,
                     layout_seed: Date.now(),
                     color_seed: Date.now()
                 });
-                setProgress(80);
-                setGseaData({ table: gseaResults, plots: { geneConceptNetwork: geneConceptNetwork } });
+
+                setGseaData({ table: gseaTable, plots: { geneConceptNetwork: geneConceptNetwork } });
             } catch (error) {
                 console.error("Error in gene set enrichment analysis:", error);
                 setError("An error occurred during the gene set enrichment analysis. Please try again.");
