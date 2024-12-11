@@ -5,7 +5,7 @@ let pyodide;
 
 async function initializePyodide() {
   pyodide = await loadPyodide({
-    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.3/full/'
+    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/'
   });
   await pyodide.loadPackage(['numpy', 'scipy', 'scikit-learn', 'micropip']);
 
@@ -80,34 +80,31 @@ self.onmessage = async function (event) {
           import numpy as np
           from gene_platform_utils.transformation import vst
           counts_2d = np.asarray(expression).reshape(numSamples, numGenes)
-          vst(counts_2d)
+          vst(counts_2d).astype(np.float32).flatten()
         `)).toJs();
         break;
       case 'transform_log2':
         result = (await pyodide.runPythonAsync(`
-          from js import counts, numGenes, numSamples
+          from js import expression
           import numpy as np
           from gene_platform_utils.transformation import log2_1p
-          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
-          log2_1p(counts_2d)
+          log2_1p(np.asarray(expression)).astype(np.float32)
         `)).toJs();
         break;
       case 'transform_ln':
         result = (await pyodide.runPythonAsync(`
-          from js import counts, numGenes, numSamples
+          from js import expression
           import numpy as np
           from gene_platform_utils.transformation import ln_1p
-          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
-          ln_1p(counts_2d)
+          ln_1p(np.asarray(expression)).astype(np.float32)
         `)).toJs();
         break;
       case 'transform_log10':
         result = (await pyodide.runPythonAsync(`
-          from js import counts, numGenes, numSamples
+          from js import expression, numGenes, numSamples
           import numpy as np
           from gene_platform_utils.transformation import log10_1p
-          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
-          log10_1p(counts_2d)
+          log10_1p(np.asarray(expression)).astype(np.float32)
         `)).toJs();
         break;
       case 'compute_tmm_effective_library_sizes':
@@ -115,7 +112,7 @@ self.onmessage = async function (event) {
           from js import expression, numGenes, numSamples
           import numpy as np
           from gene_platform_utils.between_sample_norm import compute_tmm_effective_library_sizes
-          counts_2d = np.asarray(expression).reshape(numSamples, numGenes)
+          counts_2d = np.asarray(expression).reshape(numSamples, numGenes).T
           compute_tmm_effective_library_sizes(counts_2d)
         `)).toJs();
         break;
@@ -124,7 +121,7 @@ self.onmessage = async function (event) {
           from js import counts, numGenes, numSamples, sample_ids
           import numpy as np
           from gene_platform_utils.plot_eda import create_correlation_heatmap
-          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          counts_2d = np.asarray(counts).reshape(numSamples, numGenes).T
           create_correlation_heatmap(counts_2d, sample_ids)
         `);
         break;
@@ -133,7 +130,7 @@ self.onmessage = async function (event) {
           from gene_platform_utils.plot_eda import create_pca_plot
           from js import counts, numGenes, numSamples, sample_ids
           import numpy as np
-          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          counts_2d = np.asarray(counts).reshape(numSamples, numGenes).T
           create_pca_plot(counts_2d, sample_ids)
         `);
         break;
@@ -142,7 +139,7 @@ self.onmessage = async function (event) {
           from gene_platform_utils.plot_eda import create_tsne_plot
           from js import counts, numGenes, numSamples, sample_ids
           import numpy as np
-          counts_2d = np.asarray(counts).reshape(numGenes, numSamples)
+          counts_2d = np.asarray(counts).reshape(numSamples, numGenes).T
           create_tsne_plot(counts_2d, sample_ids)
         `);
         break;

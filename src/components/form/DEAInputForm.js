@@ -37,8 +37,8 @@ const DEAInputForm = ({
                             <label className="radioLabel opacity-50 pointer-events-none">
                                 <span id="adjustmentSubfield">Adjustment method (🚧):</span>
                                 <select id="adjustmentMethod" name="adjustmentMethod">
-                                    <option value="option1">Benjamini and Hochberg</option>
-                                    <option value="option2">Bonferroni</option>
+                                    <option value="bh">Benjamini and Hochberg</option>
+                                    <option value="bonferroni">Bonferroni</option>
                                 </select>
                             </label>
                             <div className="tooltip-wrapper">

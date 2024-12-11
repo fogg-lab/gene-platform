@@ -20,7 +20,6 @@ const readFileAsText = (file) => {
     });
 };
 
-
 async function processUploadedFiles(countsFile, coldataFile) {
     // Parse coldata file
     const coldataText = await readFileAsText(coldataFile);
@@ -134,12 +133,15 @@ const EDAInputForm = ({
     isLoading,
     handleStageChange,
     currentStage,
-    edaData
+    edaData,
+    onTransformMethodChange,
+    dataset
 }) => {
     const [countsFile, setCountsFile] = useState(null);
     const [coldataFile, setColdataFile] = useState(null);
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
+    const [transformMethod, setTransformMethod] = useState('log2');
 
     const onDropCounts = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
@@ -230,6 +232,17 @@ const EDAInputForm = ({
         }
     };
 
+    const handleTransformMethodChange = (method) => {
+        setTransformMethod(method);
+    };
+
+    const hasData = () => {
+        return (
+            dataset !== null || // External/Example dataset
+            (countsFile && coldataFile) // Uploaded files
+        );
+    };
+
     return (
         <div id="analysisInputContainer_comp">
             <div className="form-with-tooltips">
@@ -270,14 +283,19 @@ const EDAInputForm = ({
                         />
                     </div>
                     <h3>Configuration</h3>
-                    <div className="opacity-50 pointer-events-none">
+                    <div>
                         <label className="radioLabel">
-                            <span>Data Exploration Transform (🚧):</span>
-                            <select id="transformationMethod" name="transformationMethod">
-                                <option value="option1">VST</option>
-                                <option value="option2">log2(counts + 1)</option>
-                                <option value="option3">ln(counts + 1)</option>
-                                <option value="option4">log10(counts + 1)</option>
+                            <span>Data Exploration Transform:</span>
+                            <select 
+                                id="transformationMethod" 
+                                name="transformationMethod"
+                                onChange={(e) => onTransformMethodChange(e.target.value)}
+                                defaultValue="log2"
+                            >
+                                <option value="vst">VST</option>
+                                <option value="log2">log2(counts + 1)</option>
+                                <option value="ln">ln(counts + 1)</option>
+                                <option value="log10">log10(counts + 1)</option>
                             </select>
                         </label>
                     </div>
@@ -286,6 +304,7 @@ const EDAInputForm = ({
                             icon={edaData?.plots?.pca ? next : terminal}
                             label={edaData?.plots?.pca ? "Next Stage" : "Run Analysis"}
                             onClick={handleRunAnalysis}
+                            disabled={!hasData() && !edaData?.plots?.pca}
                         />
                     </div>
                 </div>
@@ -317,6 +336,11 @@ EDAInputForm.propTypes = {
     onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
+    handleStageChange: PropTypes.func.isRequired,
+    currentStage: PropTypes.string.isRequired,
+    edaData: PropTypes.object,
+    onTransformMethodChange: PropTypes.func.isRequired,
+    dataset: PropTypes.object
 };
 
 export default EDAInputForm;

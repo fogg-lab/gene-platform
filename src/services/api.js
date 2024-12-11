@@ -56,7 +56,7 @@ export async function getExternalDataset(dataSrc, datasetID) {
 
     // Use pyodide to load and process the NPY data
     let pyodide = await loadPyodide({
-        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.3/full/",
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/",
     });
     await pyodide.loadPackage("numpy");
 

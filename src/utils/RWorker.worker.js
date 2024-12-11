@@ -56,9 +56,7 @@ self.onmessage = async function(event) {
         await webR.objs.globalEnv.bind('coldata', coldataDataframe);
         await webR.objs.globalEnv.bind('coldata_cols', coldata.cols);
 
-        // counts is an Int32Array
-        // I found out the hard way that WebR specifically needs a Uint8 view when it comes to TypedArrays
-        // (if given a Int32Array it will truncate every 32 bit int down to a single byte)
+        // counts is an Int32Array. WebR needs a Uint8 view of the same data
         const countsUint8Array = new Uint8Array(counts.buffer);
         await webR.objs.globalEnv.bind('counts', countsUint8Array);
 

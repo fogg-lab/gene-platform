@@ -48,6 +48,8 @@ const Analysis = () => {
         enrichment: true
     });
 
+    const [transformMethod, setTransformMethod] = useState('log2');
+
     const updateLockedState = (stage, isLocked) => {
         setLockedStates(prevStates => ({
             ...prevStates,
@@ -150,37 +152,36 @@ const Analysis = () => {
         } else if (type === 'example') {
             setIsLoading(true);
             try {
-                const exampleData = await getExternalDataset('GDC', 'CDDP_EAGLE-1');
+                const exampleData = await getExternalDataset('GDC', 'TCGA-CESC');
                 dset = exampleData;
                 setDataset(exampleData);
 
                 handleClearGroup(true);
                 handleClearGroup(false);
 
-                setReferenceGroup(
-                    {
-                        samples: exampleData.coldataTable.data
-                            .filter(row => row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')] === '0.0')
-                            .map(row => ({
-                                id: row[exampleData.coldataTable.cols.indexOf('sample_id')],
-                                [exampleData.coldataTable.cols[0]]: row[0]
-                            }))
-                    }
-                );
+                // Get all samples and split them into smokers vs non-smokers
+                const allSamples = exampleData.coldataTable.data.map(row => ({
+                    id: row[exampleData.coldataTable.cols.indexOf('sample_id')],
+                    [exampleData.coldataTable.cols[0]]: row[0],
+                    packYears: row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')]
+                }));
 
-                setContrastGroup(
-                    {
-                        samples: exampleData.coldataTable.data
-                            .filter(row => {
-                                const packYears = parseFloat(row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')]);
-                                return !isNaN(packYears) && packYears >= 50;
-                            })
-                            .map(row => ({
-                                id: row[exampleData.coldataTable.cols.indexOf('sample_id')],
-                                [exampleData.coldataTable.cols[0]]: row[0]
-                            }))
-                    }
-                );
+                // Contrast group: samples with valid pack_years_smoked values
+                setContrastGroup({
+                    samples: allSamples.filter(sample => {
+                        const packYears = parseFloat(sample.packYears);
+                        return !isNaN(packYears);
+                    })
+                });
+
+                // Reference group: samples with no pack_years_smoked values
+                setReferenceGroup({
+                    samples: allSamples.filter(sample => {
+                        const packYears = parseFloat(sample.packYears);
+                        return isNaN(packYears);
+                    })
+                });
+
                 const collectionSpecies = "human";
                 const collectionId = "C5:GO:BP";
                 //const collectionId = "C2:CP:KEGG_LEGACY";
@@ -238,21 +239,19 @@ const Analysis = () => {
         setIsLoading(true);
         setProgress(0);
 
-        // Create a consistent data structure regardless of source
+        // processedData is used for uploaded data, otherwise use dataset
         const analysisData = processedData || dataset;
-        
+
         const numInputGenes = analysisData.countsTable.rows.length;
         const numSamples = analysisData.coldataTable.rows.length;
-        
-        // Use consistent expression data
         const expressionData = analysisData.expression;
-        
+
         const geneInfo = await WorkerManager.runTask('py', 'check_genes', {
             genesQuery: analysisData.countsTable.rows,
             humanGeneReference: humanGenes.genes,
             mouseGeneReference: mouseGenes.genes
         });
-        
+
         const geneReference = geneInfo.detectedSpecies === "mouse" ? mouseGenes.genes : humanGenes.genes;
 
         // Create filtered expression and countsTable that excludes duplicate and unmatched genes and uses HGNC symbol
@@ -282,7 +281,7 @@ const Analysis = () => {
         // EDA
         if (currentStage === 'exploration') {
             try {
-                const transformedCounts = await WorkerManager.runTask('py', 'transform_vst', {
+                const transformedCounts = await WorkerManager.runTask('py', `transform_${transformMethod}`, {
                     expression: mappedGenesExpression,
                     numSamples: numSamples,
                     numGenes: numGenes,
@@ -408,64 +407,6 @@ const Analysis = () => {
             }
         }
 
-        // GSEA using camera
-        if (currentStage === 'enrichment') {
-            try {
-                // Prepare gene sets in the format camera expects
-                const combinedGeneSets = geneSetCollections.reduce((acc, collection) => {
-                    return {
-                        ...acc,
-                        ...collection.data.geneSetSymbols.reduce((setAcc, symbols, index) => {
-                            setAcc[collection.data.geneSets[index]] = symbols;
-                            return setAcc;
-                        }, {})
-                    };
-                }, {});
-
-                // Get design matrix and contrast from the DE analysis
-                const design = dataset.deResults.design;
-                const contrast = dataset.deResults.contrast;
-                
-                setProgress(40);
-                const cameraResults = await WorkerManager.runTask('r', 'run_camera', {
-                    counts: dataset.expression,
-                    geneSymbols: mappedGeneSymbols,
-                    geneSets: combinedGeneSets,
-                    design: design,
-                    contrast: contrast,
-                    species: geneInfo.detectedSpecies
-                });
-
-                setProgress(60);
-                // Create table from camera results
-                const gseaTable = {
-                    cols: ['Name', 'NGenes', 'Direction', 'PValue', 'FDR'],
-                    data: cameraResults.Name.map((name, i) => [
-                        name,
-                        cameraResults.NGenes[i],
-                        cameraResults.Direction[i],
-                        cameraResults.PValue[i],
-                        cameraResults.FDR[i]
-                    ])
-                };
-
-                setProgress(80);
-                // Create visualization
-                const geneConceptNetwork = await WorkerManager.runTask('py', 'create_gene_concept_network', {
-                    gsea_res: gseaTable,
-                    de_res: dataset.deResults,
-                    color_metric: 'FDR',
-                    pvalue_threshold: 0.05,
-                    layout_seed: Date.now(),
-                    color_seed: Date.now()
-                });
-
-                setGseaData({ table: gseaTable, plots: { geneConceptNetwork: geneConceptNetwork } });
-            } catch (error) {
-                console.error("Error in gene set enrichment analysis:", error);
-                setError("An error occurred during the gene set enrichment analysis. Please try again.");
-            }
-        }
         setProgress(100);
         setIsLoading(false);
     };
@@ -529,6 +470,10 @@ const Analysis = () => {
         setGeneSetCollections(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleTransformMethodChange = (method) => {
+        setTransformMethod(method);
+    };
+
     if (error) {
         return <div>Error: {error}</div>;
     }
@@ -546,6 +491,8 @@ const Analysis = () => {
                         handleStageChange={handleStageChange}
                         currentStage={currentStage}
                         edaData={edaData}
+                        onTransformMethodChange={handleTransformMethodChange}
+                        dataset={dataset}
                     />
                 )}
                 {currentStage === 'differential' && (
