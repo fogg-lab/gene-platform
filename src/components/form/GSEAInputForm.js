@@ -146,7 +146,12 @@ const GSEAInputForm = ({
                         </div>
 
                         <div id="runAnalysisContainer">
-                            <IconButton icon={terminal} label="Run Analysis" onClick={handleRunAnalysis} />
+                            <IconButton
+                                icon={terminal}
+                                label="Run Analysis"
+                                onClick={handleRunAnalysis}
+                                disabled={geneSetCollections.length === 0}
+                            />
                         </div>
                     </div>
                 </div>

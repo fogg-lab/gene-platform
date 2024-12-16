@@ -159,32 +159,34 @@ const Analysis = () => {
                 handleClearGroup(true);
                 handleClearGroup(false);
 
-                // Get all samples and split them into smokers vs non-smokers
+                // Get all samples and split them by FIGO stage
                 const allSamples = exampleData.coldataTable.data.map(row => ({
                     id: row[exampleData.coldataTable.cols.indexOf('sample_id')],
                     [exampleData.coldataTable.cols[0]]: row[0],
-                    packYears: row[exampleData.coldataTable.cols.indexOf('pack_years_smoked')]
+                    figoStage: row[exampleData.coldataTable.cols.indexOf('figo_stage')]
                 }));
 
-                // Contrast group: samples with valid pack_years_smoked values
-                setContrastGroup({
+                // Reference group: Stage I samples (starts with 'Stage I' but not 'Stage II' or 'Stage IV')
+                setReferenceGroup({
                     samples: allSamples.filter(sample => {
-                        const packYears = parseFloat(sample.packYears);
-                        return !isNaN(packYears);
+                        const stage = sample.figoStage;
+                        return stage && 
+                               stage.startsWith('Stage I') && 
+                               !stage.startsWith('Stage II') &&
+                               !stage.startsWith('Stage IV');
                     })
                 });
 
-                // Reference group: samples with no pack_years_smoked values
-                setReferenceGroup({
+                // Contrast group: Stage III samples
+                setContrastGroup({
                     samples: allSamples.filter(sample => {
-                        const packYears = parseFloat(sample.packYears);
-                        return isNaN(packYears);
+                        const stage = sample.figoStage;
+                        return stage && stage.startsWith('Stage III');
                     })
                 });
 
                 const collectionSpecies = "human";
                 const collectionId = "C5:GO:BP";
-                //const collectionId = "C2:CP:KEGG_LEGACY";
                 const newCollection = await getExternalGeneSetCollection(collectionSpecies, collectionId);
                 setGeneSetCollections(prev => [...prev, { name: collectionId, data: newCollection }]);
             } catch (error) {

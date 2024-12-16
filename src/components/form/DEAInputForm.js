@@ -92,6 +92,7 @@ const DEAInputForm = ({
                                     runAnalysis();
                                 }
                             }}
+                            disabled={!deData?.plots?.volcano && (referenceGroup.samples.length < 1 || contrastGroup.samples.length < 1)}
                         />
                     </div>
                 </div>

@@ -201,8 +201,7 @@ const EDAInputForm = ({
     const handleRunAnalysis = async () => {
         if (edaData?.plots?.pca) {
             handleStageChange('differential');
-        }
-        else {
+        } else {
             if (countsFile && coldataFile) {
                 try {
                     const processedData = await processUploadedFiles(countsFile, coldataFile);
@@ -226,7 +225,7 @@ const EDAInputForm = ({
                 } catch (error) {
                     console.error("Error processing uploaded files:", error);
                 }
-            } else {
+            } else if (dataset) {
                 runAnalysis();
             }
         }

@@ -112,7 +112,7 @@ self.onmessage = async function (event) {
           from js import expression, numGenes, numSamples
           import numpy as np
           from gene_platform_utils.between_sample_norm import compute_tmm_effective_library_sizes
-          counts_2d = np.asarray(expression).reshape(numSamples, numGenes).T
+          counts_2d = np.asarray(expression).reshape(numSamples, numGenes)
           compute_tmm_effective_library_sizes(counts_2d)
         `)).toJs();
         break;
