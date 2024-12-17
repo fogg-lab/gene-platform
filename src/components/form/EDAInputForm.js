@@ -141,7 +141,7 @@ const EDAInputForm = ({
     const [coldataFile, setColdataFile] = useState(null);
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
-    const [transformMethod, setTransformMethod] = useState('log2');
+    const [transformMethod, setTransformMethod] = useState('vst');
 
     const onDropCounts = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
@@ -289,7 +289,7 @@ const EDAInputForm = ({
                                 id="transformationMethod" 
                                 name="transformationMethod"
                                 onChange={(e) => onTransformMethodChange(e.target.value)}
-                                defaultValue="log2"
+                                defaultValue="vst"
                             >
                                 <option value="vst">VST</option>
                                 <option value="log2">log2(counts + 1)</option>

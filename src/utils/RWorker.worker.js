@@ -119,50 +119,92 @@ self.onmessage = async function(event) {
         break;
 
       case 'run_camera':
-        await webR.objs.globalEnv.bind('counts', counts);
+        // Bind variables to the R environment
+        await webR.objs.globalEnv.bind('numSamples', design.length);
+        await webR.objs.globalEnv.bind('numGenes', numGenes);
         await webR.objs.globalEnv.bind('geneSymbols', geneSymbols);
-        await webR.objs.globalEnv.bind('geneSets', geneSets);
+        await webR.objs.globalEnv.bind('geneSetNames', geneSetNames);
         await webR.objs.globalEnv.bind('design', design);
         await webR.objs.globalEnv.bind('contrast', contrast);
-        await webR.objs.globalEnv.bind('species', species);
+        await webR.objs.globalEnv.bind('minSetSize', data.minSetSize || 15);
+
+        // Convert counts to Uint8Array first (quirk of webR)
+        const countsUint8Arr = new Uint8Array(counts.buffer);
+        await webR.objs.globalEnv.bind('counts', countsUint8Arr);
+
+        // Flatten geneSetSymbols into a single array and record set sizes
+        const geneSetSizes = geneSetSymbols.map(set => set.length);
+        const flattenedSymbols = geneSetSymbols.flat();
+
+        await webR.objs.globalEnv.bind('flattenedSymbols', flattenedSymbols);
+        await webR.objs.globalEnv.bind('geneSetSizes', geneSetSizes);
+        await webR.objs.globalEnv.bind('geneSetNames', geneSetNames);
 
         const _res = await (await webR.evalR(`
           library(limma)
-          library(org.Hs.eg.db)
-          library(org.Mm.eg.db)
 
-          # Convert gene sets to index lists
-          index_list <- lapply(geneSets, function(set) {
-            match(set, geneSymbols)
-          })
+          # Convert counts to matrix and set names
+          counts <- readBin(counts, what = "integer", n = numGenes * numSamples)
+          counts <- t(matrix(counts, nrow = numSamples, ncol = numGenes))
+          rownames(counts) <- geneSymbols
 
-          # Run camera analysis
+          # Reconstruct the gene sets from flattenedSymbols and geneSetSizes
+          index_list <- vector("list", length(geneSetSizes))
+          pos <- 1
+          for (i in seq_along(geneSetSizes)) {
+            set_length <- geneSetSizes[i]
+            set_symbols <- flattenedSymbols[pos:(pos + set_length - 1)]
+            pos <- pos + set_length
+
+            # Match the set symbols to our geneSymbols
+            indices <- match(set_symbols, geneSymbols)
+            original_size <- length(set_symbols)
+            valid_indices <- indices[!is.na(indices)]
+            
+            # Only include sets that meet the minimum size requirement
+            if (length(valid_indices) >= minSetSize) {
+              index_list[[i]] <- structure(valid_indices, original_size = original_size)
+            } else {
+              index_list[[i]] <- NULL
+            }
+          }
+          names(index_list) <- geneSetNames
+
+          # Filter out empty sets and NULL entries
+          valid_sets <- !sapply(index_list, is.null)
+          index_list <- index_list[valid_sets]
+
+          # Run camera
           camera_result <- camera(
             y = counts,
             index = index_list,
             design = design,
             contrast = contrast,
-            inter.gene.cor = 0.01
+            inter.gene.cor = 0.01,
+            use.ranks = TRUE
           )
 
-          # Convert results to a data frame
           camera_df <- as.data.frame(camera_result)
           camera_df$Name <- rownames(camera_df)
-
-          # Order by FDR
+          camera_df$NGenes <- sapply(index_list, function(x) attr(x, "original_size"))
           camera_df <- camera_df[order(camera_df$FDR), ]
 
-          # Return results
           list(
-            NGenes = camera_df$NGenes,
-            Direction = camera_df$Direction,
-            PValue = camera_df$PValue,
-            FDR = camera_df$FDR,
-            Name = camera_df$Name
+            NGenes = as.vector(camera_df$NGenes),
+            Direction = as.vector(camera_df$Direction),
+            PValue = as.vector(camera_df$PValue),
+            FDR = as.vector(camera_df$FDR),
+            Name = as.vector(camera_df$Name)
           )
         `)).toJs();
 
-        result = _res;
+        result = {
+          NGenes: Array.from(_res.values[0].values),
+          Direction: Array.from(_res.values[1].values),
+          PValue: Array.from(_res.values[2].values),
+          FDR: Array.from(_res.values[3].values),
+          Name: Array.from(_res.values[4].values)
+        };
         break;
     }
     self.postMessage({ status: 'success', result });
@@ -172,3 +214,4 @@ self.onmessage = async function(event) {
 };
 
 export default null;
+

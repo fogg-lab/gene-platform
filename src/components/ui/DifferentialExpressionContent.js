@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import DataTable from './DataTable';
+import React, { useEffect } from 'react';
 import ProgressBar from './ProgressBar';
 import PlotArea from './PlotArea';
 

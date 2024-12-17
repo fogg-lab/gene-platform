@@ -12,18 +12,14 @@ const GSEAInputForm = ({
     isLoading,
     onAddGeneSetCollection,
     geneSetCollections,
-    gseaParams,
-    onUpdateGseaParams,
+    enrichParams,
+    onUpdateEnrichParams,
     onRemoveGeneSetCollection
 }) => {
     const [showGeneSetPopup, setShowGeneSetPopup] = useState(false);
-    const [minSize, setMinSize] = useState(15);
-    const [maxSize, setMaxSize] = useState(500);
-    const [permutations, setPermutations] = useState(1000);
-    const [seed, setSeed] = useState(123);
 
     const handleRunAnalysis = () => {
-        runAnalysis({ minSize, maxSize, permutations, seed });
+        runAnalysis();
     };
 
     return (
@@ -50,6 +46,25 @@ const GSEAInputForm = ({
                             </div>
                         </div>
 
+                        <div className="form-field-row">
+                            <div className="form-group">
+                                <label className="form-label">Minimum Gene Set Size:</label>
+                                <input
+                                    type="number"
+                                    className="form-input"
+                                    value={enrichParams.minSize || 15}
+                                    onChange={(e) => onUpdateEnrichParams({
+                                        ...enrichParams,
+                                        minSize: parseInt(e.target.value) || 15
+                                    })}
+                                    min="1"
+                                />
+                            </div>
+                            <div className="tooltip-wrapper">
+                                <ToolTip content="Minimum number of genes required in a gene set" />
+                            </div>
+                        </div>
+
                         {geneSetCollections.length > 0 && (
                             <div className="selected-gene-sets">
                                 <h4>Selected Gene Sets:</h4>
@@ -67,83 +82,6 @@ const GSEAInputForm = ({
                                 ))}
                             </div>
                         )}
-
-                        <h3>Configuration</h3>
-                        <div className="form-container">
-                            <form id="gseaOptionsForm">
-                                <div className="form-field-row">
-                                    <div className="form-group">
-                                        <label className="form-label" htmlFor="minSize">Minimum Size:</label>
-                                        <input
-                                            className="form-input"
-                                            type="number"
-                                            id="minSize"
-                                            name="minSize"
-                                            value={minSize}
-                                            onChange={(e) => setMinSize(Number(e.target.value))}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="tooltip-wrapper">
-                                        <ToolTip content="Minimum number of genes required in a gene set for it to be considered in the analysis" />
-                                    </div>
-                                </div>
-
-                                <div className="form-field-row">
-                                    <div className="form-group">
-                                        <label className="form-label" htmlFor="maxSize">Maximum Size:</label>
-                                        <input
-                                            className="form-input"
-                                            type="number"
-                                            id="maxSize"
-                                            name="maxSize"
-                                            value={maxSize}
-                                            onChange={(e) => setMaxSize(Number(e.target.value))}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="tooltip-wrapper">
-                                        <ToolTip content="Maximum number of genes allowed in a gene set for it to be included in the analysis" />
-                                    </div>
-                                </div>
-
-                                <div className="form-field-row">
-                                    <div className="form-group">
-                                        <label className="form-label" htmlFor="permutations">Permutations:</label>
-                                        <input
-                                            className="form-input"
-                                            type="number"
-                                            id="permutations"
-                                            name="permutations"
-                                            value={permutations}
-                                            onChange={(e) => setPermutations(Number(e.target.value))}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="tooltip-wrapper">
-                                        <ToolTip content="Number of permutations to perform for statistical significance testing" />
-                                    </div>
-                                </div>
-
-                                <div className="form-field-row">
-                                    <div className="form-group">
-                                        <label className="form-label" htmlFor="seed">Seed:</label>
-                                        <input
-                                            className="form-input"
-                                            type="number"
-                                            id="seed"
-                                            name="seed"
-                                            value={seed}
-                                            onChange={(e) => setSeed(Number(e.target.value))}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="tooltip-wrapper">
-                                        <ToolTip content="Random seed for reproducible results" />
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
 
                         <div id="runAnalysisContainer">
                             <IconButton
@@ -294,8 +232,8 @@ GSEAInputForm.propTypes = {
     isLoading: PropTypes.bool.isRequired,
     onAddGeneSetCollection: PropTypes.func.isRequired,
     geneSetCollections: PropTypes.array.isRequired,
-    gseaParams: PropTypes.object.isRequired,
-    onUpdateGseaParams: PropTypes.func.isRequired,
+    enrichParams: PropTypes.object.isRequired,
+    onUpdateEnrichParams: PropTypes.func.isRequired,
     onRemoveGeneSetCollection: PropTypes.func.isRequired,
 };
 
