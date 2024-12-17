@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DataTable from './DataTable';
 import ProgressBar from './ProgressBar';
 import PlotArea from './PlotArea';
+import { formatNumber } from '../../lib/utils';
 
 const GSEAContent = ({
     data,
@@ -17,43 +18,46 @@ const GSEAContent = ({
     const [currentPlot, setCurrentPlot] = useState('pca');
 
     const renderTable = () => {
-        if (!data || !data.tables || !data.tables.coldata) {
+        if (data && data.tables && data.tables.results) {
+            const rawData = data.tables.results.data;
+            const cols = data.tables.results.cols;
+            const numericColumns = ['PValue', 'FDR'];
+            const tableData = rawData.map((row, index) => {
+                const obj = {};
+                cols.forEach((col, colIndex) => {
+                    obj[col] = numericColumns.includes(col) ? formatNumber(row[colIndex]) : row[colIndex];
+                });
+                obj.id = index;
+                return obj;
+            });
+
+            const columns = data.tables.results.cols.map(col => ({ key: col, name: col }));
+
             return (
-                <div className='analysisContentGuide'>
-                    <h1>To run Gene Set Enrichment Analysis:</h1>
-                    <p>Step 1. Add a gene set</p>
-                    <p>Note: Default configuration recommended for most analyses</p>
-                    <p>(Optional) Change standard configuration.</p>
-                    <p>Step 2. Run</p>
-                </div>);
+                <DataTable
+                    data={tableData}
+                    columns={columns}
+                    contrastGroup={contrastGroup}
+                    referenceGroup={referenceGroup}
+                    onAddSamplesToGroup={onAddSamplesToGroup}
+                    onRemoveSamplesFromGroup={onRemoveSamplesFromGroup}
+                />
+            );
         }
 
-        const tableData = data.tables.coldata.data.map((row, index) => {
-            const obj = {};
-            data.tables.coldata.cols.forEach((col, colIndex) => {
-                obj[col] = row[colIndex];
-            });
-            obj.id = index;
-            return obj;
-        });
-
-        const columns = data.tables.coldata.cols.map(col => ({ key: col, name: col }));
-
         return (
-            <DataTable
-                data={tableData}
-                columns={columns}
-                contrastGroup={contrastGroup}
-                referenceGroup={referenceGroup}
-                onAddSamplesToGroup={onAddSamplesToGroup}
-                onRemoveSamplesFromGroup={onRemoveSamplesFromGroup}
-            />
+            <div className='analysisContentGuide'>
+                <h1>To run Gene Set Enrichment Analysis:</h1>
+                <p>Step 1. Add a gene set</p>
+                <p>(Optional) Change standard configuration.</p>
+                <p>Step 2. Run</p>
+            </div>
         );
     };
 
     const renderPlotTabs = () => {
         if (!data || !data.plots) {
-            return <p>No plots available</p>;
+            return <p>No plots available 🚧</p>;
         }
 
         const availablePlots = Object.keys(data.plots);

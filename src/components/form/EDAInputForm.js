@@ -5,7 +5,6 @@ import IconButton from '../ui/IconButton';
 import ToolTip from '../ui/ToolTip';
 import terminal from '../../assets/icons/terminal.png';
 import next from '../../assets/icons/next.svg';
-import pako from 'pako';
 import Papa from 'papaparse';
 
 function validFileType(filetype) {
@@ -21,24 +20,28 @@ const readFileAsText = (file) => {
     });
 };
 
-
 async function processUploadedFiles(countsFile, coldataFile) {
     // Parse coldata file
     const coldataText = await readFileAsText(coldataFile);
-    const coldataData = Papa.parse(coldataText, { header: true }).data;
+    let coldataData = Papa.parse(coldataText, { header: true }).data;
+    if (Object.keys(coldataData.at(-1)).length === 1) {
+        coldataData = coldataData.slice(0, -1);
+    }
     const coldataTable = structureColdataTable(coldataData);
 
     // Parse counts file
     const countsText = await readFileAsText(countsFile);
-    const countsData = Papa.parse(countsText, { header: true }).data;
-    const { countsTable, genesTable, expression, counts } = structureCountsData(countsData);
+    let countsData = Papa.parse(countsText, { header: true }).data;
+    if (Object.keys(countsData.at(-1)).length === 1) {
+        countsData = countsData.slice(0, -1);
+    }
+    const { countsTable, expression, counts } = structureCountsData(countsData);
 
     return {
         expression,
         counts,
         countsTable,
         coldataTable,
-        genesTable,
     };
 }
 
@@ -52,26 +55,30 @@ function structureColdataTable(coldataData) {
 }
 
 function structureCountsData(countsData) {
-    const sampleIds = Object.keys(countsData[0]).slice(2);
-    const genesData = countsData.map(row => [row['Ensembl gene'], row['Symbol']]);
-    const expressionData = countsData.map(row => sampleIds.map(id => parseInt(row[id])));
+    const sampleIds = Object.keys(countsData[0]).slice(1);
+    const countsDataInt = countsData.map(row => sampleIds.map(id => parseInt(row[id])));
+    const counts = new Int32Array(countsDataInt.flat());
+    
+    // Fix: Properly transpose the entire matrix
+    const numGenes = countsData.length;
+    const numSamples = sampleIds.length;
+    const expression = new Int32Array(numGenes * numSamples);
+    
+    for (let i = 0; i < numGenes; i++) {
+        for (let j = 0; j < numSamples; j++) {
+            expression[j * numGenes + i] = countsDataInt[i][j];
+        }
+    }
 
-    const expression = new Int32Array(expressionData.flat());
-    const counts = new Int32Array(expressionData.map((row, i) => row.map((val, j) => expressionData[j][i])).flat());
-
+    const geneIdType = Object.keys(countsData[0])[0];
+    
     const countsTable = {
-        cols: ['Ensembl gene', 'Symbol', ...sampleIds],
-        rows: genesData.map(gene => gene[0]),
-        data: countsData.map(row => [row['Ensembl gene'], row['Symbol'], ...sampleIds.map(id => parseInt(row[id]))])
+        cols: [...sampleIds],
+        rows: countsData.map(row => row[geneIdType]),
+        data: countsDataInt
     };
 
-    const genesTable = {
-        cols: ['ensembl_gene', 'symbol'],
-        rows: genesData.map(gene => gene[0]),
-        data: genesData
-    };
-
-    return { countsTable, genesTable, expression, counts };
+    return { countsTable, expression, counts };
 }
 
 const FileDropArea = ({ title, onDrop, fileName }) => {
@@ -101,11 +108,11 @@ const FileDropArea = ({ title, onDrop, fileName }) => {
     });
 
     return (
-        <div {...getRootProps()} className="filedropArea filedropArea-disabled">
-            <input {...getInputProps()} className="fileDrop" disabled />
+        <div {...getRootProps()} className="filedropArea">
+            <input {...getInputProps()} className="fileDrop" />
             <h4>{title}</h4>
             <span>Drop file here or</span>
-            <button className="openFilesystemButton" disabled>
+            <button className="openFilesystemButton">
                 <span>Browse</span>
             </button>
             {isDragActive ? (
@@ -126,12 +133,15 @@ const EDAInputForm = ({
     isLoading,
     handleStageChange,
     currentStage,
-    edaData
+    edaData,
+    onTransformMethodChange,
+    dataset
 }) => {
     const [countsFile, setCountsFile] = useState(null);
     const [coldataFile, setColdataFile] = useState(null);
     const [countsFileName, setCountsFileName] = useState('');
     const [coldataFileName, setColdataFileName] = useState('');
+    const [transformMethod, setTransformMethod] = useState('vst');
 
     const onDropCounts = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
@@ -144,8 +154,40 @@ const EDAInputForm = ({
         if (acceptedFiles.length > 0) {
             setColdataFile(acceptedFiles[0]);
             setColdataFileName(acceptedFiles[0].name);
+            
+            // Read and process the coldata file immediately
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const coldataText = event.target.result;
+                    let coldataData = Papa.parse(coldataText, { header: true }).data;
+                    if (Object.keys(coldataData.at(-1)).length === 1) {
+                        coldataData = coldataData.slice(0, -1);
+                    }
+                    const coldataTable = structureColdataTable(coldataData);
+                    
+                    // Create table data structure
+                    const tableData = coldataTable.data.map((row, index) => {
+                        const obj = { id: index };
+                        coldataTable.cols.forEach((col, colIndex) => {
+                            obj[col] = row[colIndex];
+                        });
+                        return obj;
+                    });
+
+                    // Pass the processed data up to the parent
+                    onDatasetSelect('upload', {
+                        coldataTable,
+                        tableData,
+                        tableColumns: coldataTable.cols.map(col => ({ key: col, name: col }))
+                    });
+                } catch (error) {
+                    console.error("Error processing coldata file:", error);
+                }
+            };
+            reader.readAsText(acceptedFiles[0]);
         }
-    }, []);
+    }, [onDatasetSelect]);
 
     const handleButtonClick = (datasetType) => {
         if (datasetType === 'external') {
@@ -159,19 +201,45 @@ const EDAInputForm = ({
     const handleRunAnalysis = async () => {
         if (edaData?.plots?.pca) {
             handleStageChange('differential');
-        }
-        else {
+        } else {
             if (countsFile && coldataFile) {
                 try {
                     const processedData = await processUploadedFiles(countsFile, coldataFile);
+                    // Create table data structure before running analysis
+                    const tableData = processedData.coldataTable.data.map((row, index) => {
+                        const obj = { id: index };
+                        processedData.coldataTable.cols.forEach((col, colIndex) => {
+                            obj[col] = row[colIndex];
+                        });
+                        return obj;
+                    });
+
+                    // Set the table data in the parent component
+                    onDatasetSelect('upload', {
+                        ...processedData,
+                        tableData,
+                        tableColumns: processedData.coldataTable.cols.map(col => ({ key: col, name: col }))
+                    });
+                    
                     runAnalysis(processedData);
                 } catch (error) {
                     console.error("Error processing uploaded files:", error);
                 }
-            } else {
+            } else if (dataset) {
                 runAnalysis();
             }
         }
+    };
+
+    const handleTransformMethodChange = (method) => {
+        setTransformMethod(method);
+    };
+
+    const hasData = () => {
+        return (
+            dataset !== null || // External/Example dataset
+            (countsFile && coldataFile) // Uploaded files
+        );
     };
 
     return (
@@ -214,14 +282,19 @@ const EDAInputForm = ({
                         />
                     </div>
                     <h3>Configuration</h3>
-                    <div className="opacity-50 pointer-events-none">
+                    <div>
                         <label className="radioLabel">
-                            <span>Data Exploration Transform (🚧):</span>
-                            <select id="transformationMethod" name="transformationMethod">
-                                <option value="option1">VST</option>
-                                <option value="option2">log2(counts + 1)</option>
-                                <option value="option3">ln(counts + 1)</option>
-                                <option value="option4">log10(counts + 1)</option>
+                            <span>Data Exploration Transform:</span>
+                            <select 
+                                id="transformationMethod" 
+                                name="transformationMethod"
+                                onChange={(e) => onTransformMethodChange(e.target.value)}
+                                defaultValue="vst"
+                            >
+                                <option value="vst">VST</option>
+                                <option value="log2">log2(counts + 1)</option>
+                                <option value="ln">ln(counts + 1)</option>
+                                <option value="log10">log10(counts + 1)</option>
                             </select>
                         </label>
                     </div>
@@ -230,6 +303,7 @@ const EDAInputForm = ({
                             icon={edaData?.plots?.pca ? next : terminal}
                             label={edaData?.plots?.pca ? "Next Stage" : "Run Analysis"}
                             onClick={handleRunAnalysis}
+                            disabled={!hasData() && !edaData?.plots?.pca}
                         />
                     </div>
                 </div>
@@ -261,6 +335,11 @@ EDAInputForm.propTypes = {
     onRemoveSamplesFromGroup: PropTypes.func.isRequired,
     runAnalysis: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
+    handleStageChange: PropTypes.func.isRequired,
+    currentStage: PropTypes.string.isRequired,
+    edaData: PropTypes.object,
+    onTransformMethodChange: PropTypes.func.isRequired,
+    dataset: PropTypes.object
 };
 
 export default EDAInputForm;

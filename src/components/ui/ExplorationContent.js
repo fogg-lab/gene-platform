@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import DataTable from './DataTable';
 import ProgressBar from './ProgressBar';
 import PlotArea from './PlotArea';
-import { useErrorPopup } from './ErrorPopup';
 
 const ExplorationContent = ({
     data,
@@ -13,11 +11,10 @@ const ExplorationContent = ({
     renderTable,
 }) => {
     const [currentPlot, setCurrentPlot] = useState('pca');
-    const { showError } = useErrorPopup();
 
     const renderPlotTabs = () => {
         if (!data || !data.plots) {
-            return <p>No plots available</p>;
+            return <p>Run analysis to see plots</p>;
         }
 
         const availablePlots = Object.keys(data.plots);

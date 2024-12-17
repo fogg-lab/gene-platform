@@ -1116,3 +1116,13 @@ ul.suggestions {
 .tooltip-row {
     height: 24px;
 }
+
+.analysisInputButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.analysisInputButton:disabled:hover {
+    background-color: #cccccc;
+}
