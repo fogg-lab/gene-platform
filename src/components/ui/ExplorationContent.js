@@ -9,8 +9,38 @@ const ExplorationContent = ({
     isLoading,
     progress,
     renderTable,
+    currentTable,
+    setCurrentTable,
+    dataset
 }) => {
     const [currentPlot, setCurrentPlot] = useState('pca');
+
+    const renderInitialGuide = () => (
+        <div className='analysisContentGuide'>
+            <h2>First, load a dataset via 1 of 3 options:</h2>
+            <div className="guide-options">
+                <div className="guide-option">
+                    <h3>1. Example dataset</h3>
+                    <p>TCGA-CESC Stage I vs Stage III cervical cancer</p>
+                </div>
+                <div className="guide-option">
+                    <h3>2. GEO/GDC</h3>
+                    <p>Load bulk RNA-Seq data from GEO or GDC</p>
+                </div>
+                <div className="guide-option">
+                    <h3>3. Uploaded CSV files</h3>
+                    <div className="tip">
+                        <span className="tip-label">Tip:</span>
+                        <p>
+                            If you're unsure how the tables should be structured, 
+                            use the example dataset and then use the export button on the 
+                            top toolbar above the displayed coldata and counts tables
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 
     const renderPlotTabs = () => {
         if (!data || !data.plots) {
@@ -43,34 +73,60 @@ const ExplorationContent = ({
         );
     };
 
+    const renderTableTabs = () => {
+        const availableTables = ['coldata', 'counts'];
+        if (data && data.tables && data.tables.transformed_counts) {
+            availableTables.push('transformed_counts');
+        }
+        return (
+            <div id="table_subtabs">
+                {availableTables.map(tbl => (
+                    <button
+                        key={tbl}
+                        className={`view-toggle-btn ${currentTable === tbl ? 'active' : ''}`}
+                        onClick={() => setCurrentTable(tbl)}
+                    >
+                        {tbl === 'transformed_counts' ? 'TRANSFORMED COUNTS' : tbl.toUpperCase()}
+                    </button>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="exploration-content">
-            <div id="view_toggle">
-                <button
-                    className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('table')}
-                >
-                    Table View
-                </button>
-                <button
-                    className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
-                    onClick={() => {
-                        setActiveTab('plot');
-                        // showError("Huge error lay ahead");
-                    }}
-                >
-                    Plot View
-                </button>
-            </div>
-            {isLoading && <ProgressBar progress={progress} />}
-            <div className={`table-view ${activeTab === 'table' ? 'active' : ''}`}>
-                {renderTable()}
-            </div>
-            <div className={`plot-view ${activeTab === 'plot' ? 'active' : ''}`}>
-                {renderPlotTabs()}
+            <div>
+                {!dataset ? (
+                    renderInitialGuide()
+                ) : (
+                    <>
+                        <div id="view_toggle">
+                            <button
+                                className={`view-toggle-btn ${activeTab === 'table' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('table')}
+                            >
+                                Table View
+                            </button>
+                            <button
+                                className={`view-toggle-btn ${activeTab === 'plot' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('plot')}
+                            >
+                                Plot View
+                            </button>
+                        </div>
+                        {activeTab === 'table' && renderTableTabs()}
+                        {isLoading && <ProgressBar progress={progress} />}
+                        <div className={`table-view ${activeTab === 'table' ? 'active' : ''}`}>
+                            {renderTable()}
+                        </div>
+                        <div className={`plot-view ${activeTab === 'plot' ? 'active' : ''}`}>
+                            {renderPlotTabs()}
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );
-}
+};
 
 export default ExplorationContent;

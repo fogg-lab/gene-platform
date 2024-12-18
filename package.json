@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "description": "Standalone desktop ver. of Fogg Lab's Gene Platform",
-  "main": "main.js",
-  "homepage": "https://fogg-lab.github.io/gene-platform",
+  "main": "public/electron.js",
+  "homepage": "./",
   "scripts": {
     "start:web": "craco start",
     "build:web": "craco build",
@@ -18,7 +18,9 @@
     "start": "npm run start:electron",
     "build": "npm run build:electron",
     "dev": "concurrently \"npm run start\" \"wait-on http://localhost:9328 && npm run electron\"",
-    "prod": "npm run build && electron ."
+    "prod": "npm run build && electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
@@ -64,20 +66,50 @@
     "browserify": "^17.0.1",
     "concurrently": "^9.1.0",
     "css-loader": "^7.1.2",
+    "dotenv": "^16.4.7",
     "dotenv-webpack": "^8.1.0",
     "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
     "electron-extension-installer": "^1.2.0",
     "electron-is-dev": "^3.0.1",
+    "events": "^3.3.0",
     "file-loader": "^6.2.0",
     "gh-pages": "^6.2.0",
     "html-webpack-plugin": "^5.6.3",
+    "path-browserify": "^1.0.1",
     "postcss": "^8.4.49",
     "style-loader": "^4.0.0",
     "tailwindcss": "^3.4.16",
+    "util": "^0.12.5",
     "wait-on": "^8.0.1",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4",
     "worker-loader": "^3.0.8",
     "worker-plugin": "^5.0.1"
+  },
+  "build": {
+    "appId": "com.fogglab.geneplatform",
+    "productName": "Gene Platform",
+    "mac": {
+      "category": "public.app-category.science",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable",
+        "msi"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Science"
+    }
   }
 }

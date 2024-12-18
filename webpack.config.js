@@ -14,7 +14,7 @@ module.exports = {
     globalObject: 'self'
   },
   mode: 'development',
-  target: 'electron-renderer',
+  target: 'web',
   module: {
     rules: [
       {
@@ -24,11 +24,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'postcss-loader',
-        ],
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
@@ -38,17 +34,15 @@ module.exports = {
         }
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i, // Rule to handle image files
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'assets/', // Unified path for all assets
-              publicPath: 'assets/' // Unified public path
-            }
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'assets/',
+            publicPath: 'assets/'
           }
-        ]
+        }]
       },
       {
         test: /\.worker\.js$/,
@@ -70,9 +64,15 @@ module.exports = {
     fallback: {
       "buffer": require.resolve("buffer/"),
       "stream": require.resolve("stream-browserify"),
-      "process/browser": require.resolve("process/browser"),
+      "process": require.resolve("process/browser"),
       "path": require.resolve("path-browserify"),
       "crypto": require.resolve("crypto-browserify"),
+      "events": require.resolve("events/"),
+      "util": require.resolve("util/"),
+      "assert": require.resolve("assert/"),
+      "fs": false,
+      "net": false,
+      "tls": false
     }
   },
   plugins: [
@@ -92,6 +92,9 @@ module.exports = {
       ],
     }),
     new Dotenv(),
+    new webpack.DefinePlugin({
+      'process.type': '"renderer"'
+    })
   ],
   devServer: {
     static: {

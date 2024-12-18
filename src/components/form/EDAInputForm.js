@@ -247,7 +247,6 @@ const EDAInputForm = ({
             <div className="form-with-tooltips">
                 <div className="form-content">
                     {/* Left side: All the form fields */}
-                    <h3>Use GDC/GEO data or run an example dataset</h3>
                     <div className='dataSubfield flex flex-col gap-2 border border-black rounded p-4'>
                         {isLoading ? (
                             <div className="loader"></div>
@@ -315,7 +314,7 @@ const EDAInputForm = ({
                         <ToolTip content="Upload your gene expression matrix and sample metadata files" />
                     </div>
                     <div className="tooltip-row" style={{ marginTop: '150px' }}>
-                        <ToolTip content="Select the transformation method to normalize your count data" />
+                        <ToolTip content="Select the transformation method applied to the count data prior to visualization" />
                     </div>
                 </div>
             </div>

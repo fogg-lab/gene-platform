@@ -1,7 +1,13 @@
-const { app, BrowserWindow } = require('electron');
+require('dotenv').config();
+
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 let mainWindow;
+
+ipcMain.handle('getEnvVar', (event, varName) => {
+    return process.env[varName];
+});
 
 async function createWindow() {
   const isDev = (await import('electron-is-dev')).default;
@@ -12,8 +18,9 @@ async function createWindow() {
     minWidth: 1200,
     minHeight: 600,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   });
 
