@@ -188,13 +188,6 @@ nav {
     overflow-y: auto;
 }
 
-.analysisContentGuide {
-    background: #ECECEC;
-    padding: 3%;
-    border-radius: 15px;
-    height: 40%;
-}
-
 .analysisContentGuide h1 {
     font-size: 1.5em;
     font-family: 'KievitOffc'
@@ -1125,4 +1118,94 @@ ul.suggestions {
 
 .analysisInputButton:disabled:hover {
     background-color: #cccccc;
+}
+
+.analysisContentGuide {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.analysisContentGuide h2 {
+    color: #333;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.guide-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.guide-option {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.guide-option h3 {
+    color: #D73F09;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.guide-option p {
+    margin: 0;
+    color: #666;
+    line-height: 1.5;
+}
+
+.tip {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #D73F09;
+}
+
+.tip-label {
+    color: #D73F09;
+    font-weight: 600;
+}
+
+.tip p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.filter-btn {
+    background-color: #D73F09;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    font-family: 'KievitOffc';
+    font-size: 1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.filter-btn:hover {
+    background-color: #b33507;
+}
+
+.filter-btn:before {
+    content: '🔍';
+    font-size: 1em;
+}
+
+.filter-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
 }

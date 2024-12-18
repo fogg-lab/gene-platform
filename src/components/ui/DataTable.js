@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { DataGridPro, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarExport, GridToolbarDensitySelector, gridExpandedSortedRowIdsSelector, useGridApiContext, } from '@mui/x-data-grid-pro';
 import PropTypes from 'prop-types';
 
@@ -7,37 +7,11 @@ const getIntersectingRows = (filteredRows, selectionModel) => {
   return selectionModel.filter(id => filteredRows.includes(id));
 };
 
-const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows, clearSelection, requiresToolbar }) => {
-  const [selectedGroupType, setSelectedGroupType] = useState('reference');
+const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows, clearSelection, requiresToolbar, contrastGroup, referenceGroup }) => {
   const apiRef = useGridApiContext();
 
-  if (!requiresToolbar) {
-    return null;
-  }
-
-  const handleAddSamples = () => {
-    console.log("handleAddSamples called");
-    console.log("Current selectionModel:", selectionModel);
-    const filteredSelectionModel = getIntersectingRows(getFilteredRows({ apiRef }), selectionModel);
-    console.log("Filtered selectionModel:", filteredSelectionModel);
-    const selectedSamples = filteredSelectionModel.map(id => {
-      const row = rows.find(r => r.id === id);
-      return {
-        id: row.sample_id || row.id,
-        [Object.keys(row)[0]]: row[Object.keys(row)[0]]
-      };
-    });
-    console.log("Selected samples:", selectedSamples);
-    onAddSamplesToGroup(selectedGroupType === 'contrast', selectedSamples);
-    console.log("Calling clearSelection");
-    clearSelection();
-    console.log("clearSelection called");
-  };
-
-  const numSelectedFiltered = getIntersectingRows(getFilteredRows({ apiRef }), selectionModel).length;
-
-  return (
-    <GridToolbarContainer>
+  const basicControls = (
+    <div style={{ display: 'flex', gap: '8px' }}>
       <GridToolbarColumnsButton />
       <GridToolbarFilterButton />
       <GridToolbarDensitySelector />
@@ -45,22 +19,104 @@ const CustomToolbar = ({ onAddSamplesToGroup, selectionModel, rows, clearSelecti
         printOptions={{ disableToolbarButton: false }}
         csvOptions={{ disableToolbarButton: false }}
       />
-      <select
-        value={selectedGroupType}
-        onChange={(e) => setSelectedGroupType(e.target.value)}
-      >
-        <option value="reference">Reference Group</option>
-        <option value="contrast">Contrast Group</option>
-      </select>
-      <button
-        onClick={handleAddSamples}
-        disabled={numSelectedFiltered === 0}
-      >
-        Add Selected ({numSelectedFiltered})
-      </button>
+    </div>
+  );
+
+  const handleAddSamples = (isContrast) => {
+    const filteredSelectionModel = getIntersectingRows(getFilteredRows({ apiRef }), selectionModel);
+    const selectedSamples = filteredSelectionModel.map(id => {
+      const row = rows.find(r => r.id === id);
+      return {
+        id: row.sample_id || row.id,
+        [Object.keys(row)[0]]: row[Object.keys(row)[0]]
+      };
+    });
+    onAddSamplesToGroup(isContrast, selectedSamples);
+    clearSelection();
+  };
+
+  const numSelectedFiltered = getIntersectingRows(getFilteredRows({ apiRef }), selectionModel).length;
+  const referenceCount = referenceGroup.samples.length;
+  const contrastCount = contrastGroup.samples.length;
+
+  return (
+    <GridToolbarContainer sx={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      padding: '8px 16px',
+      borderBottom: '1px solid rgba(224, 224, 224, 1)'
+    }}>
+      {basicControls}
+      {requiresToolbar && (
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          alignItems: 'center'
+        }}>
+          <span style={{ 
+            fontFamily: 'KievitOffc',
+            marginRight: '8px'
+          }}>
+            {numSelectedFiltered} samples selected
+          </span>
+          <button
+            onClick={() => handleAddSamples(false)}
+            disabled={numSelectedFiltered === 0}
+            style={{
+              backgroundColor: '#D73F09',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: numSelectedFiltered === 0 ? 'not-allowed' : 'pointer',
+              opacity: numSelectedFiltered === 0 ? 0.6 : 1,
+              fontFamily: 'KievitOffc',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '2px'
+            }}
+          >
+            <span>Assign to Reference Group</span>
+            <span style={{ fontSize: '0.8em' }}>({referenceCount} samples)</span>
+          </button>
+          <button
+            onClick={() => handleAddSamples(true)}
+            disabled={numSelectedFiltered === 0}
+            style={{
+              backgroundColor: '#D73F09',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: numSelectedFiltered === 0 ? 'not-allowed' : 'pointer',
+              opacity: numSelectedFiltered === 0 ? 0.6 : 1,
+              fontFamily: 'KievitOffc',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '2px'
+            }}
+          >
+            <span>Assign to Contrast Group</span>
+            <span style={{ fontSize: '0.8em' }}>({contrastCount} samples)</span>
+          </button>
+        </div>
+      )}
     </GridToolbarContainer>
   );
 };
+
+CustomToolbar.propTypes = {
+  onAddSamplesToGroup: PropTypes.func.isRequired,
+  selectionModel: PropTypes.array.isRequired,
+  rows: PropTypes.array.isRequired,
+  clearSelection: PropTypes.func.isRequired,
+  requiresToolbar: PropTypes.bool.isRequired,
+  contrastGroup: PropTypes.object.isRequired,
+  referenceGroup: PropTypes.object.isRequired,
+};
+
 const DataTable = ({
   data,
   columns,
@@ -68,7 +124,8 @@ const DataTable = ({
   referenceGroup,
   onAddSamplesToGroup,
   onRemoveSamplesFromGroup,
-  requiresToolbar
+  requiresToolbar,
+  activeFilter,
 }) => {
   const [sortModel, setSortModel] = useState([]);
   const [selectionModel, setSelectionModel] = useState([]);
@@ -106,6 +163,38 @@ const DataTable = ({
     }));
   }, [data, rowGroups]);
 
+  useEffect(() => {
+    if (activeFilter) {
+      console.log('Setting filter for genes:', activeFilter.genes);
+      const upperGenes = activeFilter.genes.map(gene => gene.toUpperCase());
+      console.log('Filtered genes (uppercase):', upperGenes);
+
+      setFilterModel({
+        items: [{
+          field: 'symbol',
+          operator: 'isAnyOf',
+          value: upperGenes
+        }]
+      });
+
+      // Debug check if genes exist in the data
+      const foundGenes = data.filter(row => 
+        upperGenes.includes(row.symbol?.toUpperCase())
+      );
+      console.log('Found matching genes:', foundGenes.length);
+      console.log('Sample matching genes:', foundGenes.slice(0, 5));
+    } else {
+      setFilterModel({ items: [] });
+    }
+  }, [activeFilter, data]);
+
+  useEffect(() => {
+    if (activeFilter) {
+      console.log('Active filter genes:', activeFilter.genes);
+      console.log('Available rows:', filteredRows);
+      console.log('Current filter model:', filterModel);
+    }
+  }, [activeFilter, filteredRows, filterModel]);
 
   const handleHeaderClick = useCallback((params) => {
     if (params.field === '__check__') {
@@ -124,25 +213,9 @@ const DataTable = ({
     setSelectionModel(newSelectionModel);
   }, [selectionModel]);
 
-  const handleAddSamplesToGroup = useCallback((isContrast, samples) => {
-    console.log("handleAddSamplesToGroup called", { isContrast, samples });
-    const groupType = isContrast ? 'contrast' : 'reference';
-    setRowGroups(prevGroups => {
-      const newGroups = { ...prevGroups };
-      samples.forEach(sample => {
-        newGroups[sample.id || sample.sample_id] = groupType;
-      });
-      console.log("New rowGroups:", newGroups);
-      return newGroups;
-    });
-    onAddSamplesToGroup(isContrast, samples);
-    setKey(prevKey => {
-      console.log("Incrementing key to force re-render");
-      return prevKey + 1;
-    });
-  }, [onAddSamplesToGroup]);
-
   const getRowClassName = useCallback((params) => {
+    if (!requiresToolbar) return '';
+    
     const sampleId = params.row.sample_id || params.id;
     if (contrastGroup.samples.some(sample => sample.id === sampleId)) {
       return 'contrast-row';
@@ -150,7 +223,7 @@ const DataTable = ({
       return 'reference-row';
     }
     return '';
-  }, [contrastGroup, referenceGroup]);
+  }, [contrastGroup, referenceGroup, requiresToolbar]);
 
   const clearSelection = useCallback(() => {
     console.log("clearSelection function called");
@@ -160,6 +233,9 @@ const DataTable = ({
   }, []);
 
   console.log("Rendering DataTable, current selectionModel:", selectionModel);
+
+  console.log('First row of data:', data[0]);
+  console.log('Available columns:', columns);
 
   return (
     <div style={{ height: '80vh', width: '100%', maxHeight: 'calc(100vh - 20px)', overflow: 'hidden' }}>
@@ -171,10 +247,13 @@ const DataTable = ({
         sortModel={sortModel}
         onSortModelChange={setSortModel}
         filterModel={filterModel}
-        onFilterModelChange={setFilterModel}
+        onFilterModelChange={(model) => {
+          console.log('Filter model changed:', model);
+          setFilterModel(model);
+        }}
         checkboxSelection={requiresToolbar}
         disableColumnMenu={false}
-        disableSelectionOnClick={true}
+        disableSelectionOnClick={false}
         density="compact"
         getRowId={(row) => row.id}
         onColumnHeaderClick={handleHeaderClick}
@@ -189,16 +268,18 @@ const DataTable = ({
         rowsPerPageOptions={[25, 50, 100]}
         initialState={{ pagination: { pageSize: 100 } }}
         slots={{
-          toolbar: requiresToolbar ? CustomToolbar : null,
+          toolbar: CustomToolbar,
         }}
         slotProps={{
-          toolbar: requiresToolbar ? {
-            onAddSamplesToGroup: handleAddSamplesToGroup,
-            selectionModel: selectionModel,
+          toolbar: {
+            onAddSamplesToGroup,
+            selectionModel,
             rows: filteredRows,
-            clearSelection: clearSelection,
-            requiresToolbar: requiresToolbar,
-          } : undefined,
+            clearSelection,
+            requiresToolbar,
+            contrastGroup,
+            referenceGroup,
+          },
         }}
         sx={{
           height: '100%',
@@ -242,7 +323,12 @@ const DataTable = ({
               backgroundColor: 'rgb(237, 255, 235) !important',
             },
           },
+          '& .MuiDataGrid-cell': {
+            userSelect: requiresToolbar ? 'none' : 'default',
+            cursor: requiresToolbar ? 'pointer' : 'default',
+          },
         }}
+        isRowSelectable={(params) => requiresToolbar}
       />
     </div>
   );

@@ -38,7 +38,7 @@ const Analysis = () => {
         weight: 1,
         minSize: 15,
         maxSize: 500,
-        nperm: 1000,
+        nperm: 1000
     });
 
     const [currentStage, setCurrentStage] = useState('exploration');
@@ -47,7 +47,6 @@ const Analysis = () => {
         differential: true,
         enrichment: true
     });
-
     const [transformMethod, setTransformMethod] = useState('log2');
 
     const updateLockedState = (stage, isLocked) => {
@@ -226,12 +225,14 @@ const Analysis = () => {
                 if (deData) {
                     setCurrentTable('de_results');
                     if (!currentPlot) setCurrentPlot('volcano_plot');
+                } else {
+                    setCurrentTable('coldata');
                 }
                 break;
             case 'enrichment':
                 if (enrichData) {
                     setCurrentTable('gsea_results');
-                    if (!currentPlot) setCurrentPlot('gene_concept_network');
+                    //if (!currentPlot) setCurrentPlot('gene_concept_network');
                 }
                 break;
         }
@@ -482,6 +483,7 @@ const Analysis = () => {
 
                 setDeData({ table: deTable, plots: { meanDifference: meanDifferencePlot, volcano: volcanoPlot } });
                 updateLockedState('enrichment', false);
+                setCurrentTable('de_results');
             } catch (error) {
                 console.error("Error in differential expression analysis:", error);
                 setError("An error occurred during the differential expression analysis.");
@@ -492,8 +494,7 @@ const Analysis = () => {
         setIsLoading(false);
     };
 
-    const renderTable = () => {
-        // If we have not run analysis yet and no table data
+    const renderTable = (filterProps) => {
         if ((!tableData || !tableColumns.length) && currentStage !== 'differential' && currentStage !== 'enrichment') {
             return (
                 <div className='analysisContentGuide'>
@@ -502,68 +503,87 @@ const Analysis = () => {
             );
         }
 
-        // Handle enrichment results
-        if (currentStage === 'enrichment' && enrichData && enrichData.tables && enrichData.tables.results) {
-            const rawData = enrichData.tables.results.data;
-            const cols = enrichData.tables.results.cols;
-            const numericColumns = ['PValue', 'FDR'];
-            const currentTableData = rawData.map((row, index) => {
-                const obj = { id: index };
-                cols.forEach((col, colIndex) => {
-                    obj[col] = numericColumns.includes(col) ? formatNumber(row[colIndex]) : row[colIndex];
-                });
-                return obj;
-            });
-            const currentTableColumns = cols.map(col => ({ key: col, name: col }));
-            return (
-                <div>
-                    <h1>Results: limma camera</h1>
-                    <DataTable
-                        data={currentTableData}
-                        columns={currentTableColumns}
-                        contrastGroup={contrastGroup}
-                        referenceGroup={referenceGroup}
-                        onAddSamplesToGroup={handleAddSamplesToGroup}
-                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                        requiresToolbar={false}
-                    />
-                </div>
-            );
-        }
-
-        // Handle differential results
-        if (currentStage === 'differential' && deData && deData.table) {
-            const rawData = deData.table.data;
-            const cols = deData.table.cols;
-            const numericColumns = ['logFC', 't', 'p_value', 'p_value_adj'];
-            const currentTableData = rawData.map((row, index) => {
-                const obj = { id: index };
-                cols.forEach((col, colIndex) => {
-                    obj[col] = numericColumns.includes(col) ? formatNumber(row[colIndex]) : row[colIndex];
-                });
-                return obj;
-            });
-            const currentTableColumns = cols.map(col => ({ key: col, name: col }));
-            return (
-                <div>
-                    <h1>DE Results</h1>
-                    <DataTable
-                        data={currentTableData}
-                        columns={currentTableColumns}
-                        contrastGroup={contrastGroup}
-                        referenceGroup={referenceGroup}
-                        onAddSamplesToGroup={handleAddSamplesToGroup}
-                        onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                        requiresToolbar={false}
-                    />
-                </div>
-            );
-        }
-
-        // Default to showing the dataset table (for exploration)
+        const enableSampleSelection = currentStage === 'differential' && currentTable === 'coldata';
         let currentTableData = tableData;
         let currentTableColumns = tableColumns;
-        const requiresToolbar = currentStage !== 'exploration';
+
+        if (currentStage === 'exploration') {
+            switch (currentTable) {
+                case 'coldata':
+                    currentTableData = dataset.coldataTable.data.map((row, index) => {
+                        const obj = {};
+                        dataset.coldataTable.cols.forEach((col, colIndex) => {
+                            obj[col] = row[colIndex];
+                        });
+                        obj.id = index;
+                        return obj;
+                    });
+                    currentTableColumns = dataset.coldataTable.cols.map(col => ({ key: col, name: col }));
+                    break;
+                case 'counts':
+                    currentTableData = dataset.countsTable.data.map((row, index) => {
+                        const obj = {};
+                        dataset.countsTable.cols.forEach((col, colIndex) => {
+                            obj[col] = row[colIndex];
+                        });
+                        obj.id = index;
+                        return obj;
+                    });
+                    currentTableColumns = dataset.countsTable.cols.map(col => ({ key: col, name: col }));
+                    break;
+                case 'transformed_counts':
+                    if (edaData && edaData.tables && edaData.tables.transformed_counts) {
+                        currentTableData = edaData.tables.transformed_counts.data.map((row, index) => {
+                            const obj = {};
+                            edaData.tables.transformed_counts.cols.forEach((col, colIndex) => {
+                                obj[col] = row[colIndex];
+                            });
+                            obj.id = index;
+                            return obj;
+                        });
+                        currentTableColumns = edaData.tables.transformed_counts.cols.map(col => ({ key: col, name: col }));
+                    }
+                    break;
+            }
+        } else if (currentStage === 'differential') {
+            switch (currentTable) {
+                case 'coldata':
+                    currentTableData = dataset.coldataTable.data.map((row, index) => {
+                        const obj = {};
+                        dataset.coldataTable.cols.forEach((col, colIndex) => {
+                            obj[col] = row[colIndex];
+                        });
+                        obj.id = index;
+                        return obj;
+                    });
+                    currentTableColumns = dataset.coldataTable.cols.map(col => ({ key: col, name: col }));
+                    break;
+                case 'counts':
+                    currentTableData = dataset.countsTable.data.map((row, index) => {
+                        const obj = {};
+                        dataset.countsTable.cols.forEach((col, colIndex) => {
+                            obj[col] = row[colIndex];
+                        });
+                        obj.id = index;
+                        return obj;
+                    });
+                    currentTableColumns = dataset.countsTable.cols.map(col => ({ key: col, name: col }));
+                    break;
+                case 'de_results':
+                    if (deData && deData.table) {
+                        currentTableData = deData.table.data.map((row, index) => {
+                            const obj = {};
+                            deData.table.cols.forEach((col, colIndex) => {
+                                obj[col] = row[colIndex];
+                            });
+                            obj.id = index;
+                            return obj;
+                        });
+                        currentTableColumns = deData.table.cols.map(col => ({ key: col, name: col }));
+                    }
+                    break;
+            }
+        }
 
         return (
             <DataTable
@@ -573,7 +593,8 @@ const Analysis = () => {
                 referenceGroup={referenceGroup}
                 onAddSamplesToGroup={handleAddSamplesToGroup}
                 onRemoveSamplesFromGroup={handleRemoveSamplesFromGroup}
-                requiresToolbar={requiresToolbar}
+                requiresToolbar={enableSampleSelection}
+                activeFilter={filterProps?.activeFilter}
             />
         );
     };
@@ -624,8 +645,12 @@ const Analysis = () => {
                         onDatasetSelect={handleDatasetSelect}
                         runAnalysis={runAnalysis}
                         isLoading={isLoading}
-                        onAddGeneSetCollection={(species, collectionId) => getExternalGeneSetCollection(species, collectionId)
-                            .then(newCollection => setGeneSetCollections(prev => [...prev, { name: collectionId, data: newCollection }]))}
+                        onAddGeneSetCollection={(species, collectionId) =>
+                            getExternalGeneSetCollection(species, collectionId)
+                                .then(newCollection =>
+                                    setGeneSetCollections(prev => [...prev, { name: collectionId, data: newCollection }])
+                                )
+                        }
                         geneSetCollections={geneSetCollections}
                         enrichParams={enrichParams}
                         onUpdateEnrichParams={setEnrichParams}
@@ -665,6 +690,9 @@ const Analysis = () => {
                                 isLoading={isLoading}
                                 progress={progress}
                                 renderTable={renderTable}
+                                currentTable={currentTable}
+                                setCurrentTable={setCurrentTable}
+                                dataset={dataset}
                             />
                         )}
                         {currentStage === 'differential' && (
@@ -679,6 +707,7 @@ const Analysis = () => {
                                 setCurrentTable={setCurrentTable}
                                 currentPlot={currentPlot}
                                 setCurrentPlot={setCurrentPlot}
+                                dataset={dataset}
                             />
                         )}
                         {currentStage === 'enrichment' && (
@@ -692,7 +721,6 @@ const Analysis = () => {
                                 referenceGroup={referenceGroup}
                                 isLoading={isLoading}
                                 progress={progress}
-                                renderTable={renderTable} // Pass renderTable so GSEAContent can use it if needed
                             />
                         )}
                     </div>

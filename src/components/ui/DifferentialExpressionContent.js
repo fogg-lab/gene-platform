@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ProgressBar from './ProgressBar';
 import PlotArea from './PlotArea';
+import GeneSetFilterPopup from './GeneSetFilterPopup';
 
 const DifferentialExpressionContent = ({
     data,
@@ -13,6 +14,7 @@ const DifferentialExpressionContent = ({
     setCurrentTable,
     currentPlot,
     setCurrentPlot,
+    dataset,
 }) => {
     useEffect(() => {
         if (data && !activeTab) {
@@ -25,6 +27,65 @@ const DifferentialExpressionContent = ({
             setCurrentPlot(Object.keys(data.plots)[0]);
         }
     }, [data, currentPlot, setCurrentPlot]);
+
+    const [showGeneSetFilter, setShowGeneSetFilter] = useState(false);
+    const [activeFilter, setActiveFilter] = useState(null);
+
+    const handleGeneSetFilter = (geneSetId, genes) => {
+        setActiveFilter({ id: geneSetId, genes });
+    };
+
+    const renderTableTabs = () => {
+        const availableTables = ['coldata', 'counts'];
+        if (data && data.table) {
+            availableTables.push('de_results');
+        }
+        return (
+            <div id="table_subtabs">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        {availableTables.map(tbl => (
+                            <button
+                                key={tbl}
+                                className={`view-toggle-btn ${currentTable === tbl ? 'active' : ''}`}
+                                onClick={() => setCurrentTable(tbl)}
+                            >
+                                {tbl.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+                    {currentTable === 'de_results' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {activeFilter && (
+                                <span style={{ fontSize: '0.9em', color: '#666' }}>
+                                    Filtered by: {activeFilter.id}
+                                    <button
+                                        onClick={() => setActiveFilter(null)}
+                                        style={{
+                                            marginLeft: '8px',
+                                            border: 'none',
+                                            background: 'none',
+                                            cursor: 'pointer',
+                                            color: '#999'
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            )}
+                            <button
+                                className="filter-btn"
+                                onClick={() => setShowGeneSetFilter(true)}
+                                title="Filter table rows using gene sets from MSigDB"
+                            >
+                                Filter by Gene Set
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     const renderPlotTabs = () => {
         if (!data || !data.plots) {
@@ -74,14 +135,21 @@ const DifferentialExpressionContent = ({
                         Plot View
                     </button>
                 </div>
+                {activeTab === 'table' && renderTableTabs()}
                 {isLoading && <ProgressBar progress={progress} />}
                 <div className={`table-view ${activeTab === 'table' ? 'active' : ''}`}>
-                    {renderTable()}
+                    {renderTable({ activeFilter })}
                 </div>
                 <div className={`plot-view ${activeTab === 'plot' ? 'active' : ''}`}>
                     {renderPlotTabs()}
                 </div>
             </div>
+            <GeneSetFilterPopup
+                isVisible={showGeneSetFilter}
+                setIsVisible={setShowGeneSetFilter}
+                onFilterApply={handleGeneSetFilter}
+                species={dataset?.species || 'human'}
+            />
         </div>
     );
 }
