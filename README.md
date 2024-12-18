@@ -1,37 +1,14 @@
 # GENE Platform
 
-For the original Flask-based web application, visit https://github.com/fogg-lab/gene-platform-archive
+A desktop application for gene expression analysis of bulk RNA-seq data, built with Electron and React. This project is a rewrite of the [original Flask-based web application](https://github.com/fogg-lab/gene-platform-archive).
 
-## (Development) Prerequisites
-1. NPM installed
-2. Node.js installed
+Download and install the latest version on the [releases page](https://github.com/fogg-lab/gene-platform/releases).
 
-## (Development) Install and run steps:
-1. install NPM dependencies: npm install
-2. start webpack dev server: npm start
-3. run electron application: npm run electron
+## Features
 
-This should launch the electron/react window.
-
-## Project Structure
-
-```
-electron_app/
-│
-├── src/
-│   ├── index.js // Main entry for React / where root gets rendered
-│   ├── App.js //routing / state management
-│   └── styles.css (not implemented)
-│
-├── public/
-│   └── index.html //root React element
-│
-├── dist/
-│   └── (output files after build)
-│
-├── main.js //react + electron bundler
-├── package.json
-├── webpack.config.js
-├── .babelrc
-└── README.md
-```
+- Exploratory Data Analysis
+- Differential expression analysis for bulk RNA-seq data with a `limma-voom` pipeline
+- Enrichment analysis via limma's `camera` method
+- Interactive data visualization
+- Load [harmonized GEO and GDC datasets](https://github.com/fogg-lab/curated-bulk-rnaseq-gene-expression)
+- Local data processing via WebAssembly
