@@ -133,8 +133,6 @@ const DataTable = ({
   const [key, setKey] = useState(0);
   const [rowGroups, setRowGroups] = useState({});
 
-  console.log("Requires Toolbar: ", requiresToolbar);
-
   const gridColumns = useMemo(() => {
     return columns.map(col => ({
       field: col.key,
@@ -165,9 +163,7 @@ const DataTable = ({
 
   useEffect(() => {
     if (activeFilter) {
-      console.log('Setting filter for genes:', activeFilter.genes);
       const upperGenes = activeFilter.genes.map(gene => gene.toUpperCase());
-      console.log('Filtered genes (uppercase):', upperGenes);
 
       setFilterModel({
         items: [{
@@ -198,7 +194,6 @@ const DataTable = ({
 
   const handleHeaderClick = useCallback((params) => {
     if (params.field === '__check__') {
-      console.log("Select-all header clicked");
       const newSelectionModel = selectionModel.length > 0 ? [] : filteredRows.map(row => row.id);
       setSelectionModel(newSelectionModel);
     }
@@ -232,11 +227,6 @@ const DataTable = ({
     console.log("Selection cleared and DataGrid re-render triggered");
   }, []);
 
-  console.log("Rendering DataTable, current selectionModel:", selectionModel);
-
-  console.log('First row of data:', data[0]);
-  console.log('Available columns:', columns);
-
   return (
     <div style={{ height: '80vh', width: '100%', maxHeight: 'calc(100vh - 20px)', overflow: 'hidden' }}>
       <DataGridPro
@@ -248,7 +238,6 @@ const DataTable = ({
         onSortModelChange={setSortModel}
         filterModel={filterModel}
         onFilterModelChange={(model) => {
-          console.log('Filter model changed:', model);
           setFilterModel(model);
         }}
         checkboxSelection={requiresToolbar}
@@ -259,7 +248,6 @@ const DataTable = ({
         onColumnHeaderClick={handleHeaderClick}
         selectionModel={selectionModel}
         onSelectionModelChange={(newSelectionModel) => {
-          console.log("onSelectionModelChange called", newSelectionModel);
           setSelectionModel(newSelectionModel);
         }}
         onCellClick={handleCellClick}
